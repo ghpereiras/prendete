@@ -59,6 +59,35 @@ def test_preview_invite_registration_open_by_default(client):
     assert body["registration_open"] is True
 
 
+def test_registration_closes_at_event_start_by_default(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    already_started = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    # no registration_deadline_minutes_before at all: should still default to closing at starts_at
+    create_event(client, owner_token, starts_at=already_started)
+    token = get_invite_token(client, 1, owner_token)
+
+    preview = client.get(f"/events/invite/{token}").json()
+    assert preview["registration_open"] is False
+
+    response = client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+    assert response.status_code == 409
+
+
+def test_registration_open_before_event_start_by_default(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    not_started_yet = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+    create_event(client, owner_token, starts_at=not_started_yet)
+    token = get_invite_token(client, 1, owner_token)
+
+    preview = client.get(f"/events/invite/{token}").json()
+    assert preview["registration_open"] is True
+
+    response = client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+    assert response.status_code == 201
+
+
 def test_join_event_rejected_after_registration_deadline(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")

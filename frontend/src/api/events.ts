@@ -91,18 +91,18 @@ export function endsAt(startsAt: string, durationMinutes: number): Date {
   return new Date(new Date(startsAt).getTime() + durationMinutes * 60000);
 }
 
+// Without an explicit deadline, registration closes when the event starts.
 export function registrationDeadline(
   startsAt: string,
   registrationDeadlineMinutesBefore: number | null,
-): Date | null {
-  if (registrationDeadlineMinutesBefore === null) return null;
-  return new Date(new Date(startsAt).getTime() - registrationDeadlineMinutesBefore * 60000);
+): Date {
+  const minutesBefore = registrationDeadlineMinutesBefore ?? 0;
+  return new Date(new Date(startsAt).getTime() - minutesBefore * 60000);
 }
 
 export function isRegistrationOpen(
   startsAt: string,
   registrationDeadlineMinutesBefore: number | null,
 ): boolean {
-  const deadline = registrationDeadline(startsAt, registrationDeadlineMinutesBefore);
-  return deadline === null || Date.now() < deadline.getTime();
+  return Date.now() < registrationDeadline(startsAt, registrationDeadlineMinutesBefore).getTime();
 }

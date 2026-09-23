@@ -35,7 +35,7 @@ export default function InvitePreview() {
     ? registrationDeadline(event.starts_at, event.registration_deadline_minutes_before)
     : null;
   const { msRemaining, isOver } = useCountdown(deadline);
-  const registrationClosed = event ? (deadline ? isOver : !event.registration_open) : false;
+  const registrationClosed = isOver;
 
   async function handleJoin() {
     if (!token) return;
@@ -90,14 +90,13 @@ export default function InvitePreview() {
           : t("invitePreview.spotsLeft", { count: event.spots_left })}
       </p>
 
-      {deadline &&
-        (registrationClosed ? (
-          <p className="error">{t("invitePreview.registrationClosed")}</p>
-        ) : (
-          <p className="countdown">
-            {t("invitePreview.timeToRegister", { time: formatCountdown(msRemaining) })}
-          </p>
-        ))}
+      {registrationClosed ? (
+        <p className="error">{t("invitePreview.registrationClosed")}</p>
+      ) : (
+        <p className="countdown">
+          {t("invitePreview.timeToRegister", { time: formatCountdown(msRemaining) })}
+        </p>
+      )}
 
       {joinError && <p className="error">{joinError}</p>}
 

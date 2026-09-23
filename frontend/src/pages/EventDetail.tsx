@@ -88,18 +88,16 @@ export default function EventDetail() {
           ? t("common.loading")
           : t("eventDetail.spotsLeft", { count: spotsLeft })}
       </p>
-      {event.registration_deadline_minutes_before !== null && (
-        <p className={isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before) ? undefined : "error"}>
-          {isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before)
-            ? t("eventDetail.registrationDeadline", {
-                date: registrationDeadline(
-                  event.starts_at,
-                  event.registration_deadline_minutes_before,
-                )!.toLocaleString(),
-              })
-            : t("eventDetail.registrationClosed")}
-        </p>
-      )}
+      <p className={isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before) ? undefined : "error"}>
+        {isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before)
+          ? t("eventDetail.registrationDeadline", {
+              date: registrationDeadline(
+                event.starts_at,
+                event.registration_deadline_minutes_before,
+              ).toLocaleString(),
+            })
+          : t("eventDetail.registrationClosed")}
+      </p>
 
       {inviteUrl && (
         <div className="invite-link">

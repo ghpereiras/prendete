@@ -75,7 +75,7 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `GET /events/{event_id}/invite-link` (solo el dueño) — devuelve el `invite_token` para armar el link a compartir
 - `POST /events/{event_id}/invite-link/regenerate` (solo el dueño) — invalida el link anterior y genera uno nuevo
 - `GET /events/invite/{invite_token}` (público, sin login) — preview del evento y cupos restantes, para mostrar antes de pedir login/registro
-- `POST /events/invite/{invite_token}/join` (autenticado) — se suma al evento; `409` si ya está sumado, si el evento está lleno, o si ya pasó el `registration_deadline_minutes_before` (cierre de inscripciones, opcional)
+- `POST /events/invite/{invite_token}/join` (autenticado) — se suma al evento; `409` si ya está sumado, si el evento está lleno, o si ya pasó el cierre de inscripciones (`registration_deadline_minutes_before`, o la fecha de inicio del evento si no se definió uno)
 - `GET /events/{event_id}/invitations` (solo el dueño) — lista las invitaciones (todas, cualquier estado), con `invitee_id`
 - `GET /events/{event_id}/attendees` (dueño o participante aceptado) — lista para mostrar en el frontend: dueño primero (`is_owner: true`) y después cada invitado aceptado, con nombre y email
 - `PATCH /invitations/{id}` — cambiar el propio estado (`declined` para salir del evento y liberar cupo, `accepted` para volver a sumarse si hay lugar), solo el invitado
@@ -118,7 +118,7 @@ El token JWT se guarda en `localStorage`.
 
 ### Duración y cierre de inscripciones
 
-El formulario de creación pide fecha de inicio + **duración en horas** (no una fecha de fin); el horario de fin se calcula y se muestra en el detalle/preview ([api/events.ts](frontend/src/api/events.ts): `endsAt`). El "Cierre de inscripciones" es opcional — si se completa (en horas antes del evento), pasado ese plazo nadie puede sumarse (`POST .../join` devuelve `409`) y el botón "Sumarme" queda deshabilitado en el frontend.
+El formulario de creación pide fecha de inicio + **duración en horas** (no una fecha de fin); el horario de fin se calcula y se muestra en el detalle/preview ([api/events.ts](frontend/src/api/events.ts): `endsAt`). El "Cierre de inscripciones" es opcional (en horas antes del evento) — **si no se completa, el default es la fecha de inicio del evento**: nadie puede sumarse una vez que el evento ya empezó, aunque el dueño no haya configurado un cierre explícito (`crud.event.is_registration_open`). Pasado el cierre, `POST .../join` devuelve `409`, y en la preview de invitación el botón "Sumarme" desaparece y se muestra un contador en vivo (`HH:MM:SS`, o `Xd HH:MM:SS` si faltan 24hs o más) hasta el cierre.
 
 ### Ubicación con Google Maps
 

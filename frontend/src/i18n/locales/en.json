@@ -40,7 +40,7 @@
     "durationHours": "Duration (hours)",
     "registrationDeadlineHours": "Registration deadline (optional)",
     "registrationDeadlinePlaceholder": "Hours before the event",
-    "registrationDeadlineHint": "If set, nobody can join after that many hours before the event starts. Leave it empty for no limit.",
+    "registrationDeadlineHint": "If left empty, registration closes automatically when the event starts. Fill it in if you want it to close earlier.",
     "maxAttendees": "Max attendees",
     "submit": "Create event",
     "submitting": "Creating event...",

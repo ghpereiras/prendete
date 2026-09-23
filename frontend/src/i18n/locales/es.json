@@ -40,7 +40,7 @@
     "durationHours": "Duración (en horas)",
     "registrationDeadlineHours": "Cierre de inscripciones (opcional)",
     "registrationDeadlinePlaceholder": "Horas antes del evento",
-    "registrationDeadlineHint": "Si lo completás, nadie va a poder sumarse pasadas esas horas antes de que empiece el evento. Dejalo vacío para no poner límite.",
+    "registrationDeadlineHint": "Si lo dejás vacío, las inscripciones se cierran automáticamente cuando empieza el evento. Completalo si querés que se cierren antes.",
     "maxAttendees": "Cupo máximo",
     "submit": "Crear evento",
     "submitting": "Creando evento...",

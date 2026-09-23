@@ -51,9 +51,8 @@ def can_view_event(db: Session, event: Event, user_id: int) -> bool:
 
 
 def is_registration_open(event: Event) -> bool:
-    if event.registration_deadline_minutes_before is None:
-        return True
-    deadline = event.starts_at - timedelta(minutes=event.registration_deadline_minutes_before)
+    minutes_before = event.registration_deadline_minutes_before or 0
+    deadline = event.starts_at - timedelta(minutes=minutes_before)
     return datetime.now(timezone.utc) < deadline
 
 
