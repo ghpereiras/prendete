@@ -12,10 +12,12 @@ import {
 import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
 import { useCountdown } from "../hooks/useCountdown";
+import { formatDateTime } from "../utils/date";
 import { formatCountdown } from "../utils/time";
 
 export default function InvitePreview() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? "es";
   const { token } = useParams<{ token: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -81,8 +83,8 @@ export default function InvitePreview() {
         mapsLink={event.maps_link}
       />
       <p>
-        {new Date(event.starts_at).toLocaleString()} —{" "}
-        {endsAt(event.starts_at, event.duration_minutes).toLocaleString()}
+        {formatDateTime(event.starts_at, lang)} —{" "}
+        {formatDateTime(endsAt(event.starts_at, event.duration_minutes), lang)}
       </p>
       <p>
         {isFull

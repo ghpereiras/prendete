@@ -13,9 +13,11 @@ import {
   type EventAttendee,
 } from "../api/events";
 import EventLocation from "../components/EventLocation";
+import { formatDateTime } from "../utils/date";
 
 export default function EventDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? "es";
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [attendees, setAttendees] = useState<EventAttendee[] | null>(null);
@@ -80,8 +82,8 @@ export default function EventDetail() {
         mapsLink={event.maps_link}
       />
       <p>
-        {new Date(event.starts_at).toLocaleString()} —{" "}
-        {endsAt(event.starts_at, event.duration_minutes).toLocaleString()}
+        {formatDateTime(event.starts_at, lang)} —{" "}
+        {formatDateTime(endsAt(event.starts_at, event.duration_minutes), lang)}
       </p>
       <p>
         {spotsLeft === null
@@ -91,10 +93,10 @@ export default function EventDetail() {
       <p className={isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before) ? undefined : "error"}>
         {isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before)
           ? t("eventDetail.registrationDeadline", {
-              date: registrationDeadline(
-                event.starts_at,
-                event.registration_deadline_minutes_before,
-              ).toLocaleString(),
+              date: formatDateTime(
+                registrationDeadline(event.starts_at, event.registration_deadline_minutes_before),
+                lang,
+              ),
             })
           : t("eventDetail.registrationClosed")}
       </p>
