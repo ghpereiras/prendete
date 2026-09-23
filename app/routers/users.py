@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.auth import get_current_user
 from app.database import get_db
+from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -15,13 +17,27 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     return crud.user.create_user(db, user_in)
 
 
+@router.get("/me", response_model=UserRead)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
 @router.get("", response_model=list[UserRead])
-def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     return crud.user.list_users(db, skip, limit)
 
 
 @router.get("/{user_id}", response_model=UserRead)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     user = crud.user.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
