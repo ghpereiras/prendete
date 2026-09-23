@@ -1,8 +1,11 @@
 # Privento
 
-Backend de gestión de eventos: usuarios, eventos e invitaciones. FastAPI + SQLAlchemy + Alembic + PostgreSQL.
+Gestión de eventos: usuarios, eventos e invitaciones.
 
-## Setup
+- Backend: FastAPI + SQLAlchemy + Alembic + PostgreSQL (raíz del repo)
+- Frontend: React + Vite + TypeScript ([frontend/](frontend))
+
+## Backend — Setup
 
 ```bash
 python3 -m venv .venv
@@ -66,14 +69,28 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `POST /events/{event_id}/invitations` (solo el dueño del evento), `GET /events/{event_id}/invitations` (solo el dueño)
 - `PATCH /invitations/{id}` — actualizar estado (`accepted` / `declined`), solo el invitado
 
-## Pendiente
-
-- Refresh tokens / logout (los JWT actuales expiran solos, no hay revocación).
-- Endpoint para editar eventos (`PUT`/`PATCH /events/{id}`).
-
 ## Migraciones nuevas
 
 ```bash
 alembic revision --autogenerate -m "descripcion"
 alembic upgrade head
 ```
+
+## Frontend — Setup
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Corre en `http://localhost:5173`. El backend debe estar corriendo en `http://localhost:8000` (CORS ya configurado para ese origen en `app/main.py`).
+
+Páginas: `/login`, `/register`, `/` (protegida, redirige a `/login` si no hay sesión). El token JWT se guarda en `localStorage`.
+
+## Pendiente
+
+- Refresh tokens / logout server-side (los JWT actuales expiran solos, no hay revocación).
+- Endpoint para editar eventos (`PUT`/`PATCH /events/{id}`).
+- Frontend: pantallas de eventos e invitaciones (por ahora solo auth).
