@@ -79,6 +79,14 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `GET /events/{event_id}/invitations` (solo el dueño) — lista quién se sumó
 - `PATCH /invitations/{id}` — cambiar el propio estado (`declined` para salir del evento y liberar cupo, `accepted` para volver a sumarse si hay lugar), solo el invitado
 
+## Tests
+
+```bash
+pytest
+```
+
+Usan una base separada (`privento_test`, en el mismo Postgres) que se crea sola si no existe, y se truncan las tablas antes de cada test. No tocan la base de desarrollo.
+
 ## Migraciones nuevas
 
 ```bash
