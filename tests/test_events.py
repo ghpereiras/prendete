@@ -5,7 +5,7 @@ EVENT_PAYLOAD = {
     "description": "Juntada",
     "location": "Casa",
     "starts_at": "2026-11-01T20:00:00Z",
-    "ends_at": "2026-11-02T02:00:00Z",
+    "duration_minutes": 360,
     "max_attendees": 2,
 }
 
@@ -56,6 +56,30 @@ def test_create_event_max_attendees_zero_rejected(client):
     token = register_and_login(client, "owner@example.com")
     response = create_event(client, token, max_attendees=0)
     assert response.status_code == 422
+
+
+def test_create_event_duration_zero_rejected(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token, duration_minutes=0)
+    assert response.status_code == 422
+
+
+def test_create_event_registration_deadline_is_optional(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token)
+    assert response.json()["registration_deadline_minutes_before"] is None
+
+
+def test_create_event_registration_deadline_zero_rejected(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token, registration_deadline_minutes_before=0)
+    assert response.status_code == 422
+
+
+def test_create_event_registration_deadline_accepted(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token, registration_deadline_minutes_before=120)
+    assert response.json()["registration_deadline_minutes_before"] == 120
 
 
 def test_list_events_scoped_to_owner_and_participants(client):

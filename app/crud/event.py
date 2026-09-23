@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -46,6 +48,13 @@ def can_view_event(db: Session, event: Event, user_id: int) -> bool:
         )
     )
     return invitation is not None
+
+
+def is_registration_open(event: Event) -> bool:
+    if event.registration_deadline_minutes_before is None:
+        return True
+    deadline = event.starts_at - timedelta(minutes=event.registration_deadline_minutes_before)
+    return datetime.now(timezone.utc) < deadline
 
 
 def regenerate_invite_token(db: Session, event: Event) -> Event:

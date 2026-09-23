@@ -8,7 +8,8 @@ export interface Event {
   location_details: string | null;
   maps_link: string | null;
   starts_at: string;
-  ends_at: string;
+  duration_minutes: number;
+  registration_deadline_minutes_before: number | null;
   max_attendees: number;
   owner_id: number;
   created_at: string;
@@ -21,7 +22,8 @@ export interface EventCreateInput {
   location_details?: string;
   maps_link?: string;
   starts_at: string;
-  ends_at: string;
+  duration_minutes: number;
+  registration_deadline_minutes_before?: number;
   max_attendees: number;
 }
 
@@ -60,9 +62,11 @@ export interface EventInvitePreview {
   location_details: string | null;
   maps_link: string | null;
   starts_at: string;
-  ends_at: string;
+  duration_minutes: number;
+  registration_deadline_minutes_before: number | null;
   max_attendees: number;
   spots_left: number;
+  registration_open: boolean;
 }
 
 export function previewInvite(token: string): Promise<EventInvitePreview> {
@@ -80,4 +84,24 @@ export interface Invitation {
 
 export function joinEvent(token: string): Promise<Invitation> {
   return apiPost<Invitation>(`/events/invite/${token}/join`, {});
+}
+
+export function endsAt(startsAt: string, durationMinutes: number): Date {
+  return new Date(new Date(startsAt).getTime() + durationMinutes * 60000);
+}
+
+export function registrationDeadline(
+  startsAt: string,
+  registrationDeadlineMinutesBefore: number | null,
+): Date | null {
+  if (registrationDeadlineMinutesBefore === null) return null;
+  return new Date(new Date(startsAt).getTime() - registrationDeadlineMinutesBefore * 60000);
+}
+
+export function isRegistrationOpen(
+  startsAt: string,
+  registrationDeadlineMinutesBefore: number | null,
+): boolean {
+  const deadline = registrationDeadline(startsAt, registrationDeadlineMinutesBefore);
+  return deadline === null || Date.now() < deadline.getTime();
 }

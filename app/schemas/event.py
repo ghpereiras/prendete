@@ -10,7 +10,8 @@ class EventCreate(BaseModel):
     location_details: str | None = None
     maps_link: str | None = None
     starts_at: datetime
-    ends_at: datetime
+    duration_minutes: int = Field(gt=0)
+    registration_deadline_minutes_before: int | None = Field(default=None, gt=0)
     max_attendees: int = Field(gt=0)
 
 
@@ -24,7 +25,8 @@ class EventRead(BaseModel):
     location_details: str | None
     maps_link: str | None
     starts_at: datetime
-    ends_at: datetime
+    duration_minutes: int
+    registration_deadline_minutes_before: int | None
     max_attendees: int
     owner_id: int
     created_at: datetime
@@ -44,9 +46,11 @@ class EventInvitePreview(BaseModel):
     location_details: str | None
     maps_link: str | None
     starts_at: datetime
-    ends_at: datetime
+    duration_minutes: int
+    registration_deadline_minutes_before: int | None
     max_attendees: int
     spots_left: int
+    registration_open: bool
 
 
 class EventAttendee(BaseModel):

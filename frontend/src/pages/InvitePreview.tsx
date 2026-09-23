@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
-import { joinEvent, previewInvite, type EventInvitePreview } from "../api/events";
+import { endsAt, joinEvent, previewInvite, type EventInvitePreview } from "../api/events";
 import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
 
@@ -55,6 +55,7 @@ export default function InvitePreview() {
   }
 
   const isFull = event.spots_left <= 0;
+  const canJoin = !isFull && event.registration_open;
 
   return (
     <div className="page">
@@ -66,18 +67,22 @@ export default function InvitePreview() {
         mapsLink={event.maps_link}
       />
       <p>
-        {new Date(event.starts_at).toLocaleString()} — {new Date(event.ends_at).toLocaleString()}
+        {new Date(event.starts_at).toLocaleString()} —{" "}
+        {endsAt(event.starts_at, event.duration_minutes).toLocaleString()}
       </p>
       <p>
         {isFull
           ? t("invitePreview.full")
           : t("invitePreview.spotsLeft", { count: event.spots_left })}
       </p>
+      {!event.registration_open && (
+        <p className="error">{t("invitePreview.registrationClosed")}</p>
+      )}
 
       {joinError && <p className="error">{joinError}</p>}
 
       {user ? (
-        <button onClick={handleJoin} disabled={joining || isFull}>
+        <button onClick={handleJoin} disabled={joining || !canJoin}>
           {joining ? t("invitePreview.joining") : t("invitePreview.join")}
         </button>
       ) : (

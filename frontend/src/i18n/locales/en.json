@@ -37,7 +37,10 @@
     "mapsLink": "Google Maps link (optional)",
     "mapsLinkHint": "Find the place on Google Maps and paste the \"Share\" link, or, if you want the map to show up embedded, use \"Embed a map\" and paste that address instead.",
     "startsAt": "Starts",
-    "endsAt": "Ends",
+    "durationHours": "Duration (hours)",
+    "registrationDeadlineHours": "Registration deadline (optional)",
+    "registrationDeadlinePlaceholder": "Hours before the event",
+    "registrationDeadlineHint": "If set, nobody can join after that many hours before the event starts. Leave it empty for no limit.",
     "maxAttendees": "Max attendees",
     "submit": "Create event",
     "submitting": "Creating event...",
@@ -52,6 +55,8 @@
     "ownerBadge": "Owner",
     "mapTitle": "Event location",
     "viewOnMaps": "View on Google Maps",
+    "registrationDeadline": "Registration open until {{date}}",
+    "registrationClosed": "Registration for this event is closed",
     "notFound": "Event not found",
     "linkError": "Couldn't get the invite link",
     "backHome": "Back home"
@@ -59,6 +64,7 @@
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",
     "full": "This event is full",
+    "registrationClosed": "Registration for this event has closed",
     "join": "Join",
     "joining": "Joining...",
     "needsAuth": "Sign in or create an account to join",

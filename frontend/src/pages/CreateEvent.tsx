@@ -12,7 +12,8 @@ export default function CreateEvent() {
   const [locationDetails, setLocationDetails] = useState("");
   const [mapsLink, setMapsLink] = useState("");
   const [startsAt, setStartsAt] = useState("");
-  const [endsAt, setEndsAt] = useState("");
+  const [durationHours, setDurationHours] = useState("3");
+  const [registrationDeadlineHours, setRegistrationDeadlineHours] = useState("");
   const [maxAttendees, setMaxAttendees] = useState("10");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -29,7 +30,10 @@ export default function CreateEvent() {
         location_details: locationDetails || undefined,
         maps_link: mapsLink || undefined,
         starts_at: new Date(startsAt).toISOString(),
-        ends_at: new Date(endsAt).toISOString(),
+        duration_minutes: Math.round(Number(durationHours) * 60),
+        registration_deadline_minutes_before: registrationDeadlineHours
+          ? Math.round(Number(registrationDeadlineHours) * 60)
+          : undefined,
         max_attendees: Number(maxAttendees),
       });
       navigate(`/events/${event.id}`);
@@ -90,13 +94,27 @@ export default function CreateEvent() {
           />
         </label>
         <label>
-          {t("createEvent.endsAt")}
+          {t("createEvent.durationHours")}
           <input
-            type="datetime-local"
-            value={endsAt}
-            onChange={(e) => setEndsAt(e.target.value)}
+            type="number"
+            min={0.5}
+            step={0.5}
+            value={durationHours}
+            onChange={(e) => setDurationHours(e.target.value)}
             required
           />
+        </label>
+        <label>
+          {t("createEvent.registrationDeadlineHours")}
+          <input
+            type="number"
+            min={0.5}
+            step={0.5}
+            value={registrationDeadlineHours}
+            onChange={(e) => setRegistrationDeadlineHours(e.target.value)}
+            placeholder={t("createEvent.registrationDeadlinePlaceholder")}
+          />
+          <span className="field-hint">{t("createEvent.registrationDeadlineHint")}</span>
         </label>
         <label>
           {t("createEvent.maxAttendees")}

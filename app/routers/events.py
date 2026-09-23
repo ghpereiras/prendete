@@ -43,9 +43,11 @@ def preview_invite(invite_token: str, db: Session = Depends(get_db)):
         location_details=event.location_details,
         maps_link=event.maps_link,
         starts_at=event.starts_at,
-        ends_at=event.ends_at,
+        duration_minutes=event.duration_minutes,
+        registration_deadline_minutes_before=event.registration_deadline_minutes_before,
         max_attendees=event.max_attendees,
         spots_left=max(event.max_attendees - accepted, 0),
+        registration_open=crud.event.is_registration_open(event),
     )
 
 

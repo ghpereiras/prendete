@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from tests.conftest import auth_headers, register_and_login
 from tests.test_events import EVENT_PAYLOAD, create_event
 
@@ -45,6 +47,51 @@ def test_preview_invite_includes_location_fields(client):
     body = client.get(f"/events/invite/{token}").json()
     assert body["location_details"] == "Piso 4, depto B"
     assert body["maps_link"] == "https://www.google.com/maps/embed?pb=abc123"
+
+
+def test_preview_invite_registration_open_by_default(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    create_event(client, owner_token)
+    token = get_invite_token(client, 1, owner_token)
+
+    body = client.get(f"/events/invite/{token}").json()
+    assert body["registration_open"] is True
+
+
+def test_join_event_rejected_after_registration_deadline(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    soon = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+    create_event(
+        client,
+        owner_token,
+        starts_at=soon,
+        # closes 1 hour before start: deadline already passed since the event starts in 10 min
+        registration_deadline_minutes_before=60,
+    )
+    token = get_invite_token(client, 1, owner_token)
+
+    preview = client.get(f"/events/invite/{token}").json()
+    assert preview["registration_open"] is False
+
+    response = client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+    assert response.status_code == 409
+
+
+def test_join_event_allowed_before_registration_deadline(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    far_future = (datetime.now(timezone.utc) + timedelta(days=10)).isoformat()
+    create_event(
+        client,
+        owner_token,
+        starts_at=far_future,
+        registration_deadline_minutes_before=60,
+    )
+    token = get_invite_token(client, 1, owner_token)
+
+    response = client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+    assert response.status_code == 201
 
 
 def test_preview_invite_invalid_token_404(client):

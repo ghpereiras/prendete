@@ -26,6 +26,9 @@ def join_event(
     if existing and existing.status == InvitationStatus.ACCEPTED:
         raise HTTPException(status_code=409, detail="You already joined this event")
 
+    if not crud.event.is_registration_open(event):
+        raise HTTPException(status_code=409, detail="Registration for this event is closed")
+
     if crud.invitation.count_accepted(db, event.id) >= event.max_attendees:
         raise HTTPException(status_code=409, detail="This event is full")
 
@@ -84,6 +87,8 @@ def update_invitation(
 
     if invitation_in.status == InvitationStatus.ACCEPTED and invitation.status != InvitationStatus.ACCEPTED:
         event = crud.event.get_event(db, invitation.event_id)
+        if not crud.event.is_registration_open(event):
+            raise HTTPException(status_code=409, detail="Registration for this event is closed")
         if crud.invitation.count_accepted(db, invitation.event_id) >= event.max_attendees:
             raise HTTPException(status_code=409, detail="This event is full")
 

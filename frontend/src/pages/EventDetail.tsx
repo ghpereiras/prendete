@@ -2,7 +2,16 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
-import { getEvent, getInviteLink, listAttendees, type Event, type EventAttendee } from "../api/events";
+import {
+  endsAt,
+  getEvent,
+  getInviteLink,
+  isRegistrationOpen,
+  listAttendees,
+  registrationDeadline,
+  type Event,
+  type EventAttendee,
+} from "../api/events";
 import EventLocation from "../components/EventLocation";
 
 export default function EventDetail() {
@@ -71,13 +80,26 @@ export default function EventDetail() {
         mapsLink={event.maps_link}
       />
       <p>
-        {new Date(event.starts_at).toLocaleString()} — {new Date(event.ends_at).toLocaleString()}
+        {new Date(event.starts_at).toLocaleString()} —{" "}
+        {endsAt(event.starts_at, event.duration_minutes).toLocaleString()}
       </p>
       <p>
         {spotsLeft === null
           ? t("common.loading")
           : t("eventDetail.spotsLeft", { count: spotsLeft })}
       </p>
+      {event.registration_deadline_minutes_before !== null && (
+        <p className={isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before) ? undefined : "error"}>
+          {isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before)
+            ? t("eventDetail.registrationDeadline", {
+                date: registrationDeadline(
+                  event.starts_at,
+                  event.registration_deadline_minutes_before,
+                )!.toLocaleString(),
+              })
+            : t("eventDetail.registrationClosed")}
+        </p>
+      )}
 
       {inviteUrl && (
         <div className="invite-link">
