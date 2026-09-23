@@ -65,6 +65,7 @@
     "spotsLeft": "Quedan {{count}} lugares",
     "full": "El evento está completo",
     "registrationClosed": "Las inscripciones para este evento ya cerraron",
+    "isOwner": "Sos el organizador de este evento.",
     "join": "Sumarme",
     "joining": "Sumándote...",
     "needsAuth": "Iniciá sesión o creá una cuenta para sumarte",

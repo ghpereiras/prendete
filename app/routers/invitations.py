@@ -22,6 +22,9 @@ def join_event(
     if not event:
         raise HTTPException(status_code=404, detail="Invalid invite link")
 
+    if event.owner_id == current_user.id:
+        raise HTTPException(status_code=409, detail="You're the owner of this event")
+
     existing = crud.invitation.get_invitation_for_user(db, event.id, current_user.id)
     if existing and existing.status == InvitationStatus.ACCEPTED:
         raise HTTPException(status_code=409, detail="You already joined this event")
@@ -29,7 +32,7 @@ def join_event(
     if not crud.event.is_registration_open(event):
         raise HTTPException(status_code=409, detail="Registration for this event is closed")
 
-    if crud.invitation.count_accepted(db, event.id) >= event.max_attendees:
+    if crud.invitation.count_accepted(db, event.id, exclude_user_id=event.owner_id) >= event.max_attendees:
         raise HTTPException(status_code=409, detail="This event is full")
 
     if existing:
@@ -89,7 +92,10 @@ def update_invitation(
         event = crud.event.get_event(db, invitation.event_id)
         if not crud.event.is_registration_open(event):
             raise HTTPException(status_code=409, detail="Registration for this event is closed")
-        if crud.invitation.count_accepted(db, invitation.event_id) >= event.max_attendees:
+        if (
+            crud.invitation.count_accepted(db, invitation.event_id, exclude_user_id=event.owner_id)
+            >= event.max_attendees
+        ):
             raise HTTPException(status_code=409, detail="This event is full")
 
     return crud.invitation.update_invitation_status(db, invitation, invitation_in.status)

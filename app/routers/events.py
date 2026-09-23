@@ -34,7 +34,7 @@ def preview_invite(invite_token: str, db: Session = Depends(get_db)):
     event = crud.event.get_event_by_token(db, invite_token)
     if not event:
         raise HTTPException(status_code=404, detail="Invalid invite link")
-    accepted = crud.invitation.count_accepted(db, event.id)
+    accepted = crud.invitation.count_accepted(db, event.id, exclude_user_id=event.owner_id)
     return EventInvitePreview(
         id=event.id,
         title=event.title,
@@ -48,6 +48,7 @@ def preview_invite(invite_token: str, db: Session = Depends(get_db)):
         max_attendees=event.max_attendees,
         spots_left=max(event.max_attendees - accepted, 0),
         registration_open=crud.event.is_registration_open(event),
+        owner_id=event.owner_id,
     )
 
 

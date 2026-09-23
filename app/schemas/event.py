@@ -51,6 +51,7 @@ class EventInvitePreview(BaseModel):
     max_attendees: int
     spots_left: int
     registration_open: bool
+    owner_id: int
 
 
 class EventAttendee(BaseModel):

@@ -67,6 +67,7 @@ export interface EventInvitePreview {
   max_attendees: number;
   spots_left: number;
   registration_open: boolean;
+  owner_id: number;
 }
 
 export function previewInvite(token: string): Promise<EventInvitePreview> {

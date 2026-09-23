@@ -54,8 +54,9 @@ export default function InvitePreview() {
     return <p className="page">{t("common.loading")}</p>;
   }
 
+  const isOwner = user?.id === event.owner_id;
   const isFull = event.spots_left <= 0;
-  const canJoin = !isFull && event.registration_open;
+  const canJoin = !isFull && event.registration_open && !isOwner;
 
   return (
     <div className="page">
@@ -81,7 +82,9 @@ export default function InvitePreview() {
 
       {joinError && <p className="error">{joinError}</p>}
 
-      {user ? (
+      {isOwner ? (
+        <p>{t("invitePreview.isOwner")}</p>
+      ) : user ? (
         <button onClick={handleJoin} disabled={joining || !canJoin}>
           {joining ? t("invitePreview.joining") : t("invitePreview.join")}
         </button>

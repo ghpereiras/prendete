@@ -30,15 +30,15 @@ def list_accepted_invitees(db: Session, event_id: int) -> list[Invitation]:
     return list(db.scalars(stmt))
 
 
-def count_accepted(db: Session, event_id: int) -> int:
-    return (
-        db.scalar(
-            select(func.count())
-            .select_from(Invitation)
-            .where(Invitation.event_id == event_id, Invitation.status == InvitationStatus.ACCEPTED)
-        )
-        or 0
+def count_accepted(db: Session, event_id: int, exclude_user_id: int | None = None) -> int:
+    stmt = (
+        select(func.count())
+        .select_from(Invitation)
+        .where(Invitation.event_id == event_id, Invitation.status == InvitationStatus.ACCEPTED)
     )
+    if exclude_user_id is not None:
+        stmt = stmt.where(Invitation.invitee_id != exclude_user_id)
+    return db.scalar(stmt) or 0
 
 
 def create_accepted_invitation(db: Session, event_id: int, invitee_id: int) -> Invitation:

@@ -32,6 +32,7 @@ def test_preview_invite_is_public(client):
     body = response.json()
     assert body["title"] == EVENT_PAYLOAD["title"]
     assert body["spots_left"] == EVENT_PAYLOAD["max_attendees"]
+    assert body["owner_id"] == 1
 
 
 def test_preview_invite_includes_location_fields(client):
@@ -110,6 +111,19 @@ def test_join_event_success(client):
     body = response.json()
     assert body["status"] == "accepted"
     assert body["event_id"] == 1
+
+
+def test_owner_cannot_join_own_event(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    create_event(client, owner_token, max_attendees=1)
+    token = get_invite_token(client, 1, owner_token)
+
+    response = client.post(f"/events/invite/{token}/join", headers=auth_headers(owner_token))
+    assert response.status_code == 409
+
+    # the owner's attempt must not have consumed the only spot
+    preview = client.get(f"/events/invite/{token}").json()
+    assert preview["spots_left"] == 1
 
 
 def test_join_event_updates_spots_left(client):
