@@ -29,8 +29,6 @@
     "loading": "Loading..."
   },
   "language": {
-    "label": "Language",
-    "es": "Spanish",
-    "en": "English"
+    "label": "Language"
   }
 }
