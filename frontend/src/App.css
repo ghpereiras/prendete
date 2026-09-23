@@ -40,16 +40,19 @@
   color: var(--text-h);
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form textarea {
   font: inherit;
   padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text-h);
+  resize: vertical;
 }
 
-.auth-form input:focus-visible {
+.auth-form input:focus-visible,
+.auth-form textarea:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
@@ -96,6 +99,61 @@
   background: var(--bg);
   color: var(--text-h);
   cursor: pointer;
+}
+
+.button-link {
+  display: inline-block;
+  font: inherit;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.event-list-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  text-decoration: none;
+  text-align: left;
+}
+
+.invite-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  max-width: 420px;
+}
+
+.invite-link code {
+  word-break: break-all;
+  font-size: 13px;
+}
+
+.invite-auth-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.page button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .sr-only {

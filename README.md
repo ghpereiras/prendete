@@ -105,11 +105,19 @@ npm run dev
 
 Corre en `http://localhost:5173`. El backend debe estar corriendo en `http://localhost:8000` (CORS ya configurado para ese origen en `app/main.py`).
 
-Páginas: `/login`, `/register`, `/` (protegida, redirige a `/login` si no hay sesión). El token JWT se guarda en `localStorage`.
+Páginas:
+
+- `/login`, `/register` — públicas
+- `/invite/:token` — pública, preview del evento; si no hay sesión pide login/registro y vuelve acá después
+- `/` — protegida, lista tus eventos y accedé a crear uno nuevo
+- `/events/new` — protegida, formulario de creación
+- `/events/:eventId` — protegida, detalle del evento; si sos el dueño, muestra el link de invitación para compartir
+
+El token JWT se guarda en `localStorage`.
 
 ## Pendiente
 
 - Refresh tokens / logout server-side (los JWT actuales expiran solos, no hay revocación).
 - Endpoint para editar eventos (`PUT`/`PATCH /events/{id}`).
-- Frontend: pantallas de eventos e invitaciones (por ahora solo auth).
+- Frontend: pantalla para que el dueño vea/gestione la lista de invitados de un evento.
 - Sistema de roles (USER/ADMIN) — quedó en pausa, sin implementar.

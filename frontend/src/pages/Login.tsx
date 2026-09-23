@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from ?? "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export default function Login() {
     setSubmitting(true);
     try {
       await login(email, password);
-      navigate("/");
+      navigate(from);
     } catch {
       setError(t("login.error"));
     } finally {
@@ -53,7 +55,10 @@ export default function Login() {
           {submitting ? t("login.submitting") : t("login.submit")}
         </button>
         <p>
-          {t("login.noAccount")} <Link to="/register">{t("login.registerLink")}</Link>
+          {t("login.noAccount")}{" "}
+          <Link to="/register" state={from !== "/" ? { from } : undefined}>
+            {t("login.registerLink")}
+          </Link>
         </p>
       </form>
     </div>

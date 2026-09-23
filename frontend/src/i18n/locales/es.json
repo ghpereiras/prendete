@@ -23,7 +23,40 @@
   },
   "home": {
     "greeting": "Hola, {{name}}",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "createEvent": "Crear evento",
+    "noEvents": "Todavía no tenés eventos."
+  },
+  "createEvent": {
+    "title": "Crear evento",
+    "name": "Nombre",
+    "description": "Descripción",
+    "location": "Ubicación",
+    "startsAt": "Empieza",
+    "endsAt": "Termina",
+    "maxAttendees": "Cupo máximo",
+    "submit": "Crear evento",
+    "submitting": "Creando evento...",
+    "error": "No se pudo crear el evento"
+  },
+  "eventDetail": {
+    "maxAttendees": "Cupo máximo: {{count}}",
+    "shareLink": "Compartí este link con tus amigos para que se sumen:",
+    "copy": "Copiar link",
+    "copied": "¡Copiado!",
+    "notFound": "No se encontró el evento",
+    "linkError": "No se pudo obtener el link de invitación",
+    "backHome": "Volver al inicio"
+  },
+  "invitePreview": {
+    "spotsLeft": "Quedan {{count}} lugares",
+    "full": "El evento está completo",
+    "join": "Sumarme",
+    "joining": "Sumándote...",
+    "needsAuth": "Iniciá sesión o creá una cuenta para sumarte",
+    "alreadyJoinedOrFull": "Ya estás sumado a este evento, o ya no quedan lugares",
+    "joinError": "No se pudo completar la invitación",
+    "notFound": "Este link de invitación no es válido"
   },
   "common": {
     "loading": "Cargando..."

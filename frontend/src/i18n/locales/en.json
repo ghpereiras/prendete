@@ -23,7 +23,40 @@
   },
   "home": {
     "greeting": "Hi, {{name}}",
-    "logout": "Log out"
+    "logout": "Log out",
+    "createEvent": "Create event",
+    "noEvents": "You don't have any events yet."
+  },
+  "createEvent": {
+    "title": "Create event",
+    "name": "Name",
+    "description": "Description",
+    "location": "Location",
+    "startsAt": "Starts",
+    "endsAt": "Ends",
+    "maxAttendees": "Max attendees",
+    "submit": "Create event",
+    "submitting": "Creating event...",
+    "error": "Couldn't create the event"
+  },
+  "eventDetail": {
+    "maxAttendees": "Max attendees: {{count}}",
+    "shareLink": "Share this link with your friends so they can join:",
+    "copy": "Copy link",
+    "copied": "Copied!",
+    "notFound": "Event not found",
+    "linkError": "Couldn't get the invite link",
+    "backHome": "Back home"
+  },
+  "invitePreview": {
+    "spotsLeft": "{{count}} spots left",
+    "full": "This event is full",
+    "join": "Join",
+    "joining": "Joining...",
+    "needsAuth": "Sign in or create an account to join",
+    "alreadyJoinedOrFull": "You already joined this event, or it's full",
+    "joinError": "Couldn't complete the join",
+    "notFound": "This invite link isn't valid"
   },
   "common": {
     "loading": "Loading..."

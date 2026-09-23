@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { register } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
@@ -9,6 +9,8 @@ export default function Register() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from ?? "/";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +24,7 @@ export default function Register() {
     try {
       await register(email, fullName, password);
       await login(email, password);
-      navigate("/");
+      navigate(from);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setError(t("register.errorEmailTaken"));
@@ -71,7 +73,10 @@ export default function Register() {
           {submitting ? t("register.submitting") : t("register.submit")}
         </button>
         <p>
-          {t("register.haveAccount")} <Link to="/login">{t("register.loginLink")}</Link>
+          {t("register.haveAccount")}{" "}
+          <Link to="/login" state={from !== "/" ? { from } : undefined}>
+            {t("register.loginLink")}
+          </Link>
         </p>
       </form>
     </div>
