@@ -65,9 +65,19 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 
 - `POST /users` (público), `GET /users`, `GET /users/me`, `GET /users/{id}`
 - `POST /auth/login` (público)
-- `POST /events` (dueño = usuario autenticado), `GET /events`, `GET /events/{id}`, `DELETE /events/{id}` (solo el dueño)
-- `POST /events/{event_id}/invitations` (solo el dueño del evento), `GET /events/{event_id}/invitations` (solo el dueño)
-- `PATCH /invitations/{id}` — actualizar estado (`accepted` / `declined`), solo el invitado
+- `POST /events` (dueño = usuario autenticado, requiere `max_attendees`)
+- `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema)
+- `GET /events/{id}` — solo el dueño o un participante aceptado (404 para el resto)
+- `DELETE /events/{id}` — solo el dueño
+
+### Invitaciones por link
+
+- `GET /events/{event_id}/invite-link` (solo el dueño) — devuelve el `invite_token` para armar el link a compartir
+- `POST /events/{event_id}/invite-link/regenerate` (solo el dueño) — invalida el link anterior y genera uno nuevo
+- `GET /events/invite/{invite_token}` (público, sin login) — preview del evento y cupos restantes, para mostrar antes de pedir login/registro
+- `POST /events/invite/{invite_token}/join` (autenticado) — se suma al evento; `409` si ya está sumado o si el evento está lleno (cupo definido por `max_attendees`)
+- `GET /events/{event_id}/invitations` (solo el dueño) — lista quién se sumó
+- `PATCH /invitations/{id}` — cambiar el propio estado (`declined` para salir del evento y liberar cupo, `accepted` para volver a sumarse si hay lugar), solo el invitado
 
 ## Migraciones nuevas
 
@@ -94,3 +104,4 @@ Páginas: `/login`, `/register`, `/` (protegida, redirige a `/login` si no hay s
 - Refresh tokens / logout server-side (los JWT actuales expiran solos, no hay revocación).
 - Endpoint para editar eventos (`PUT`/`PATCH /events/{id}`).
 - Frontend: pantallas de eventos e invitaciones (por ahora solo auth).
+- Sistema de roles (USER/ADMIN) — quedó en pausa, sin implementar.

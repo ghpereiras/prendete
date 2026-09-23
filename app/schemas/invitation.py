@@ -5,10 +5,6 @@ from pydantic import BaseModel, ConfigDict
 from app.models.invitation import InvitationStatus
 
 
-class InvitationCreate(BaseModel):
-    invitee_id: int
-
-
 class InvitationUpdate(BaseModel):
     status: InvitationStatus
 

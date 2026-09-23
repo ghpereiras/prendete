@@ -1,10 +1,15 @@
+import secrets
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.database import Base
+
+
+def generate_invite_token() -> str:
+    return secrets.token_urlsafe(12)
 
 
 class Event(Base):
@@ -16,6 +21,10 @@ class Event(Base):
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    max_attendees: Mapped[int] = mapped_column(Integer, nullable=False)
+    invite_token: Mapped[str] = mapped_column(
+        String(32), unique=True, index=True, nullable=False, default=generate_invite_token
+    )
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

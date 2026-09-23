@@ -5,7 +5,7 @@ from app import crud
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
-from app.schemas.event import EventCreate, EventRead
+from app.schemas.event import EventCreate, EventInviteLink, EventInvitePreview, EventRead
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -26,7 +26,25 @@ def list_events(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return crud.event.list_events(db, skip, limit)
+    return crud.event.list_events_for_user(db, current_user.id, skip, limit)
+
+
+@router.get("/invite/{invite_token}", response_model=EventInvitePreview)
+def preview_invite(invite_token: str, db: Session = Depends(get_db)):
+    event = crud.event.get_event_by_token(db, invite_token)
+    if not event:
+        raise HTTPException(status_code=404, detail="Invalid invite link")
+    accepted = crud.invitation.count_accepted(db, event.id)
+    return EventInvitePreview(
+        id=event.id,
+        title=event.title,
+        description=event.description,
+        location=event.location,
+        starts_at=event.starts_at,
+        ends_at=event.ends_at,
+        max_attendees=event.max_attendees,
+        spots_left=max(event.max_attendees - accepted, 0),
+    )
 
 
 @router.get("/{event_id}", response_model=EventRead)
@@ -36,9 +54,38 @@ def get_event(
     current_user: User = Depends(get_current_user),
 ):
     event = crud.event.get_event(db, event_id)
-    if not event:
+    if not event or not crud.event.can_view_event(db, event, current_user.id):
         raise HTTPException(status_code=404, detail="Event not found")
     return event
+
+
+@router.get("/{event_id}/invite-link", response_model=EventInviteLink)
+def get_invite_link(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = crud.event.get_event(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event owner can view the invite link")
+    return EventInviteLink(invite_token=event.invite_token)
+
+
+@router.post("/{event_id}/invite-link/regenerate", response_model=EventInviteLink)
+def regenerate_invite_link(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = crud.event.get_event(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event owner can regenerate the invite link")
+    event = crud.event.regenerate_invite_token(db, event)
+    return EventInviteLink(invite_token=event.invite_token)
 
 
 @router.delete("/{event_id}", status_code=204)
