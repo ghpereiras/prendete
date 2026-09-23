@@ -2,9 +2,17 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
-import { endsAt, joinEvent, previewInvite, type EventInvitePreview } from "../api/events";
+import {
+  endsAt,
+  joinEvent,
+  previewInvite,
+  registrationDeadline,
+  type EventInvitePreview,
+} from "../api/events";
 import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
+import { useCountdown } from "../hooks/useCountdown";
+import { formatCountdown } from "../utils/time";
 
 export default function InvitePreview() {
   const { t } = useTranslation();
@@ -22,6 +30,12 @@ export default function InvitePreview() {
       .then(setEvent)
       .catch(() => setNotFound(true));
   }, [token]);
+
+  const deadline = event
+    ? registrationDeadline(event.starts_at, event.registration_deadline_minutes_before)
+    : null;
+  const { msRemaining, isOver } = useCountdown(deadline);
+  const registrationClosed = event ? (deadline ? isOver : !event.registration_open) : false;
 
   async function handleJoin() {
     if (!token) return;
@@ -56,7 +70,6 @@ export default function InvitePreview() {
 
   const isOwner = user?.id === event.owner_id;
   const isFull = event.spots_left <= 0;
-  const canJoin = !isFull && event.registration_open && !isOwner;
 
   return (
     <div className="page">
@@ -76,16 +89,22 @@ export default function InvitePreview() {
           ? t("invitePreview.full")
           : t("invitePreview.spotsLeft", { count: event.spots_left })}
       </p>
-      {!event.registration_open && (
-        <p className="error">{t("invitePreview.registrationClosed")}</p>
-      )}
+
+      {deadline &&
+        (registrationClosed ? (
+          <p className="error">{t("invitePreview.registrationClosed")}</p>
+        ) : (
+          <p className="countdown">
+            {t("invitePreview.timeToRegister", { time: formatCountdown(msRemaining) })}
+          </p>
+        ))}
 
       {joinError && <p className="error">{joinError}</p>}
 
       {isOwner ? (
         <p>{t("invitePreview.isOwner")}</p>
-      ) : user ? (
-        <button onClick={handleJoin} disabled={joining || !canJoin}>
+      ) : registrationClosed ? null : user ? (
+        <button onClick={handleJoin} disabled={joining || isFull}>
           {joining ? t("invitePreview.joining") : t("invitePreview.join")}
         </button>
       ) : (

@@ -88,6 +88,12 @@
   font-size: 14px;
 }
 
+.countdown {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 18px;
+  color: var(--accent);
+}
+
 .language-switcher {
   position: absolute;
   top: 16px;

@@ -65,6 +65,7 @@
     "spotsLeft": "{{count}} spots left",
     "full": "This event is full",
     "registrationClosed": "Registration for this event has closed",
+    "timeToRegister": "Time until registration closes: {{time}}",
     "isOwner": "You're the organizer of this event.",
     "join": "Join",
     "joining": "Joining...",
