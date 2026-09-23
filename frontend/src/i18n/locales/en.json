@@ -40,10 +40,12 @@
     "error": "Couldn't create the event"
   },
   "eventDetail": {
-    "maxAttendees": "Max attendees: {{count}}",
+    "spotsLeft": "Spots available: {{count}}",
     "shareLink": "Share this link with your friends so they can join:",
     "copy": "Copy link",
     "copied": "Copied!",
+    "attendees": "Who's going:",
+    "ownerBadge": "Owner",
     "notFound": "Event not found",
     "linkError": "Couldn't get the invite link",
     "backHome": "Back home"

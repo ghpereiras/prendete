@@ -41,3 +41,10 @@ class EventInvitePreview(BaseModel):
     ends_at: datetime
     max_attendees: int
     spots_left: int
+
+
+class EventAttendee(BaseModel):
+    user_id: int
+    full_name: str
+    email: str
+    is_owner: bool

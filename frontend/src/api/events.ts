@@ -37,6 +37,17 @@ export function getInviteLink(eventId: number): Promise<{ invite_token: string }
   return apiGet<{ invite_token: string }>(`/events/${eventId}/invite-link`);
 }
 
+export interface EventAttendee {
+  user_id: number;
+  full_name: string;
+  email: string;
+  is_owner: boolean;
+}
+
+export function listAttendees(eventId: number): Promise<EventAttendee[]> {
+  return apiGet<EventAttendee[]>(`/events/${eventId}/attendees`);
+}
+
 export interface EventInvitePreview {
   id: number;
   title: string;

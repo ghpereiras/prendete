@@ -76,7 +76,8 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `POST /events/{event_id}/invite-link/regenerate` (solo el dueño) — invalida el link anterior y genera uno nuevo
 - `GET /events/invite/{invite_token}` (público, sin login) — preview del evento y cupos restantes, para mostrar antes de pedir login/registro
 - `POST /events/invite/{invite_token}/join` (autenticado) — se suma al evento; `409` si ya está sumado o si el evento está lleno (cupo definido por `max_attendees`)
-- `GET /events/{event_id}/invitations` (solo el dueño) — lista quién se sumó
+- `GET /events/{event_id}/invitations` (solo el dueño) — lista las invitaciones (todas, cualquier estado), con `invitee_id`
+- `GET /events/{event_id}/attendees` (dueño o participante aceptado) — lista para mostrar en el frontend: dueño primero (`is_owner: true`) y después cada invitado aceptado, con nombre y email
 - `PATCH /invitations/{id}` — cambiar el propio estado (`declined` para salir del evento y liberar cupo, `accepted` para volver a sumarse si hay lugar), solo el invitado
 
 ## Tests

@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
-import { getEvent, getInviteLink, type Event } from "../api/events";
+import { getEvent, getInviteLink, listAttendees, type Event, type EventAttendee } from "../api/events";
 
 export default function EventDetail() {
   const { t } = useTranslation();
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
+  const [attendees, setAttendees] = useState<EventAttendee[] | null>(null);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +19,11 @@ export default function EventDetail() {
       .then(setEvent)
       .catch(() => setError(t("eventDetail.notFound")));
   }, [eventId, t]);
+
+  useEffect(() => {
+    if (!eventId || !event) return;
+    listAttendees(Number(eventId)).then(setAttendees);
+  }, [eventId, event]);
 
   useEffect(() => {
     if (!eventId || !event) return;
@@ -51,6 +57,9 @@ export default function EventDetail() {
     return <p className="page">{t("common.loading")}</p>;
   }
 
+  const acceptedCount = attendees ? attendees.filter((a) => !a.is_owner).length : null;
+  const spotsLeft = acceptedCount === null ? null : Math.max(event.max_attendees - acceptedCount, 0);
+
   return (
     <div className="page">
       <h1>{event.title}</h1>
@@ -59,7 +68,11 @@ export default function EventDetail() {
       <p>
         {new Date(event.starts_at).toLocaleString()} — {new Date(event.ends_at).toLocaleString()}
       </p>
-      <p>{t("eventDetail.maxAttendees", { count: event.max_attendees })}</p>
+      <p>
+        {spotsLeft === null
+          ? t("common.loading")
+          : t("eventDetail.spotsLeft", { count: spotsLeft })}
+      </p>
 
       {inviteUrl && (
         <div className="invite-link">
@@ -68,6 +81,22 @@ export default function EventDetail() {
           <button onClick={copyLink}>
             {copied ? t("eventDetail.copied") : t("eventDetail.copy")}
           </button>
+        </div>
+      )}
+
+      {attendees && attendees.length > 0 && (
+        <div className="attendee-list">
+          <p>{t("eventDetail.attendees")}</p>
+          <ul>
+            {attendees.map((attendee) => (
+              <li key={attendee.user_id}>
+                {attendee.full_name}
+                {attendee.is_owner && (
+                  <span className="owner-badge">{t("eventDetail.ownerBadge")}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

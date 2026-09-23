@@ -163,6 +163,48 @@ def test_regenerate_invite_link_invalidates_old_token(client):
     assert client.get(f"/events/invite/{new_token}").status_code == 200
 
 
+def test_list_attendees_shows_owner_first_then_accepted(client):
+    owner_token = register_and_login(client, "owner@example.com", full_name="Owner Person")
+    friend_token = register_and_login(client, "friend@example.com", full_name="Friend Person")
+    create_event(client, owner_token)
+    token = get_invite_token(client, 1, owner_token)
+    client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+
+    response = client.get("/events/1/attendees", headers=auth_headers(owner_token))
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 2
+    assert body[0]["full_name"] == "Owner Person"
+    assert body[0]["is_owner"] is True
+    assert body[1]["full_name"] == "Friend Person"
+    assert body[1]["is_owner"] is False
+
+
+def test_list_attendees_excludes_declined(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    create_event(client, owner_token)
+    token = get_invite_token(client, 1, owner_token)
+    client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+    client.patch("/invitations/1", json={"status": "declined"}, headers=auth_headers(friend_token))
+
+    response = client.get("/events/1/attendees", headers=auth_headers(owner_token))
+    assert len(response.json()) == 1
+    assert response.json()[0]["is_owner"] is True
+
+
+def test_list_attendees_visible_to_participants_not_strangers(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    stranger_token = register_and_login(client, "stranger@example.com")
+    create_event(client, owner_token)
+    token = get_invite_token(client, 1, owner_token)
+    client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+
+    assert client.get("/events/1/attendees", headers=auth_headers(friend_token)).status_code == 200
+    assert client.get("/events/1/attendees", headers=auth_headers(stranger_token)).status_code == 404
+
+
 def test_regenerate_invite_link_requires_owner(client):
     owner_token = register_and_login(client, "owner@example.com")
     stranger_token = register_and_login(client, "stranger@example.com")

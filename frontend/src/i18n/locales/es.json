@@ -40,10 +40,12 @@
     "error": "No se pudo crear el evento"
   },
   "eventDetail": {
-    "maxAttendees": "Cupo máximo: {{count}}",
+    "spotsLeft": "Cupos disponibles: {{count}}",
     "shareLink": "Compartí este link con tus amigos para que se sumen:",
     "copy": "Copiar link",
     "copied": "¡Copiado!",
+    "attendees": "Quién va:",
+    "ownerBadge": "Dueño",
     "notFound": "No se encontró el evento",
     "linkError": "No se pudo obtener el link de invitación",
     "backHome": "Volver al inicio"

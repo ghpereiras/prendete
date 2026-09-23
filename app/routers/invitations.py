@@ -6,6 +6,7 @@ from app.auth import get_current_user
 from app.database import get_db
 from app.models.invitation import InvitationStatus
 from app.models.user import User
+from app.schemas.event import EventAttendee
 from app.schemas.invitation import InvitationRead, InvitationUpdate
 
 router = APIRouter(tags=["invitations"])
@@ -45,6 +46,27 @@ def list_invitations(
     if event.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event owner can view invitations")
     return crud.invitation.list_invitations_for_event(db, event_id)
+
+
+@router.get("/events/{event_id}/attendees", response_model=list[EventAttendee])
+def list_attendees(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = crud.event.get_event(db, event_id)
+    if not event or not crud.event.can_view_event(db, event, current_user.id):
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    attendees = [
+        EventAttendee(user_id=event.owner.id, full_name=event.owner.full_name, email=event.owner.email, is_owner=True)
+    ]
+    attendees += [
+        EventAttendee(user_id=inv.invitee.id, full_name=inv.invitee.full_name, email=inv.invitee.email, is_owner=False)
+        for inv in crud.invitation.list_accepted_invitees(db, event_id)
+        if inv.invitee_id != event.owner_id
+    ]
+    return attendees
 
 
 @router.patch("/invitations/{invitation_id}", response_model=InvitationRead)

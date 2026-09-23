@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.invitation import Invitation, InvitationStatus
 
@@ -18,6 +18,16 @@ def get_invitation_for_user(db: Session, event_id: int, invitee_id: int) -> Invi
 
 def list_invitations_for_event(db: Session, event_id: int) -> list[Invitation]:
     return list(db.scalars(select(Invitation).where(Invitation.event_id == event_id)))
+
+
+def list_accepted_invitees(db: Session, event_id: int) -> list[Invitation]:
+    stmt = (
+        select(Invitation)
+        .options(joinedload(Invitation.invitee))
+        .where(Invitation.event_id == event_id, Invitation.status == InvitationStatus.ACCEPTED)
+        .order_by(Invitation.responded_at)
+    )
+    return list(db.scalars(stmt))
 
 
 def count_accepted(db: Session, event_id: int) -> int:
