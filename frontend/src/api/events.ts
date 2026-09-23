@@ -5,6 +5,8 @@ export interface Event {
   title: string;
   description: string | null;
   location: string | null;
+  location_details: string | null;
+  maps_link: string | null;
   starts_at: string;
   ends_at: string;
   max_attendees: number;
@@ -16,6 +18,8 @@ export interface EventCreateInput {
   title: string;
   description?: string;
   location?: string;
+  location_details?: string;
+  maps_link?: string;
   starts_at: string;
   ends_at: string;
   max_attendees: number;
@@ -53,6 +57,8 @@ export interface EventInvitePreview {
   title: string;
   description: string | null;
   location: string | null;
+  location_details: string | null;
+  maps_link: string | null;
   starts_at: string;
   ends_at: string;
   max_attendees: number;

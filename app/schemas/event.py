@@ -7,6 +7,8 @@ class EventCreate(BaseModel):
     title: str
     description: str | None = None
     location: str | None = None
+    location_details: str | None = None
+    maps_link: str | None = None
     starts_at: datetime
     ends_at: datetime
     max_attendees: int = Field(gt=0)
@@ -19,6 +21,8 @@ class EventRead(BaseModel):
     title: str
     description: str | None
     location: str | None
+    location_details: str | None
+    maps_link: str | None
     starts_at: datetime
     ends_at: datetime
     max_attendees: int
@@ -37,6 +41,8 @@ class EventInvitePreview(BaseModel):
     title: str
     description: str | None
     location: str | None
+    location_details: str | None
+    maps_link: str | None
     starts_at: datetime
     ends_at: datetime
     max_attendees: int

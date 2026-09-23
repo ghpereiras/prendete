@@ -65,7 +65,7 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 
 - `POST /users` (público), `GET /users`, `GET /users/me`, `GET /users/{id}`
 - `POST /auth/login` (público)
-- `POST /events` (dueño = usuario autenticado, requiere `max_attendees`)
+- `POST /events` (dueño = usuario autenticado, requiere `max_attendees`; `location`, `location_details` y `maps_link` son opcionales)
 - `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema)
 - `GET /events/{id}` — solo el dueño o un participante aceptado (404 para el resto)
 - `DELETE /events/{id}` — solo el dueño
@@ -115,6 +115,15 @@ Páginas:
 - `/events/:eventId` — protegida, detalle del evento; si sos el dueño, muestra el link de invitación para compartir
 
 El token JWT se guarda en `localStorage`.
+
+### Ubicación con Google Maps
+
+El campo "Link de Google Maps" del formulario de creación es opcional y acepta dos tipos de link, sin necesidad de API key:
+
+- **Link de "Compartir"** (`maps.app.goo.gl/...` o `google.com/maps/place/...`): Google no permite embeberlo en un iframe, así que se muestra un botón "Ver en Google Maps" que abre en pestaña nueva.
+- **Link de "Insertar un mapa"** (Compartir → *Insertar un mapa* → copiar el `src` del iframe, `google.com/maps/embed?pb=...`): se muestra el mapa incrustado directamente en la página.
+
+La detección es automática ([utils/maps.ts](frontend/src/utils/maps.ts)) según el formato del link pegado. Si no se completa ningún link, el evento queda solo con el texto libre de "Ubicación".
 
 ## Pendiente
 

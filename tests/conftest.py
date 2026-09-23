@@ -26,6 +26,9 @@ def _ensure_test_database() -> None:
 def engine():
     _ensure_test_database()
     engine = create_engine(TEST_DATABASE_URL)
+    # drop_all first: create_all alone won't pick up column changes on tables
+    # that already exist from a previous run against an older model version.
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     yield engine
     engine.dispose()

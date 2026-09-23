@@ -32,6 +32,21 @@ def test_preview_invite_is_public(client):
     assert body["spots_left"] == EVENT_PAYLOAD["max_attendees"]
 
 
+def test_preview_invite_includes_location_fields(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    create_event(
+        client,
+        owner_token,
+        location_details="Piso 4, depto B",
+        maps_link="https://www.google.com/maps/embed?pb=abc123",
+    )
+    token = get_invite_token(client, 1, owner_token)
+
+    body = client.get(f"/events/invite/{token}").json()
+    assert body["location_details"] == "Piso 4, depto B"
+    assert body["maps_link"] == "https://www.google.com/maps/embed?pb=abc123"
+
+
 def test_preview_invite_invalid_token_404(client):
     response = client.get("/events/invite/does-not-exist")
     assert response.status_code == 404

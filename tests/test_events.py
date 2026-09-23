@@ -30,6 +30,28 @@ def test_create_event_success(client):
     assert "invite_token" not in body
 
 
+def test_create_event_with_location_details_and_maps_link(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(
+        client,
+        token,
+        location_details="Piso 4, depto B",
+        maps_link="https://www.google.com/maps/embed?pb=abc123",
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["location_details"] == "Piso 4, depto B"
+    assert body["maps_link"] == "https://www.google.com/maps/embed?pb=abc123"
+
+
+def test_create_event_location_fields_are_optional(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token)
+    body = response.json()
+    assert body["location_details"] is None
+    assert body["maps_link"] is None
+
+
 def test_create_event_max_attendees_zero_rejected(client):
     token = register_and_login(client, "owner@example.com")
     response = create_event(client, token, max_attendees=0)

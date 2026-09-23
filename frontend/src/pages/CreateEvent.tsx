@@ -9,6 +9,8 @@ export default function CreateEvent() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [locationDetails, setLocationDetails] = useState("");
+  const [mapsLink, setMapsLink] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [maxAttendees, setMaxAttendees] = useState("10");
@@ -24,6 +26,8 @@ export default function CreateEvent() {
         title,
         description: description || undefined,
         location: location || undefined,
+        location_details: locationDetails || undefined,
+        maps_link: mapsLink || undefined,
         starts_at: new Date(startsAt).toISOString(),
         ends_at: new Date(endsAt).toISOString(),
         max_attendees: Number(maxAttendees),
@@ -56,6 +60,25 @@ export default function CreateEvent() {
         <label>
           {t("createEvent.location")}
           <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+        </label>
+        <label>
+          {t("createEvent.locationDetails")}
+          <input
+            type="text"
+            value={locationDetails}
+            onChange={(e) => setLocationDetails(e.target.value)}
+            placeholder={t("createEvent.locationDetailsPlaceholder")}
+          />
+        </label>
+        <label>
+          {t("createEvent.mapsLink")}
+          <input
+            type="url"
+            value={mapsLink}
+            onChange={(e) => setMapsLink(e.target.value)}
+            placeholder="https://www.google.com/maps/..."
+          />
+          <span className="field-hint">{t("createEvent.mapsLinkHint")}</span>
         </label>
         <label>
           {t("createEvent.startsAt")}

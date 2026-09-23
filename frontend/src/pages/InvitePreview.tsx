@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { joinEvent, previewInvite, type EventInvitePreview } from "../api/events";
+import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
 
 export default function InvitePreview() {
@@ -59,7 +60,11 @@ export default function InvitePreview() {
     <div className="page">
       <h1>{event.title}</h1>
       {event.description && <p>{event.description}</p>}
-      {event.location && <p>{event.location}</p>}
+      <EventLocation
+        location={event.location}
+        locationDetails={event.location_details}
+        mapsLink={event.maps_link}
+      />
       <p>
         {new Date(event.starts_at).toLocaleString()} — {new Date(event.ends_at).toLocaleString()}
       </p>

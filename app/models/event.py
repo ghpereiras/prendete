@@ -19,6 +19,8 @@ class Event(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    location_details: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    maps_link: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     max_attendees: Mapped[int] = mapped_column(Integer, nullable=False)
