@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { register } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
@@ -23,9 +25,9 @@ export default function Register() {
       navigate("/");
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError("Ese email ya está registrado");
+        setError(t("register.errorEmailTaken"));
       } else {
-        setError("No se pudo completar el registro");
+        setError(t("register.errorGeneric"));
       }
     } finally {
       setSubmitting(false);
@@ -35,10 +37,10 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h1>Crear cuenta</h1>
+        <h1>{t("register.title")}</h1>
         {error && <p className="error">{error}</p>}
         <label>
-          Nombre completo
+          {t("register.fullName")}
           <input
             type="text"
             value={fullName}
@@ -47,7 +49,7 @@ export default function Register() {
           />
         </label>
         <label>
-          Email
+          {t("register.email")}
           <input
             type="email"
             value={email}
@@ -56,7 +58,7 @@ export default function Register() {
           />
         </label>
         <label>
-          Contraseña
+          {t("register.password")}
           <input
             type="password"
             value={password}
@@ -66,10 +68,10 @@ export default function Register() {
           />
         </label>
         <button type="submit" disabled={submitting}>
-          {submitting ? "Creando cuenta..." : "Registrarme"}
+          {submitting ? t("register.submitting") : t("register.submit")}
         </button>
         <p>
-          ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
+          {t("register.haveAccount")} <Link to="/login">{t("register.loginLink")}</Link>
         </p>
       </form>
     </div>

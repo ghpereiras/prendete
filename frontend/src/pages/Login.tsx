@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -18,7 +20,7 @@ export default function Login() {
       await login(email, password);
       navigate("/");
     } catch {
-      setError("Email o contraseña incorrectos");
+      setError(t("login.error"));
     } finally {
       setSubmitting(false);
     }
@@ -27,10 +29,10 @@ export default function Login() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h1>Iniciar sesión</h1>
+        <h1>{t("login.title")}</h1>
         {error && <p className="error">{error}</p>}
         <label>
-          Email
+          {t("login.email")}
           <input
             type="email"
             value={email}
@@ -39,7 +41,7 @@ export default function Login() {
           />
         </label>
         <label>
-          Contraseña
+          {t("login.password")}
           <input
             type="password"
             value={password}
@@ -48,10 +50,10 @@ export default function Login() {
           />
         </label>
         <button type="submit" disabled={submitting}>
-          {submitting ? "Ingresando..." : "Ingresar"}
+          {submitting ? t("login.submitting") : t("login.submit")}
         </button>
         <p>
-          ¿No tenés cuenta? <Link to="/register">Registrate</Link>
+          {t("login.noAccount")} <Link to="/register">{t("login.registerLink")}</Link>
         </p>
       </form>
     </div>

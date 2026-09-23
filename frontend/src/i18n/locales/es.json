@@ -1,0 +1,36 @@
+{
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Email",
+    "password": "Contraseña",
+    "submit": "Ingresar",
+    "submitting": "Ingresando...",
+    "noAccount": "¿No tenés cuenta?",
+    "registerLink": "Registrate",
+    "error": "Email o contraseña incorrectos"
+  },
+  "register": {
+    "title": "Crear cuenta",
+    "fullName": "Nombre completo",
+    "email": "Email",
+    "password": "Contraseña",
+    "submit": "Registrarme",
+    "submitting": "Creando cuenta...",
+    "haveAccount": "¿Ya tenés cuenta?",
+    "loginLink": "Iniciá sesión",
+    "errorEmailTaken": "Ese email ya está registrado",
+    "errorGeneric": "No se pudo completar el registro"
+  },
+  "home": {
+    "greeting": "Hola, {{name}}",
+    "logout": "Cerrar sesión"
+  },
+  "common": {
+    "loading": "Cargando..."
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
+  }
+}

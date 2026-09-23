@@ -1,0 +1,36 @@
+{
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up",
+    "error": "Incorrect email or password"
+  },
+  "register": {
+    "title": "Create account",
+    "fullName": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign up",
+    "submitting": "Creating account...",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "errorEmailTaken": "That email is already registered",
+    "errorGeneric": "Couldn't complete registration"
+  },
+  "home": {
+    "greeting": "Hi, {{name}}",
+    "logout": "Log out"
+  },
+  "common": {
+    "loading": "Loading..."
+  },
+  "language": {
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English"
+  }
+}
