@@ -10,9 +10,6 @@ export default function Sidebar() {
 
   return (
     <nav className="sidebar">
-      <NavLink to="/" end className={linkClass}>
-        {t("sidebar.home")}
-      </NavLink>
       <NavLink to="/events/upcoming" className={linkClass}>
         {t("sidebar.upcoming")}
       </NavLink>
