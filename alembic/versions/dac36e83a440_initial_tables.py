@@ -1,8 +1,8 @@
 """initial tables
 
-Revision ID: 581ef36e8d18
+Revision ID: dac36e83a440
 Revises: 
-Create Date: 2026-09-23 17:32:29.798019
+Create Date: 2026-09-24 12:57:02.935439
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '581ef36e8d18'
+revision: str = 'dac36e83a440'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -34,8 +34,11 @@ def upgrade() -> None:
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('location', sa.String(length=255), nullable=True),
+    sa.Column('location_details', sa.String(length=255), nullable=True),
+    sa.Column('maps_link', sa.String(length=2048), nullable=True),
     sa.Column('starts_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('ends_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('duration_minutes', sa.Integer(), nullable=False),
+    sa.Column('registration_deadline_minutes_before', sa.Integer(), nullable=True),
     sa.Column('max_attendees', sa.Integer(), nullable=False),
     sa.Column('invite_token', sa.String(length=32), nullable=False),
     sa.Column('owner_id', sa.Integer(), nullable=False),
@@ -51,6 +54,7 @@ def upgrade() -> None:
     sa.Column('status', sa.Enum('PENDING', 'ACCEPTED', 'DECLINED', name='invitation_status'), nullable=False),
     sa.Column('invited_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('responded_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('comment', sa.String(length=500), nullable=True),
     sa.ForeignKeyConstraint(['event_id'], ['events.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['invitee_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
