@@ -35,7 +35,7 @@
     "locationDetails": "Datos adicionales",
     "locationDetailsPlaceholder": "Piso, depto, referencias...",
     "mapsLink": "Link de Google Maps (opcional)",
-    "mapsLinkHint": "Buscá el lugar en Google Maps y pegá el link para compartir (\"Compartir\") o, si querés que se vea el mapa incrustado, usá \"Insertar un mapa\" y pegá esa dirección.",
+    "mapsLinkHint": "Buscá el lugar en Google Maps y pegá el link para compartir (\"Compartir\"), o si querés que se vea el mapa incrustado, usá \"Insertar un mapa\" y pegá directamente lo que te da Google, ya sea el link o el código HTML completo del iframe — lo detectamos automáticamente.",
     "startsAt": "Empieza",
     "durationHours": "Duración (en horas)",
     "registrationDeadlineHours": "Cierre de inscripciones (opcional)",

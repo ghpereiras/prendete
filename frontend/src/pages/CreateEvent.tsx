@@ -77,7 +77,7 @@ export default function CreateEvent() {
         <label>
           {t("createEvent.mapsLink")}
           <input
-            type="url"
+            type="text"
             value={mapsLink}
             onChange={(e) => setMapsLink(e.target.value)}
             placeholder="https://www.google.com/maps/..."

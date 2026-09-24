@@ -125,9 +125,9 @@ El formulario de creación pide fecha de inicio + **duración en horas** (no una
 El campo "Link de Google Maps" del formulario de creación es opcional y acepta dos tipos de link, sin necesidad de API key:
 
 - **Link de "Compartir"** (`maps.app.goo.gl/...` o `google.com/maps/place/...`): Google no permite embeberlo en un iframe, así que se muestra un botón "Ver en Google Maps" que abre en pestaña nueva.
-- **Link de "Insertar un mapa"** (Compartir → *Insertar un mapa* → copiar el `src` del iframe, `google.com/maps/embed?pb=...`): se muestra el mapa incrustado directamente en la página.
+- **Link de "Insertar un mapa"** (Compartir → *Insertar un mapa*): se muestra el mapa incrustado directamente en la página. El campo acepta tanto pegar solo el link (`google.com/maps/embed?pb=...`) como pegar el `<iframe>` completo que copia Google — el backend extrae la URL del `src` antes de guardar (`app/utils/maps.py: extract_maps_url`, aplicado en `EventCreate.maps_link`), así que no hace falta que el usuario edite el HTML a mano.
 
-La detección es automática ([utils/maps.ts](frontend/src/utils/maps.ts)) según el formato del link pegado. Si no se completa ningún link, el evento queda solo con el texto libre de "Ubicación".
+La detección de si es embebible es automática en el frontend ([utils/maps.ts](frontend/src/utils/maps.ts)) según el formato de la URL ya normalizada. Si no se completa ningún link, el evento queda solo con el texto libre de "Ubicación".
 
 ## Pendiente
 

@@ -35,7 +35,7 @@
     "locationDetails": "Additional details",
     "locationDetailsPlaceholder": "Floor, apartment number, notes...",
     "mapsLink": "Google Maps link (optional)",
-    "mapsLinkHint": "Find the place on Google Maps and paste the \"Share\" link, or, if you want the map to show up embedded, use \"Embed a map\" and paste that address instead.",
+    "mapsLinkHint": "Find the place on Google Maps and paste the \"Share\" link, or, if you want the map to show up embedded, use \"Embed a map\" and paste whatever Google gives you — the link or the full iframe HTML snippet both work, we detect it automatically.",
     "startsAt": "Starts",
     "durationHours": "Duration (hours)",
     "registrationDeadlineHours": "Registration deadline (optional)",

@@ -44,6 +44,24 @@ def test_create_event_with_location_details_and_maps_link(client):
     assert body["maps_link"] == "https://www.google.com/maps/embed?pb=abc123"
 
 
+def test_create_event_extracts_maps_url_from_pasted_iframe(client):
+    token = register_and_login(client, "owner@example.com")
+    iframe_snippet = (
+        '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284"'
+        ' width="600" height="450" style="border:0;" allowfullscreen=""'
+        ' loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'
+    )
+    response = create_event(client, token, maps_link=iframe_snippet)
+    assert response.status_code == 201
+    assert response.json()["maps_link"] == "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284"
+
+
+def test_create_event_maps_link_plain_url_unchanged(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token, maps_link="https://maps.app.goo.gl/AbCdEf")
+    assert response.json()["maps_link"] == "https://maps.app.goo.gl/AbCdEf"
+
+
 def test_create_event_location_fields_are_optional(client):
     token = register_and_login(client, "owner@example.com")
     response = create_event(client, token)

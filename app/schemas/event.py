@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.utils.maps import extract_maps_url
 
 
 class EventCreate(BaseModel):
@@ -13,6 +15,13 @@ class EventCreate(BaseModel):
     duration_minutes: int = Field(gt=0)
     registration_deadline_minutes_before: int | None = Field(default=None, gt=0)
     max_attendees: int = Field(gt=0)
+
+    @field_validator("maps_link")
+    @classmethod
+    def normalize_maps_link(cls, value: str | None) -> str | None:
+        if value is None or not value.strip():
+            return None
+        return extract_maps_url(value)
 
 
 class EventRead(BaseModel):
