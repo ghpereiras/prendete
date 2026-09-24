@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { createEvent, isRegistrationOpen } from "../api/events";
+import { usePageTitle } from "../context/PageTitleContext";
 
 function toDatetimeLocalValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -31,6 +32,8 @@ export default function CreateEvent() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  usePageTitle(t("createEvent.title"));
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
@@ -112,7 +115,6 @@ export default function CreateEvent() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <h1>{t("createEvent.title")}</h1>
         <label>
           {t("createEvent.name")}
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />

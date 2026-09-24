@@ -98,6 +98,9 @@
     "upcoming": "Próximos eventos",
     "past": "Eventos pasados"
   },
+  "header": {
+    "home": "Ir al inicio"
+  },
   "upcomingEvents": {
     "empty": "No tenés eventos próximos."
   },

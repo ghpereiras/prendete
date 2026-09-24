@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { listEvents, type Event } from "../api/events";
 import EventList from "../components/EventList";
+import { usePageTitle } from "../context/PageTitleContext";
 
 export default function UpcomingEvents() {
   const { t } = useTranslation();
   const [events, setEvents] = useState<Event[] | null>(null);
+
+  usePageTitle(t("sidebar.upcoming"));
 
   useEffect(() => {
     listEvents().then((all) => {
@@ -16,7 +19,6 @@ export default function UpcomingEvents() {
 
   return (
     <div className="page">
-      <h1>{t("sidebar.upcoming")}</h1>
       {events === null ? (
         <p>{t("common.loading")}</p>
       ) : (

@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { register } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import { usePageTitle } from "../context/PageTitleContext";
 
 export default function Register() {
   const { t } = useTranslation();
@@ -16,6 +17,8 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  usePageTitle(t("register.title"));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -39,7 +42,6 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h1>{t("register.title")}</h1>
         {error && <p className="error">{t(error)}</p>}
         <label>
           {t("register.email")}

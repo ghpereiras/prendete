@@ -115,8 +115,9 @@ Páginas:
 - `/events/past` — protegida, solo eventos con `starts_at` pasado (orden descendente, el más reciente primero)
 - `/events/new` — protegida, formulario de creación
 - `/events/:eventId` — protegida, detalle del evento; si sos el dueño, muestra el link de invitación para compartir
+- `/profile` — protegida, muestra nombre y email del usuario
 
-Las páginas protegidas comparten un layout con una barra lateral fija (`components/Sidebar.tsx`, vía `components/Layout.tsx` en `context/ProtectedRoute.tsx`) con links a Inicio / Próximos eventos / Eventos pasados; en mobile se convierte en una fila horizontal arriba. Los filtros de próximos/pasados se calculan en el cliente comparando `starts_at` contra la hora actual.
+Todas las páginas comparten un header fijo arriba de todo (`components/Header.tsx`, montado una sola vez en `App.tsx`): a la izquierda un botón circular con ícono de casa que lleva a `/`, en el centro el título grande de la página actual (cada página lo setea con `usePageTitle` de `context/PageTitleContext.tsx` — dinámico para páginas como el detalle del evento, que muestra el nombre real del evento en vez de un texto fijo), y a la derecha el selector de idioma (bandera del idioma activo) y, si hay sesión, un ícono circular con la inicial del usuario que despliega "Mi perfil" / "Cerrar sesión" al pasar el mouse o hacer click (`components/LanguageSwitcher.tsx`, `components/AccountMenu.tsx`, coordinados por `context/TopBarMenuContext.tsx` para que solo uno esté abierto a la vez). Además, las páginas protegidas muestran debajo del header una barra lateral fija (`components/Sidebar.tsx`, vía `components/Layout.tsx` en `context/ProtectedRoute.tsx`) con links a Inicio / Próximos eventos / Eventos pasados; en mobile se convierte en una fila horizontal. Los filtros de próximos/pasados se calculan en el cliente comparando `starts_at` contra la hora actual.
 
 El token JWT se guarda en `localStorage`.
 

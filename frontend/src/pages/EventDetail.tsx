@@ -13,6 +13,7 @@ import {
   type EventAttendee,
 } from "../api/events";
 import EventLocation from "../components/EventLocation";
+import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
 
 export default function EventDetail() {
@@ -24,6 +25,8 @@ export default function EventDetail() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  usePageTitle(event?.title ?? (error ? t(error) : t("common.loading")));
 
   useEffect(() => {
     if (!eventId) return;
@@ -74,7 +77,6 @@ export default function EventDetail() {
 
   return (
     <div className="page">
-      <h1>{event.title}</h1>
       {event.description && <p>{event.description}</p>}
       <EventLocation
         location={event.location}

@@ -2,10 +2,9 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import AccountMenu from "./components/AccountMenu";
-import LanguageSwitcher from "./components/LanguageSwitcher";
+import Header from "./components/Header";
+import { PageTitleProvider } from "./context/PageTitleContext";
 import ProtectedRoute from "./context/ProtectedRoute";
-import { TopBarMenuProvider } from "./context/TopBarMenuContext";
 import CreateEvent from "./pages/CreateEvent";
 import EventDetail from "./pages/EventDetail";
 import Home from "./pages/Home";
@@ -24,13 +23,8 @@ export default function App() {
   }, [i18n.resolvedLanguage]);
 
   return (
-    <>
-      <div className="top-bar">
-        <TopBarMenuProvider>
-          <LanguageSwitcher />
-          <AccountMenu />
-        </TopBarMenuProvider>
-      </div>
+    <PageTitleProvider>
+      <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -84,6 +78,6 @@ export default function App() {
           }
         />
       </Routes>
-    </>
+    </PageTitleProvider>
   );
 }

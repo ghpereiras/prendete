@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { listEvents, type Event } from "../api/events";
 import EventList from "../components/EventList";
+import { usePageTitle } from "../context/PageTitleContext";
 
 export default function PastEvents() {
   const { t } = useTranslation();
   const [events, setEvents] = useState<Event[] | null>(null);
+
+  usePageTitle(t("sidebar.past"));
 
   useEffect(() => {
     listEvents().then((all) => {
@@ -17,7 +20,6 @@ export default function PastEvents() {
 
   return (
     <div className="page">
-      <h1>{t("sidebar.past")}</h1>
       {events === null ? (
         <p>{t("common.loading")}</p>
       ) : (

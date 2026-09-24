@@ -11,6 +11,7 @@ import {
 } from "../api/events";
 import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
+import { usePageTitle } from "../context/PageTitleContext";
 import { useCountdown } from "../hooks/useCountdown";
 import { formatDateTime } from "../utils/date";
 import { formatCountdown } from "../utils/time";
@@ -26,6 +27,8 @@ export default function InvitePreview() {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
   const [comment, setComment] = useState("");
+
+  usePageTitle(event?.title ?? (notFound ? t("invitePreview.notFound") : t("common.loading")));
 
   useEffect(() => {
     if (!token) return;
@@ -76,7 +79,6 @@ export default function InvitePreview() {
 
   return (
     <div className="page">
-      <h1>{event.title}</h1>
       {event.description && <p>{event.description}</p>}
       <EventLocation
         location={event.location}

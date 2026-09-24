@@ -98,6 +98,9 @@
     "upcoming": "Upcoming events",
     "past": "Past events"
   },
+  "header": {
+    "home": "Go home"
+  },
   "upcomingEvents": {
     "empty": "You don't have any upcoming events."
   },
