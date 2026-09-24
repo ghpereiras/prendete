@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header";
 import { PageTitleProvider } from "./context/PageTitleContext";
@@ -15,8 +15,11 @@ import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import UpcomingEvents from "./pages/UpcomingEvents";
 
+const NO_HEADER_PATHS = ["/login", "/register"];
+
 export default function App() {
   const { i18n } = useTranslation();
+  const location = useLocation();
 
   useEffect(() => {
     document.documentElement.lang = i18n.resolvedLanguage ?? "es";
@@ -24,7 +27,7 @@ export default function App() {
 
   return (
     <PageTitleProvider>
-      <Header />
+      {!NO_HEADER_PATHS.includes(location.pathname) && <Header />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
