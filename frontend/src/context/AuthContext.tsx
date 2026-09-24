@@ -26,6 +26,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    // Another tab logged in/out (localStorage is shared per-origin); reload
+    // so this tab picks up the new session instead of showing a stale user.
+    function handleStorage(e: StorageEvent) {
+      if (e.key === "access_token") {
+        window.location.reload();
+      }
+    }
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   async function login(email: string, password: string) {
     const token = await apiLogin(email, password);
     localStorage.setItem("access_token", token);
