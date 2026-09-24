@@ -46,8 +46,13 @@
     "submit": "Create event",
     "submitting": "Creating event...",
     "error": "Couldn't create the event",
+    "errorTitleRequired": "Enter the event name",
+    "errorStartsAtRequired": "Pick a start date and time",
     "errorStartsInPast": "The start date has already passed, pick a future date",
-    "errorRegistrationAlreadyClosed": "With those settings, registration would already be closed the moment the event is created; shorten the registration deadline or pick another start date"
+    "errorDurationRequired": "Enter a valid duration, greater than 0",
+    "errorMaxAttendeesRequired": "Enter a valid max attendees value, greater than 0",
+    "errorRegistrationAlreadyClosed": "With those settings, registration would already be closed the moment the event is created; shorten the registration deadline or pick another start date",
+    "hasErrors": "There are errors to fix before creating the event"
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",

@@ -42,20 +42,20 @@ export default function Register() {
         <h1>{t("register.title")}</h1>
         {error && <p className="error">{t(error)}</p>}
         <label>
-          {t("register.fullName")}
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-        </label>
-        <label>
           {t("register.email")}
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          {t("register.fullName")}
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
             required
           />
         </label>

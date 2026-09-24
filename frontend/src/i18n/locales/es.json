@@ -46,8 +46,13 @@
     "submit": "Crear evento",
     "submitting": "Creando evento...",
     "error": "No se pudo crear el evento",
+    "errorTitleRequired": "Completá el nombre del evento",
+    "errorStartsAtRequired": "Elegí una fecha y hora de inicio",
     "errorStartsInPast": "La fecha de inicio ya pasó, elegí una fecha futura",
-    "errorRegistrationAlreadyClosed": "Con esos datos las inscripciones ya estarían cerradas al crear el evento; acortá el cierre de inscripciones o elegí otra fecha de inicio"
+    "errorDurationRequired": "Ingresá una duración válida, mayor a 0",
+    "errorMaxAttendeesRequired": "Ingresá un cupo máximo válido, mayor a 0",
+    "errorRegistrationAlreadyClosed": "Con esos datos las inscripciones ya estarían cerradas al crear el evento; acortá el cierre de inscripciones o elegí otra fecha de inicio",
+    "hasErrors": "Hay errores que corregir antes de crear el evento"
   },
   "eventDetail": {
     "spotsLeft": "Cupos disponibles: {{count}}",

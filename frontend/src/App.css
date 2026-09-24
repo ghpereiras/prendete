@@ -150,6 +150,11 @@
   font-size: 14px;
 }
 
+.field-error {
+  color: #e5484d;
+  font-size: 12px;
+}
+
 .countdown {
   font-family: ui-monospace, Consolas, monospace;
   font-size: 18px;
