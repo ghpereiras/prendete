@@ -60,7 +60,7 @@
     "copy": "Copy link",
     "copied": "Copied!",
     "attendees": "Who's going:",
-    "ownerBadge": "Owner",
+    "ownerBadge": "Host",
     "mapTitle": "Event location",
     "viewOnMaps": "View on Google Maps",
     "registrationDeadline": "Registration open until {{date}}",

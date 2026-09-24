@@ -60,7 +60,7 @@
     "copy": "Copiar link",
     "copied": "¡Copiado!",
     "attendees": "Quién va:",
-    "ownerBadge": "Dueño",
+    "ownerBadge": "Host",
     "mapTitle": "Ubicación del evento",
     "viewOnMaps": "Ver en Google Maps",
     "registrationDeadline": "Inscripciones abiertas hasta el {{date}}",
