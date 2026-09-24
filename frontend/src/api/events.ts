@@ -48,6 +48,7 @@ export interface EventAttendee {
   full_name: string;
   email: string;
   is_owner: boolean;
+  comment: string | null;
 }
 
 export function listAttendees(eventId: number): Promise<EventAttendee[]> {
@@ -79,12 +80,13 @@ export interface Invitation {
   event_id: number;
   invitee_id: number;
   status: "pending" | "accepted" | "declined";
+  comment: string | null;
   invited_at: string;
   responded_at: string | null;
 }
 
-export function joinEvent(token: string): Promise<Invitation> {
-  return apiPost<Invitation>(`/events/invite/${token}/join`, {});
+export function joinEvent(token: string, comment?: string): Promise<Invitation> {
+  return apiPost<Invitation>(`/events/invite/${token}/join`, { comment: comment || undefined });
 }
 
 export function endsAt(startsAt: string, durationMinutes: number): Date {

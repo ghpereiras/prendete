@@ -140,6 +140,56 @@ def test_join_event_success(client):
     body = response.json()
     assert body["status"] == "accepted"
     assert body["event_id"] == 1
+    assert body["comment"] is None
+
+
+def test_join_event_with_comment(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    create_event(client, owner_token)
+    token = get_invite_token(client, 1, owner_token)
+
+    response = client.post(
+        f"/events/invite/{token}/join",
+        json={"comment": "Voy con mi pareja"},
+        headers=auth_headers(friend_token),
+    )
+    assert response.status_code == 201
+    assert response.json()["comment"] == "Voy con mi pareja"
+
+    attendees = client.get("/events/1/attendees", headers=auth_headers(owner_token)).json()
+    friend_entry = next(a for a in attendees if not a["is_owner"])
+    assert friend_entry["comment"] == "Voy con mi pareja"
+
+
+def test_attendee_comments_hidden_from_other_participants(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    other_token = register_and_login(client, "other@example.com")
+    create_event(client, owner_token, max_attendees=5)
+    token = get_invite_token(client, 1, owner_token)
+
+    client.post(
+        f"/events/invite/{token}/join",
+        json={"comment": "Voy con mi pareja"},
+        headers=auth_headers(friend_token),
+    )
+    client.post(f"/events/invite/{token}/join", headers=auth_headers(other_token))
+
+    # another participant sees the friend's name but not their comment
+    attendees_for_other = client.get("/events/1/attendees", headers=auth_headers(other_token)).json()
+    friend_entry = next(a for a in attendees_for_other if a["email"] == "friend@example.com")
+    assert friend_entry["comment"] is None
+
+    # the friend can still see their own comment
+    attendees_for_friend = client.get("/events/1/attendees", headers=auth_headers(friend_token)).json()
+    own_entry = next(a for a in attendees_for_friend if a["email"] == "friend@example.com")
+    assert own_entry["comment"] == "Voy con mi pareja"
+
+    # the owner sees everyone's comment
+    attendees_for_owner = client.get("/events/1/attendees", headers=auth_headers(owner_token)).json()
+    friend_entry_for_owner = next(a for a in attendees_for_owner if a["email"] == "friend@example.com")
+    assert friend_entry_for_owner["comment"] == "Voy con mi pareja"
 
 
 def test_owner_cannot_join_own_event(client):
@@ -221,6 +271,22 @@ def test_leave_event_frees_capacity_and_allows_rejoin(client):
 
     rejoin_response = client.post(f"/events/invite/{token}/join", headers=auth_headers(other_token))
     assert rejoin_response.status_code == 201
+
+
+def test_update_invitation_can_set_comment(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    create_event(client, owner_token)
+    token = get_invite_token(client, 1, owner_token)
+    client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+
+    response = client.patch(
+        "/invitations/1",
+        json={"status": "accepted", "comment": "Llego un poco tarde"},
+        headers=auth_headers(friend_token),
+    )
+    assert response.status_code == 200
+    assert response.json()["comment"] == "Llego un poco tarde"
 
 
 def test_update_invitation_requires_being_the_invitee(client):

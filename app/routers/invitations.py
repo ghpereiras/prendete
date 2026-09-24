@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models.invitation import InvitationStatus
 from app.models.user import User
 from app.schemas.event import EventAttendee
-from app.schemas.invitation import InvitationRead, InvitationUpdate
+from app.schemas.invitation import InvitationJoinInput, InvitationRead, InvitationUpdate
 
 router = APIRouter(tags=["invitations"])
 
@@ -15,6 +15,7 @@ router = APIRouter(tags=["invitations"])
 @router.post("/events/invite/{invite_token}/join", response_model=InvitationRead, status_code=201)
 def join_event(
     invite_token: str,
+    join_in: InvitationJoinInput | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -35,9 +36,10 @@ def join_event(
     if crud.invitation.count_accepted(db, event.id, exclude_user_id=event.owner_id) >= event.max_attendees:
         raise HTTPException(status_code=409, detail="This event is full")
 
+    comment = join_in.comment if join_in else None
     if existing:
-        return crud.invitation.update_invitation_status(db, existing, InvitationStatus.ACCEPTED)
-    return crud.invitation.create_accepted_invitation(db, event.id, current_user.id)
+        return crud.invitation.update_invitation_status(db, existing, InvitationStatus.ACCEPTED, comment=comment)
+    return crud.invitation.create_accepted_invitation(db, event.id, current_user.id, comment=comment)
 
 
 @router.get("/events/{event_id}/invitations", response_model=list[InvitationRead])
@@ -64,11 +66,20 @@ def list_attendees(
     if not event or not crud.event.can_view_event(db, event, current_user.id):
         raise HTTPException(status_code=404, detail="Event not found")
 
+    is_owner_viewing = current_user.id == event.owner_id
+
     attendees = [
         EventAttendee(user_id=event.owner.id, full_name=event.owner.full_name, email=event.owner.email, is_owner=True)
     ]
     attendees += [
-        EventAttendee(user_id=inv.invitee.id, full_name=inv.invitee.full_name, email=inv.invitee.email, is_owner=False)
+        EventAttendee(
+            user_id=inv.invitee.id,
+            full_name=inv.invitee.full_name,
+            email=inv.invitee.email,
+            is_owner=False,
+            # Comments are only visible to the event owner and to their own author.
+            comment=inv.comment if (is_owner_viewing or inv.invitee_id == current_user.id) else None,
+        )
         for inv in crud.invitation.list_accepted_invitees(db, event_id)
         if inv.invitee_id != event.owner_id
     ]
@@ -98,4 +109,6 @@ def update_invitation(
         ):
             raise HTTPException(status_code=409, detail="This event is full")
 
-    return crud.invitation.update_invitation_status(db, invitation, invitation_in.status)
+    return crud.invitation.update_invitation_status(
+        db, invitation, invitation_in.status, comment=invitation_in.comment
+    )

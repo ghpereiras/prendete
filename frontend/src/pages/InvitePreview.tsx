@@ -25,6 +25,7 @@ export default function InvitePreview() {
   const [notFound, setNotFound] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (!token) return;
@@ -44,7 +45,7 @@ export default function InvitePreview() {
     setJoinError(null);
     setJoining(true);
     try {
-      const invitation = await joinEvent(token);
+      const invitation = await joinEvent(token, comment);
       navigate(`/events/${invitation.event_id}`);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
@@ -105,9 +106,22 @@ export default function InvitePreview() {
       {isOwner ? (
         <p>{t("invitePreview.isOwner")}</p>
       ) : registrationClosed ? null : user ? (
-        <button onClick={handleJoin} disabled={joining || isFull}>
-          {joining ? t("invitePreview.joining") : t("invitePreview.join")}
-        </button>
+        <div className="join-form">
+          <label className="sr-only" htmlFor="join-comment">
+            {t("invitePreview.commentLabel")}
+          </label>
+          <textarea
+            id="join-comment"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder={t("invitePreview.commentPlaceholder")}
+            rows={2}
+            maxLength={500}
+          />
+          <button onClick={handleJoin} disabled={joining || isFull}>
+            {joining ? t("invitePreview.joining") : t("invitePreview.join")}
+          </button>
+        </div>
       ) : (
         <div className="invite-auth-prompt">
           <p>{t("invitePreview.needsAuth")}</p>

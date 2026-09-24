@@ -117,10 +117,13 @@ export default function EventDetail() {
           <ul>
             {attendees.map((attendee) => (
               <li key={attendee.user_id}>
-                {attendee.full_name}
-                {attendee.is_owner && (
-                  <span className="owner-badge">{t("eventDetail.ownerBadge")}</span>
-                )}
+                <div className="attendee-row">
+                  {attendee.full_name}
+                  {attendee.is_owner && (
+                    <span className="owner-badge">{t("eventDetail.ownerBadge")}</span>
+                  )}
+                </div>
+                {attendee.comment && <p className="attendee-comment">"{attendee.comment}"</p>}
               </li>
             ))}
           </ul>

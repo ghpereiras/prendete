@@ -59,3 +59,4 @@ class EventAttendee(BaseModel):
     full_name: str
     email: str
     is_owner: bool
+    comment: str | None = None

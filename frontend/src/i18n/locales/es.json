@@ -67,6 +67,8 @@
     "registrationClosed": "Las inscripciones para este evento ya cerraron",
     "timeToRegister": "Tiempo para el cierre de inscripciones: {{time}}",
     "isOwner": "Sos el organizador de este evento.",
+    "commentLabel": "Comentario (opcional)",
+    "commentPlaceholder": "Dejale un comentario al organizador (opcional)",
     "join": "Sumarme",
     "joining": "Sumándote...",
     "needsAuth": "Iniciá sesión o creá una cuenta para sumarte",

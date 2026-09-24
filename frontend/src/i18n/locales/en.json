@@ -67,6 +67,8 @@
     "registrationClosed": "Registration for this event has closed",
     "timeToRegister": "Time until registration closes: {{time}}",
     "isOwner": "You're the organizer of this event.",
+    "commentLabel": "Comment (optional)",
+    "commentPlaceholder": "Leave a comment for the organizer (optional)",
     "join": "Join",
     "joining": "Joining...",
     "needsAuth": "Sign in or create an account to join",

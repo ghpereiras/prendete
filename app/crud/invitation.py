@@ -41,12 +41,15 @@ def count_accepted(db: Session, event_id: int, exclude_user_id: int | None = Non
     return db.scalar(stmt) or 0
 
 
-def create_accepted_invitation(db: Session, event_id: int, invitee_id: int) -> Invitation:
+def create_accepted_invitation(
+    db: Session, event_id: int, invitee_id: int, comment: str | None = None
+) -> Invitation:
     invitation = Invitation(
         event_id=event_id,
         invitee_id=invitee_id,
         status=InvitationStatus.ACCEPTED,
         responded_at=datetime.now(timezone.utc),
+        comment=comment,
     )
     db.add(invitation)
     db.commit()
@@ -54,9 +57,13 @@ def create_accepted_invitation(db: Session, event_id: int, invitee_id: int) -> I
     return invitation
 
 
-def update_invitation_status(db: Session, invitation: Invitation, status: InvitationStatus) -> Invitation:
+def update_invitation_status(
+    db: Session, invitation: Invitation, status: InvitationStatus, comment: str | None = None
+) -> Invitation:
     invitation.status = status
     invitation.responded_at = datetime.now(timezone.utc)
+    if comment is not None:
+        invitation.comment = comment
     db.commit()
     db.refresh(invitation)
     return invitation
