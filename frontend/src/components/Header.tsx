@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import AccountMenu from "./AccountMenu";
+import CreateEventButton from "./CreateEventButton";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { usePageTitleValue } from "../context/PageTitleContext";
 import { TopBarMenuProvider } from "../context/TopBarMenuContext";
@@ -18,6 +19,7 @@ export default function Header() {
       </Link>
       <h1 className="app-header-title">{title}</h1>
       <div className="top-bar">
+        <CreateEventButton />
         <TopBarMenuProvider>
           <LanguageSwitcher />
           <AccountMenu />

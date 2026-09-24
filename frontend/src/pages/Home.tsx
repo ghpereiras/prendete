@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
 import { listEvents, type Event } from "../api/events";
 import EventList from "../components/EventList";
 import { useAuth } from "../context/AuthContext";
@@ -19,10 +18,6 @@ export default function Home() {
 
   return (
     <div className="page">
-      <Link to="/events/new" className="button-link">
-        {t("home.createEvent")}
-      </Link>
-
       <EventList events={events} emptyMessage={t("home.noEvents")} />
     </div>
   );

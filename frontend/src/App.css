@@ -250,6 +250,11 @@
   font-weight: 600;
 }
 
+.create-event-button svg {
+  width: 20px;
+  height: 20px;
+}
+
 .icon-menu-dropdown {
   position: absolute;
   top: calc(100% + 8px);

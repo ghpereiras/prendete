@@ -23,7 +23,6 @@
   },
   "home": {
     "greeting": "Hola, {{name}}",
-    "createEvent": "Crear evento",
     "noEvents": "Todavía no tenés eventos.",
     "organizedBy": "organiza {{name}}"
   },
