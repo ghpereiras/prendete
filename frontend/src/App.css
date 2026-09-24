@@ -58,7 +58,7 @@
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
-    /* top padding clears the absolutely-positioned language switcher */
+    /* top padding clears the absolutely-positioned top bar */
     padding: 56px 12px 12px;
     border-right: none;
     border-bottom: 1px solid var(--border);
@@ -161,14 +161,17 @@
   color: var(--accent);
 }
 
-.language-switcher {
+.top-bar {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.language-switcher select {
+.top-bar select {
   font: inherit;
   font-size: 14px;
   padding: 6px 10px;
@@ -177,6 +180,58 @@
   background: var(--bg);
   color: var(--text-h);
   cursor: pointer;
+}
+
+.account-menu {
+  position: relative;
+}
+
+.account-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.account-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.account-menu-dropdown button {
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.account-menu-dropdown button:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .button-link {

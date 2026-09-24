@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
+import AccountMenu from "./components/AccountMenu";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import ProtectedRoute from "./context/ProtectedRoute";
 import CreateEvent from "./pages/CreateEvent";
@@ -10,6 +11,7 @@ import Home from "./pages/Home";
 import InvitePreview from "./pages/InvitePreview";
 import Login from "./pages/Login";
 import PastEvents from "./pages/PastEvents";
+import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import UpcomingEvents from "./pages/UpcomingEvents";
 
@@ -22,7 +24,10 @@ export default function App() {
 
   return (
     <>
-      <LanguageSwitcher />
+      <div className="top-bar">
+        <LanguageSwitcher />
+        <AccountMenu />
+      </div>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -64,6 +69,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EventDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

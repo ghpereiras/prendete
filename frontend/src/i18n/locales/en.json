@@ -23,10 +23,19 @@
   },
   "home": {
     "greeting": "Hi, {{name}}",
-    "logout": "Log out",
     "createEvent": "Create event",
     "noEvents": "You don't have any events yet.",
     "organizedBy": "organized by {{name}}"
+  },
+  "account": {
+    "label": "Account",
+    "profile": "My profile",
+    "logout": "Log out"
+  },
+  "profile": {
+    "title": "My profile",
+    "name": "Name",
+    "email": "Email"
   },
   "createEvent": {
     "title": "Create event",

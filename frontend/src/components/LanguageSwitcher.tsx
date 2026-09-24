@@ -13,7 +13,7 @@ export default function LanguageSwitcher() {
   const current = (i18n.resolvedLanguage ?? "es") as Language;
 
   return (
-    <label className="language-switcher">
+    <label>
       <span className="sr-only">{t("language.label")}</span>
       <select
         value={current}
