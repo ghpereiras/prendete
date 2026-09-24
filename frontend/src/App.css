@@ -171,22 +171,11 @@
   gap: 8px;
 }
 
-.top-bar select {
-  font: inherit;
-  font-size: 14px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-h);
-  cursor: pointer;
-}
-
-.account-menu {
+.icon-menu {
   position: relative;
 }
 
-.account-menu-trigger {
+.icon-menu-trigger {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,15 +184,21 @@
   padding: 0;
   border-radius: 50%;
   border: 1px solid var(--border);
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: var(--bg);
+  color: var(--text-h);
   font: inherit;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 18px;
   cursor: pointer;
 }
 
-.account-menu-dropdown {
+.account-menu-trigger {
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.icon-menu-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
@@ -217,7 +212,10 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.account-menu-dropdown button {
+.icon-menu-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font: inherit;
   font-size: 14px;
   text-align: left;
@@ -229,7 +227,8 @@
   cursor: pointer;
 }
 
-.account-menu-dropdown button:hover {
+.icon-menu-dropdown button:hover,
+.icon-menu-dropdown button[aria-current="true"] {
   background: var(--accent-bg);
   color: var(--accent);
 }

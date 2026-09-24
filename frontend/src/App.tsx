@@ -5,6 +5,7 @@ import "./App.css";
 import AccountMenu from "./components/AccountMenu";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import ProtectedRoute from "./context/ProtectedRoute";
+import { TopBarMenuProvider } from "./context/TopBarMenuContext";
 import CreateEvent from "./pages/CreateEvent";
 import EventDetail from "./pages/EventDetail";
 import Home from "./pages/Home";
@@ -25,8 +26,10 @@ export default function App() {
   return (
     <>
       <div className="top-bar">
-        <LanguageSwitcher />
-        <AccountMenu />
+        <TopBarMenuProvider>
+          <LanguageSwitcher />
+          <AccountMenu />
+        </TopBarMenuProvider>
       </div>
       <Routes>
         <Route path="/login" element={<Login />} />
