@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { listEvents, type Event } from "../api/events";
+import EventList from "../components/EventList";
 import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
@@ -23,14 +24,7 @@ export default function Home() {
         {t("home.createEvent")}
       </Link>
 
-      <div className="event-list">
-        {events.length === 0 && <p>{t("home.noEvents")}</p>}
-        {events.map((event) => (
-          <Link key={event.id} to={`/events/${event.id}`} className="event-list-item">
-            {event.title}
-          </Link>
-        ))}
-      </div>
+      <EventList events={events} emptyMessage={t("home.noEvents")} />
     </div>
   );
 }

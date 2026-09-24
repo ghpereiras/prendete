@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.utils.maps import extract_maps_url
 
@@ -23,6 +23,20 @@ class EventCreate(BaseModel):
             return None
         return extract_maps_url(value)
 
+    @model_validator(mode="after")
+    def validate_start_and_registration_window(self) -> "EventCreate":
+        now = datetime.now(timezone.utc)
+        if self.starts_at <= now:
+            raise ValueError("starts_at must be in the future")
+
+        minutes_before = self.registration_deadline_minutes_before or 0
+        deadline = self.starts_at - timedelta(minutes=minutes_before)
+        if deadline <= now:
+            raise ValueError(
+                "registration_deadline_minutes_before would already be closed at creation time"
+            )
+        return self
+
 
 class EventRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -38,6 +52,7 @@ class EventRead(BaseModel):
     registration_deadline_minutes_before: int | None
     max_attendees: int
     owner_id: int
+    owner_name: str
     created_at: datetime
 
 

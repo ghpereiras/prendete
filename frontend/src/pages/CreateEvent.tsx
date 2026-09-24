@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { createEvent } from "../api/events";
+import { createEvent, isRegistrationOpen } from "../api/events";
 
 export default function CreateEvent() {
   const { t } = useTranslation();
@@ -21,6 +21,21 @@ export default function CreateEvent() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const startsAtIso = new Date(startsAt).toISOString();
+    if (new Date(startsAtIso).getTime() <= Date.now()) {
+      setError("createEvent.errorStartsInPast");
+      return;
+    }
+
+    const registrationDeadlineMinutes = registrationDeadlineHours
+      ? Math.round(Number(registrationDeadlineHours) * 60)
+      : null;
+    if (!isRegistrationOpen(startsAtIso, registrationDeadlineMinutes)) {
+      setError("createEvent.errorRegistrationAlreadyClosed");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const event = await createEvent({
@@ -29,16 +44,14 @@ export default function CreateEvent() {
         location: location || undefined,
         location_details: locationDetails || undefined,
         maps_link: mapsLink || undefined,
-        starts_at: new Date(startsAt).toISOString(),
+        starts_at: startsAtIso,
         duration_minutes: Math.round(Number(durationHours) * 60),
-        registration_deadline_minutes_before: registrationDeadlineHours
-          ? Math.round(Number(registrationDeadlineHours) * 60)
-          : undefined,
+        registration_deadline_minutes_before: registrationDeadlineMinutes ?? undefined,
         max_attendees: Number(maxAttendees),
       });
       navigate(`/events/${event.id}`);
     } catch {
-      setError(t("createEvent.error"));
+      setError("createEvent.error");
     } finally {
       setSubmitting(false);
     }
@@ -48,7 +61,7 @@ export default function CreateEvent() {
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>{t("createEvent.title")}</h1>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error">{t(error)}</p>}
         <label>
           {t("createEvent.name")}
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />

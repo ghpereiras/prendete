@@ -9,7 +9,9 @@ import EventDetail from "./pages/EventDetail";
 import Home from "./pages/Home";
 import InvitePreview from "./pages/InvitePreview";
 import Login from "./pages/Login";
+import PastEvents from "./pages/PastEvents";
 import Register from "./pages/Register";
+import UpcomingEvents from "./pages/UpcomingEvents";
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -38,6 +40,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <CreateEvent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/upcoming"
+          element={
+            <ProtectedRoute>
+              <UpcomingEvents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/past"
+          element={
+            <ProtectedRoute>
+              <PastEvents />
             </ProtectedRoute>
           }
         />

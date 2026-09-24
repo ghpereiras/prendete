@@ -25,7 +25,8 @@
     "greeting": "Hi, {{name}}",
     "logout": "Log out",
     "createEvent": "Create event",
-    "noEvents": "You don't have any events yet."
+    "noEvents": "You don't have any events yet.",
+    "organizedBy": "organized by {{name}}"
   },
   "createEvent": {
     "title": "Create event",
@@ -44,7 +45,9 @@
     "maxAttendees": "Max attendees",
     "submit": "Create event",
     "submitting": "Creating event...",
-    "error": "Couldn't create the event"
+    "error": "Couldn't create the event",
+    "errorStartsInPast": "The start date has already passed, pick a future date",
+    "errorRegistrationAlreadyClosed": "With those settings, registration would already be closed the moment the event is created; shorten the registration deadline or pick another start date"
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",
@@ -75,6 +78,17 @@
     "alreadyJoinedOrFull": "You already joined this event, or it's full",
     "joinError": "Couldn't complete the join",
     "notFound": "This invite link isn't valid"
+  },
+  "sidebar": {
+    "home": "Home",
+    "upcoming": "Upcoming events",
+    "past": "Past events"
+  },
+  "upcomingEvents": {
+    "empty": "You don't have any upcoming events."
+  },
+  "pastEvents": {
+    "empty": "You don't have any past events."
   },
   "common": {
     "loading": "Loading..."

@@ -65,8 +65,8 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 
 - `POST /users` (público), `GET /users`, `GET /users/me`, `GET /users/{id}`
 - `POST /auth/login` (público)
-- `POST /events` (dueño = usuario autenticado; requiere `starts_at`, `duration_minutes` y `max_attendees`; `location`, `location_details`, `maps_link` y `registration_deadline_minutes_before` son opcionales)
-- `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema)
+- `POST /events` (dueño = usuario autenticado; requiere `starts_at`, `duration_minutes` y `max_attendees`; `location`, `location_details`, `maps_link` y `registration_deadline_minutes_before` son opcionales). `422` si `starts_at` ya pasó, o si con el `registration_deadline_minutes_before` elegido las inscripciones ya estarían cerradas en el momento de crear el evento (validado en `EventCreate.validate_start_and_registration_window`, `app/schemas/event.py`)
+- `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema), ordenados por `starts_at` ascendente (el que empieza más pronto primero); cada evento incluye `owner_name`
 - `GET /events/{id}` — solo el dueño o un participante aceptado (404 para el resto)
 - `DELETE /events/{id}` — solo el dueño
 
@@ -110,9 +110,13 @@ Páginas:
 
 - `/login`, `/register` — públicas
 - `/invite/:token` — pública, preview del evento; si no hay sesión pide login/registro y vuelve acá después
-- `/` — protegida, lista tus eventos y accedé a crear uno nuevo
+- `/` — protegida, lista todos tus eventos y accedé a crear uno nuevo
+- `/events/upcoming` — protegida, solo eventos con `starts_at` futuro (orden ascendente, el más próximo primero)
+- `/events/past` — protegida, solo eventos con `starts_at` pasado (orden descendente, el más reciente primero)
 - `/events/new` — protegida, formulario de creación
 - `/events/:eventId` — protegida, detalle del evento; si sos el dueño, muestra el link de invitación para compartir
+
+Las páginas protegidas comparten un layout con una barra lateral fija (`components/Sidebar.tsx`, vía `components/Layout.tsx` en `context/ProtectedRoute.tsx`) con links a Inicio / Próximos eventos / Eventos pasados; en mobile se convierte en una fila horizontal arriba. Los filtros de próximos/pasados se calculan en el cliente comparando `starts_at` contra la hora actual.
 
 El token JWT se guarda en `localStorage`.
 

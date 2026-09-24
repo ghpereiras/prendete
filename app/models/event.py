@@ -33,3 +33,7 @@ class Event(Base):
 
     owner: Mapped["User"] = relationship(back_populates="events")
     invitations: Mapped[list["Invitation"]] = relationship(back_populates="event", cascade="all, delete-orphan")
+
+    @property
+    def owner_name(self) -> str:
+        return self.owner.full_name

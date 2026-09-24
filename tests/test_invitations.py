@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from app.models.event import Event
 from tests.conftest import auth_headers, register_and_login
 from tests.test_events import EVENT_PAYLOAD, create_event
 
@@ -59,12 +60,19 @@ def test_preview_invite_registration_open_by_default(client):
     assert body["registration_open"] is True
 
 
-def test_registration_closes_at_event_start_by_default(client):
+def test_registration_closes_at_event_start_by_default(client, db_session):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")
-    already_started = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    soon = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
     # no registration_deadline_minutes_before at all: should still default to closing at starts_at
-    create_event(client, owner_token, starts_at=already_started)
+    create_event(client, owner_token, starts_at=soon)
+
+    # Creating an already-started event is blocked, so simulate time having
+    # passed since a valid creation by backdating starts_at directly.
+    event = db_session.get(Event, 1)
+    event.starts_at = datetime.now(timezone.utc) - timedelta(minutes=5)
+    db_session.commit()
+
     token = get_invite_token(client, 1, owner_token)
 
     preview = client.get(f"/events/invite/{token}").json()
@@ -88,17 +96,25 @@ def test_registration_open_before_event_start_by_default(client):
     assert response.status_code == 201
 
 
-def test_join_event_rejected_after_registration_deadline(client):
+def test_join_event_rejected_after_registration_deadline(client, db_session):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")
-    soon = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+    far_future = (datetime.now(timezone.utc) + timedelta(days=10)).isoformat()
     create_event(
         client,
         owner_token,
-        starts_at=soon,
-        # closes 1 hour before start: deadline already passed since the event starts in 10 min
+        starts_at=far_future,
         registration_deadline_minutes_before=60,
     )
+
+    # Creating an event whose deadline has already passed is blocked, so
+    # simulate time having passed since a valid creation by moving starts_at
+    # closer: with a 60-minute deadline, starting in 10 minutes means the
+    # registration window already closed 50 minutes ago.
+    event = db_session.get(Event, 1)
+    event.starts_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+    db_session.commit()
+
     token = get_invite_token(client, 1, owner_token)
 
     preview = client.get(f"/events/invite/{token}").json()

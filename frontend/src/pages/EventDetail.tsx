@@ -29,8 +29,8 @@ export default function EventDetail() {
     if (!eventId) return;
     getEvent(Number(eventId))
       .then(setEvent)
-      .catch(() => setError(t("eventDetail.notFound")));
-  }, [eventId, t]);
+      .catch(() => setError("eventDetail.notFound"));
+  }, [eventId]);
 
   useEffect(() => {
     if (!eventId || !event) return;
@@ -44,10 +44,10 @@ export default function EventDetail() {
       .catch((err) => {
         // Non-owners can't fetch the invite link; that's expected, not an error to show.
         if (!(err instanceof ApiError && err.status === 403)) {
-          setError(t("eventDetail.linkError"));
+          setError("eventDetail.linkError");
         }
       });
-  }, [eventId, event, t]);
+  }, [eventId, event]);
 
   async function copyLink() {
     if (!inviteUrl) return;
@@ -59,7 +59,7 @@ export default function EventDetail() {
   if (error) {
     return (
       <div className="page">
-        <p className="error">{error}</p>
+        <p className="error">{t(error)}</p>
         <Link to="/">{t("eventDetail.backHome")}</Link>
       </div>
     );

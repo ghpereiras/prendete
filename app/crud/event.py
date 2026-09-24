@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.event import Event, generate_invite_token
 from app.models.invitation import Invitation, InvitationStatus
@@ -30,11 +30,13 @@ def list_events_for_user(db: Session, user_id: int, skip: int = 0, limit: int = 
     )
     stmt = (
         select(Event)
+        .options(joinedload(Event.owner))
         .where((Event.owner_id == user_id) | (Event.id.in_(joined_event_ids)))
+        .order_by(Event.starts_at)
         .offset(skip)
         .limit(limit)
     )
-    return list(db.scalars(stmt))
+    return list(db.scalars(stmt).unique())
 
 
 def can_view_event(db: Session, event: Event, user_id: int) -> bool:

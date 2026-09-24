@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from tests.conftest import auth_headers, register_and_login
 
 EVENT_PAYLOAD = {
@@ -94,6 +96,39 @@ def test_create_event_registration_deadline_zero_rejected(client):
     assert response.status_code == 422
 
 
+def test_create_event_starts_at_in_the_past_rejected(client):
+    token = register_and_login(client, "owner@example.com")
+    past = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    response = create_event(client, token, starts_at=past)
+    assert response.status_code == 422
+
+
+def test_create_event_starts_at_right_now_rejected(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token, starts_at=datetime.now(timezone.utc).isoformat())
+    assert response.status_code == 422
+
+
+def test_create_event_registration_already_closed_at_creation_rejected(client):
+    token = register_and_login(client, "owner@example.com")
+    soon = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+    # closes 1 hour before start: with the event starting in 10 minutes, that
+    # deadline already passed the moment this request is made.
+    response = create_event(
+        client, token, starts_at=soon, registration_deadline_minutes_before=60
+    )
+    assert response.status_code == 422
+
+
+def test_create_event_registration_window_still_open_accepted(client):
+    token = register_and_login(client, "owner@example.com")
+    soon = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    response = create_event(
+        client, token, starts_at=soon, registration_deadline_minutes_before=60
+    )
+    assert response.status_code == 201
+
+
 def test_create_event_registration_deadline_accepted(client):
     token = register_and_login(client, "owner@example.com")
     response = create_event(client, token, registration_deadline_minutes_before=120)
@@ -118,6 +153,24 @@ def test_list_events_scoped_to_owner_and_participants(client):
     assert len(owner_events) == 1
     assert len(participant_events) == 1
     assert len(stranger_events) == 0
+
+
+def test_list_events_includes_owner_name(client):
+    token = register_and_login(client, "owner@example.com", full_name="Owner Person")
+    create_event(client, token)
+
+    events = client.get("/events", headers=auth_headers(token)).json()
+    assert events[0]["owner_name"] == "Owner Person"
+
+
+def test_list_events_sorted_by_soonest_start(client):
+    token = register_and_login(client, "owner@example.com")
+    create_event(client, token, title="Later", starts_at="2026-12-01T20:00:00Z")
+    create_event(client, token, title="Sooner", starts_at="2026-11-01T20:00:00Z")
+    create_event(client, token, title="Middle", starts_at="2026-11-15T20:00:00Z")
+
+    events = client.get("/events", headers=auth_headers(token)).json()
+    assert [e["title"] for e in events] == ["Sooner", "Middle", "Later"]
 
 
 def test_get_event_owner_can_view(client):

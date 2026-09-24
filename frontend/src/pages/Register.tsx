@@ -27,9 +27,9 @@ export default function Register() {
       navigate(from);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError(t("register.errorEmailTaken"));
+        setError("register.errorEmailTaken");
       } else {
-        setError(t("register.errorGeneric"));
+        setError("register.errorGeneric");
       }
     } finally {
       setSubmitting(false);
@@ -40,7 +40,7 @@ export default function Register() {
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>{t("register.title")}</h1>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error">{t(error)}</p>}
         <label>
           {t("register.fullName")}
           <input

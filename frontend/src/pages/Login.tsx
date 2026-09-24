@@ -22,7 +22,7 @@ export default function Login() {
       await login(email, password);
       navigate(from);
     } catch {
-      setError(t("login.error"));
+      setError("login.error");
     } finally {
       setSubmitting(false);
     }
@@ -32,7 +32,7 @@ export default function Login() {
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>{t("login.title")}</h1>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error">{t(error)}</p>}
         <label>
           {t("login.email")}
           <input

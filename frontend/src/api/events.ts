@@ -12,6 +12,7 @@ export interface Event {
   registration_deadline_minutes_before: number | null;
   max_attendees: number;
   owner_id: number;
+  owner_name: string;
   created_at: string;
 }
 

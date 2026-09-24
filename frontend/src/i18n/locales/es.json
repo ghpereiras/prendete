@@ -25,7 +25,8 @@
     "greeting": "Hola, {{name}}",
     "logout": "Cerrar sesión",
     "createEvent": "Crear evento",
-    "noEvents": "Todavía no tenés eventos."
+    "noEvents": "Todavía no tenés eventos.",
+    "organizedBy": "organiza {{name}}"
   },
   "createEvent": {
     "title": "Crear evento",
@@ -44,7 +45,9 @@
     "maxAttendees": "Cupo máximo",
     "submit": "Crear evento",
     "submitting": "Creando evento...",
-    "error": "No se pudo crear el evento"
+    "error": "No se pudo crear el evento",
+    "errorStartsInPast": "La fecha de inicio ya pasó, elegí una fecha futura",
+    "errorRegistrationAlreadyClosed": "Con esos datos las inscripciones ya estarían cerradas al crear el evento; acortá el cierre de inscripciones o elegí otra fecha de inicio"
   },
   "eventDetail": {
     "spotsLeft": "Cupos disponibles: {{count}}",
@@ -75,6 +78,17 @@
     "alreadyJoinedOrFull": "Ya estás sumado a este evento, o ya no quedan lugares",
     "joinError": "No se pudo completar la invitación",
     "notFound": "Este link de invitación no es válido"
+  },
+  "sidebar": {
+    "home": "Inicio",
+    "upcoming": "Próximos eventos",
+    "past": "Eventos pasados"
+  },
+  "upcomingEvents": {
+    "empty": "No tenés eventos próximos."
+  },
+  "pastEvents": {
+    "empty": "No tenés eventos pasados."
   },
   "common": {
     "loading": "Cargando..."

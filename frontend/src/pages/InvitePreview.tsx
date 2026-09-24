@@ -49,9 +49,9 @@ export default function InvitePreview() {
       navigate(`/events/${invitation.event_id}`);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setJoinError(t("invitePreview.alreadyJoinedOrFull"));
+        setJoinError("invitePreview.alreadyJoinedOrFull");
       } else {
-        setJoinError(t("invitePreview.joinError"));
+        setJoinError("invitePreview.joinError");
       }
     } finally {
       setJoining(false);
@@ -101,7 +101,7 @@ export default function InvitePreview() {
         </p>
       )}
 
-      {joinError && <p className="error">{joinError}</p>}
+      {joinError && <p className="error">{t(joinError)}</p>}
 
       {isOwner ? (
         <p>{t("invitePreview.isOwner")}</p>
