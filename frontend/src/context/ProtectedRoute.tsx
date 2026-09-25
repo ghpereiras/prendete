@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
-import Layout from "../components/Layout";
 import { useAuth } from "./AuthContext";
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -14,5 +13,5 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  return <Layout>{children}</Layout>;
+  return <>{children}</>;
 }

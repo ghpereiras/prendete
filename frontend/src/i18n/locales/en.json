@@ -35,7 +35,6 @@
   },
   "home": {
     "greeting": "Hi, {{name}}",
-    "noEvents": "You don't have any events yet.",
     "organizedBy": "organized by {{name}}"
   },
   "account": {
@@ -132,9 +131,16 @@
     "joinError": "Couldn't complete the join",
     "notFound": "This invite link isn't valid"
   },
-  "sidebar": {
+  "timeFilter": {
+    "label": "Filter by date",
     "upcoming": "Upcoming events",
     "past": "Past events"
+  },
+  "ownerFilter": {
+    "label": "Filter by organizer",
+    "all": "All",
+    "mine": "Mine",
+    "others": "Others"
   },
   "header": {
     "home": "Go home"

@@ -134,14 +134,19 @@ Páginas:
 
 - `/login`, `/register` — públicas
 - `/invite/:token` — pública, preview del evento; si no hay sesión pide login/registro y vuelve acá después
-- `/` — protegida, lista todos tus eventos y accedé a crear uno nuevo
-- `/events/upcoming` — protegida, solo eventos con `starts_at` futuro (orden ascendente, el más próximo primero)
-- `/events/past` — protegida, solo eventos con `starts_at` pasado (orden descendente, el más reciente primero)
+- `/` — protegida, redirige directo a `/events`
+- `/events` — protegida, tu pantalla principal: todos tus eventos (propios + a los que asistís) con dos filtros combinables
 - `/events/new` — protegida, formulario de creación
 - `/events/:eventId` — protegida, detalle del evento; si sos el dueño, muestra el link de invitación para compartir
 - `/profile` — protegida, muestra nombre y email del usuario
 
-Todas las páginas comparten un header fijo arriba de todo (`components/Header.tsx`, montado una sola vez en `App.tsx`): a la izquierda un botón circular con ícono de casa que lleva a `/`, en el centro el título grande de la página actual (cada página lo setea con `usePageTitle` de `context/PageTitleContext.tsx` — dinámico para páginas como el detalle del evento, que muestra el nombre real del evento en vez de un texto fijo), y a la derecha el selector de idioma (bandera del idioma activo) y, si hay sesión, un ícono circular con la inicial del usuario que despliega "Mi perfil" / "Cerrar sesión" al pasar el mouse o hacer click (`components/LanguageSwitcher.tsx`, `components/AccountMenu.tsx`, coordinados por `context/TopBarMenuContext.tsx` para que solo uno esté abierto a la vez). Además, las páginas protegidas muestran debajo del header una barra lateral fija (`components/Sidebar.tsx`, vía `components/Layout.tsx` en `context/ProtectedRoute.tsx`) con links a Inicio / Próximos eventos / Eventos pasados; en mobile se convierte en una fila horizontal. Los filtros de próximos/pasados se calculan en el cliente comparando `starts_at` contra la hora actual.
+Todas las páginas comparten un header fijo arriba de todo (`components/Header.tsx`, montado una sola vez en `App.tsx`): a la izquierda un botón circular con ícono de casa que lleva a `/` (que a su vez redirige a `/events`), en el centro el título grande de la página actual (cada página lo setea con `usePageTitle` de `context/PageTitleContext.tsx` — dinámico para páginas como el detalle del evento, que muestra el nombre real del evento en vez de un texto fijo; en `/events` particularmente muestra un saludo, "Hola, {{nombre}}", en vez de un título genérico), y a la derecha el selector de idioma (bandera del idioma activo) y, si hay sesión, un ícono circular con la inicial del usuario que despliega "Mi perfil" / "Cerrar sesión" al pasar el mouse o hacer click (`components/LanguageSwitcher.tsx`, `components/AccountMenu.tsx`, coordinados por `context/TopBarMenuContext.tsx` para que solo uno esté abierto a la vez). No hay sidebar ni navegación lateral — toda la app cuelga de ese header.
+
+`/events` (`pages/Events.tsx`) combina dos filtros independientes, ambos con el mismo componente reutilizable `components/SegmentedFilter.tsx`:
+- **Por fecha** (Próximos / Pasados) — se calcula en el cliente comparando `starts_at` contra la hora actual; Próximos ordena ascendente (el más próximo primero), Pasados ordena descendente (el más reciente primero).
+- **Por organizador** (Todos / Míos / De otros) — compara `event.owner_id` contra el usuario logueado.
+
+Ambos filtros se combinan sin alterar el orden de la lista.
 
 El token JWT se guarda en `localStorage`.
 

@@ -35,7 +35,6 @@
   },
   "home": {
     "greeting": "Hola, {{name}}",
-    "noEvents": "Todavía no tenés eventos.",
     "organizedBy": "organiza {{name}}"
   },
   "account": {
@@ -132,9 +131,16 @@
     "joinError": "No se pudo completar la invitación",
     "notFound": "Este link de invitación no es válido"
   },
-  "sidebar": {
+  "timeFilter": {
+    "label": "Filtrar por fecha",
     "upcoming": "Próximos eventos",
     "past": "Eventos pasados"
+  },
+  "ownerFilter": {
+    "label": "Filtrar por organizador",
+    "all": "Todos",
+    "mine": "Míos",
+    "others": "De otros"
   },
   "header": {
     "home": "Ir al inicio"

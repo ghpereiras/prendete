@@ -1,19 +1,17 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header";
 import { PageTitleProvider } from "./context/PageTitleContext";
 import ProtectedRoute from "./context/ProtectedRoute";
 import CreateEvent from "./pages/CreateEvent";
 import EventDetail from "./pages/EventDetail";
-import Home from "./pages/Home";
+import Events from "./pages/Events";
 import InvitePreview from "./pages/InvitePreview";
 import Login from "./pages/Login";
-import PastEvents from "./pages/PastEvents";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
-import UpcomingEvents from "./pages/UpcomingEvents";
 
 const NO_HEADER_PATHS = ["/login", "/register"];
 
@@ -36,7 +34,15 @@ export default function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <Home />
+              <Navigate to="/events" replace />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute>
+              <Events />
             </ProtectedRoute>
           }
         />
@@ -53,22 +59,6 @@ export default function App() {
           element={
             <ProtectedRoute>
               <CreateEvent />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/events/upcoming"
-          element={
-            <ProtectedRoute>
-              <UpcomingEvents />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/events/past"
-          element={
-            <ProtectedRoute>
-              <PastEvents />
             </ProtectedRoute>
           }
         />
