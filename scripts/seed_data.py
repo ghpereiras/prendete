@@ -36,30 +36,32 @@ USERS = [
 ]
 
 # (owner_email, title, days_offset, duration_minutes, max_attendees, location, registration_deadline_minutes_before)
+# Locations are real places that resolve on Google Maps (not made-up names), so
+# the seeded events show accurate map cards in the app.
 PAST_EVENTS = [
-    ("demo@example.com", "Asado de fin de año", -15, 240, 12, "Casa de Demo, Palermo", None),
-    ("ana.garcia@example.com", "Cumpleaños de Ana", -30, 300, 20, "Salón Fiesta, Belgrano", None),
-    ("carlos.ruiz@example.com", "Torneo de fútbol 5", -10, 120, 10, "Cancha El Potrero", None),
-    ("lucia.fernandez@example.com", "Noche de juegos de mesa", -20, 180, 8, "Bar La Mesa, San Telmo", None),
-    ("martin.lopez@example.com", "Clase de cocina italiana", -45, 150, 6, "Cocina Trattoria, Recoleta", None),
-    ("demo@example.com", "Cena de egresados", -60, 210, 15, "Restaurante Central", None),
-    ("sofia.martinez@example.com", "Picnic en el parque", -5, 180, 12, "Parque Centenario", None),
-    ("diego.sanchez@example.com", "Reunión de ex compañeros", -25, 150, 10, "Café del Barrio", None),
-    ("ana.garcia@example.com", "Maratón 10k", -40, 90, 25, "Costanera Norte", None),
-    ("carlos.ruiz@example.com", "After office viernes", -3, 150, 14, "Bar Terraza, Microcentro", None),
+    ("demo@example.com", "Asado de fin de año", -15, 240, 12, "Bosques de Palermo, Buenos Aires", None),
+    ("ana.garcia@example.com", "Cumpleaños de Ana", -30, 300, 20, "Centro Cultural Recoleta, Buenos Aires", None),
+    ("carlos.ruiz@example.com", "Torneo de fútbol 5", -10, 120, 10, "Club Ferro Carril Oeste, Caballito, Buenos Aires", None),
+    ("lucia.fernandez@example.com", "Noche de juegos de mesa", -20, 180, 8, "Plaza Dorrego, San Telmo, Buenos Aires", None),
+    ("martin.lopez@example.com", "Clase de cocina italiana", -45, 150, 6, "Plaza Francia, Recoleta, Buenos Aires", None),
+    ("demo@example.com", "Cena de egresados", -60, 210, 15, "La Cabrera, Palermo, Buenos Aires", None),
+    ("sofia.martinez@example.com", "Picnic en el parque", -5, 180, 12, "Parque Centenario, Buenos Aires", None),
+    ("diego.sanchez@example.com", "Reunión de ex compañeros", -25, 150, 10, "Café Tortoni, Buenos Aires", None),
+    ("ana.garcia@example.com", "Maratón 10k", -40, 90, 25, "Costanera Norte, Buenos Aires", None),
+    ("carlos.ruiz@example.com", "After office viernes", -3, 150, 14, "Florería Atlántico, Retiro, Buenos Aires", None),
 ]
 
 FUTURE_EVENTS = [
-    ("martin.lopez@example.com", "Cumpleaños de Martín", 5, 240, 18, "Casa de Martín, Villa Urquiza", None),
-    ("demo@example.com", "Conferencia de tecnología 2026", 20, 480, 100, "Centro de Convenciones", 1440),
-    ("ana.garcia@example.com", "Asado de bienvenida", 2, 240, 12, "Quinta El Rincón", None),
-    ("carlos.ruiz@example.com", "Torneo de truco", 10, 180, 16, "Club Social", None),
-    ("lucia.fernandez@example.com", "Clase de yoga al aire libre", 15, 90, 20, "Parque Las Heras", 120),
-    ("demo@example.com", "Cena de fin de proyecto", 30, 180, 10, "Restaurante Puerto", None),
-    ("sofia.martinez@example.com", "Noche de trivia", 7, 150, 12, "Bar Pregunta", None),
-    ("diego.sanchez@example.com", "Salida a la montaña", 45, 2880, 8, "Sierra de la Ventana", 4320),
-    ("valentina.romero@example.com", "Cumpleaños de Valentina", 12, 240, 20, "Salón Luna", None),
-    ("martin.lopez@example.com", "Meetup de React Buenos Aires", 60, 150, 60, "Coworking Nave", 2880),
+    ("martin.lopez@example.com", "Cumpleaños de Martín", 5, 240, 18, "Parque Sarmiento, Villa Urquiza, Buenos Aires", None),
+    ("demo@example.com", "Conferencia de tecnología 2026", 20, 480, 100, "La Rural, Predio Ferial de Buenos Aires", 1440),
+    ("ana.garcia@example.com", "Asado de bienvenida", 2, 240, 12, "Delta del Tigre, Buenos Aires", None),
+    ("carlos.ruiz@example.com", "Torneo de truco", 10, 180, 16, "Chacarita Juniors, Buenos Aires", None),
+    ("lucia.fernandez@example.com", "Clase de yoga al aire libre", 15, 90, 20, "Parque Las Heras, Buenos Aires", 120),
+    ("demo@example.com", "Cena de fin de proyecto", 30, 180, 10, "Puerto Madero, Buenos Aires", None),
+    ("sofia.martinez@example.com", "Noche de trivia", 7, 150, 12, "Los Galgos, Congreso, Buenos Aires", None),
+    ("diego.sanchez@example.com", "Salida a la montaña", 45, 2880, 8, "Sierra de la Ventana, Buenos Aires", 4320),
+    ("valentina.romero@example.com", "Cumpleaños de Valentina", 12, 240, 20, "Usina del Arte, La Boca, Buenos Aires", None),
+    ("martin.lopez@example.com", "Meetup de React Buenos Aires", 60, 150, 60, "Centro Cultural Kirchner, Buenos Aires", 2880),
 ]
 
 COMMENTS = [
