@@ -211,6 +211,25 @@
   cursor: default;
 }
 
+.form-actions button.danger,
+.button-link.danger {
+  border-color: #e5484d;
+  background: #e5484d;
+  color: #fff;
+}
+
+.event-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.event-actions .form-actions {
+  margin-top: 0;
+}
+
 .auth-form p {
   text-align: center;
   font-size: 14px;

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiError, avatarUrl } from "../api/client";
 import {
+  deleteEvent,
   endsAt,
   getEvent,
   getInviteLink,
@@ -14,6 +15,7 @@ import {
 } from "../api/events";
 import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
+import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
 
@@ -21,11 +23,16 @@ export default function EventDetail() {
   const { t, i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? "es";
   const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [attendees, setAttendees] = useState<EventAttendee[] | null>(null);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   usePageTitle(event?.title ?? (error ? t(error) : t("common.loading")));
 
@@ -60,6 +67,19 @@ export default function EventDetail() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleDelete() {
+    if (!event) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteEvent(event.id);
+      navigate("/");
+    } catch {
+      setDeleteError("eventDetail.deleteError");
+      setDeleting(false);
+    }
+  }
+
   if (error) {
     return (
       <div className="page">
@@ -74,6 +94,7 @@ export default function EventDetail() {
 
   const acceptedCount = attendees ? attendees.filter((a) => !a.is_owner).length : null;
   const spotsLeft = acceptedCount === null ? null : Math.max(event.max_attendees - acceptedCount, 0);
+  const canManage = user?.id === event.owner_id && new Date(event.starts_at).getTime() > Date.now();
 
   return (
     <div className="page">
@@ -133,6 +154,32 @@ export default function EventDetail() {
         </div>
       )}
 
+      {canManage && (
+        <div className="event-actions">
+          <Link to={`/events/${event.id}/edit`} className="button-link">
+            {t("eventDetail.edit")}
+          </Link>
+          {confirmingDelete ? (
+            <div className="form-actions">
+              <button type="button" onClick={() => setConfirmingDelete(false)} disabled={deleting}>
+                {t("eventDetail.cancel")}
+              </button>
+              <button type="button" className="danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? t("eventDetail.deleting") : t("eventDetail.confirmDelete")}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="button-link danger"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              {t("eventDetail.delete")}
+            </button>
+          )}
+          {deleteError && <p className="error">{t(deleteError)}</p>}
+        </div>
+      )}
     </div>
   );
 }

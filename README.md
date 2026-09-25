@@ -81,7 +81,8 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `POST /events` (dueño = usuario autenticado; requiere `starts_at`, `duration_minutes` y `max_attendees`; `location`, `location_details`, `maps_link` y `registration_deadline_minutes_before` son opcionales). `422` si `starts_at` ya pasó, o si con el `registration_deadline_minutes_before` elegido las inscripciones ya estarían cerradas en el momento de crear el evento (validado en `EventCreate.validate_start_and_registration_window`, `app/schemas/event.py`)
 - `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema), ordenados por `starts_at` ascendente (el que empieza más pronto primero); cada evento incluye `owner_name`
 - `GET /events/{id}` — solo el dueño o un participante aceptado (404 para el resto)
-- `DELETE /events/{id}` — solo el dueño
+- `PATCH /events/{id}` — edita el evento (mismos campos y validaciones que `POST /events`); solo el dueño, y solo si el evento todavía no empezó (`403` si ya arrancó). `422` si el `max_attendees` nuevo queda por debajo de la cantidad de invitados ya aceptados
+- `DELETE /events/{id}` — solo el dueño, y solo si el evento todavía no empezó (`403` si ya arrancó)
 
 ### Invitaciones por link
 
@@ -162,10 +163,13 @@ En `/register`, `components/AvatarPicker.tsx` deja elegir una foto (opcional): a
 
 En `/profile`, el botón "Editar perfil" cambia a un formulario (mismo `AvatarPicker`, precargado con la foto actual) para cambiar nombre y/o foto — pega a `PATCH /users/me` y actualiza el usuario en `AuthContext` al instante (sin recargar la página), así el header y el resto de la app reflejan el cambio enseguida.
 
+### Editar y eliminar eventos
+
+En `/events/:id`, el dueño ve los botones "Editar evento" y "Eliminar evento" — solo mientras el evento no haya empezado (`event.starts_at` a futuro); una vez que arrancó, dejan de mostrarse tanto para el dueño como para cualquier participante. "Editar evento" lleva a `/events/:id/edit`, que reusa el mismo formulario y componente de `CreateEvent.tsx` (incluida la búsqueda de ubicación) precargado con los datos actuales y pega a `PATCH /events/{id}` en vez de `POST /events`. "Eliminar evento" pide una confirmación inline (Cancelar / Sí, eliminar) antes de pegar a `DELETE /events/{id}` y volver al home. El backend valida ambas operaciones server-side además de ocultarlas en el frontend (dueño y evento no empezado), y `PATCH` además rechaza bajar el `max_attendees` por debajo de la cantidad de invitados ya aceptados.
+
 ## Pendiente
 
 - Refresh tokens / logout server-side (los JWT actuales expiran solos, no hay revocación).
-- Endpoint para editar eventos (`PUT`/`PATCH /events/{id}`).
 - Frontend: pantalla para que el dueño vea/gestione la lista de invitados de un evento.
 - Cambiar el email desde `/profile` (`PATCH /users/me` solo actualiza nombre y foto, no el email).
 - Sistema de roles (USER/ADMIN) — quedó en pausa, sin implementar.

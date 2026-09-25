@@ -78,7 +78,12 @@
     "errorDurationRequired": "Enter a valid duration, greater than 0",
     "errorMaxAttendeesRequired": "Enter a valid max attendees value, greater than 0",
     "errorRegistrationAlreadyClosed": "With those settings, registration would already be closed the moment the event is created; shorten the registration deadline or pick another start date",
-    "hasErrors": "There are errors to fix before creating the event"
+    "errorMaxAttendeesBelowAccepted": "Max attendees can't be lower than the number of people who already confirmed",
+    "hasErrors": "There are errors to fix before creating the event",
+    "editTitle": "Edit event",
+    "editSubmit": "Save changes",
+    "editSubmitting": "Saving...",
+    "editLoadError": "Couldn't load the event to edit"
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",
@@ -92,7 +97,13 @@
     "registrationDeadline": "Registration open until {{date}}",
     "registrationClosed": "Registration for this event is closed",
     "notFound": "Event not found",
-    "linkError": "Couldn't get the invite link"
+    "linkError": "Couldn't get the invite link",
+    "edit": "Edit event",
+    "delete": "Delete event",
+    "confirmDelete": "Yes, delete",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "deleteError": "Couldn't delete the event"
   },
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",

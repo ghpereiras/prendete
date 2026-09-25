@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from app.models.event import Event
 from tests.conftest import auth_headers, register_and_login
 
 EVENT_PAYLOAD = {
@@ -189,6 +190,70 @@ def test_get_event_participant_can_view(client):
 
     response = client.get("/events/1", headers=auth_headers(participant_token))
     assert response.status_code == 200
+
+
+def test_update_event_success(client):
+    token = register_and_login(client, "owner@example.com")
+    create_event(client, token)
+    response = client.patch(
+        "/events/1", json={**EVENT_PAYLOAD, "title": "Asado actualizado"}, headers=auth_headers(token)
+    )
+    assert response.status_code == 200
+    assert response.json()["title"] == "Asado actualizado"
+
+
+def test_update_event_requires_owner(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    stranger_token = register_and_login(client, "stranger@example.com")
+    create_event(client, owner_token)
+
+    response = client.patch("/events/1", json=EVENT_PAYLOAD, headers=auth_headers(stranger_token))
+    assert response.status_code == 403
+
+
+def test_update_nonexistent_event_404(client):
+    token = register_and_login(client, "owner@example.com")
+    response = client.patch("/events/999", json=EVENT_PAYLOAD, headers=auth_headers(token))
+    assert response.status_code == 404
+
+
+def test_update_event_max_attendees_below_accepted_rejected(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend1_token = register_and_login(client, "friend1@example.com")
+    friend2_token = register_and_login(client, "friend2@example.com")
+    create_event(client, owner_token, max_attendees=5)
+    invite_token = client.get(
+        "/events/1/invite-link", headers=auth_headers(owner_token)
+    ).json()["invite_token"]
+    client.post(f"/events/invite/{invite_token}/join", headers=auth_headers(friend1_token))
+    client.post(f"/events/invite/{invite_token}/join", headers=auth_headers(friend2_token))
+
+    response = client.patch(
+        "/events/1", json={**EVENT_PAYLOAD, "max_attendees": 1}, headers=auth_headers(owner_token)
+    )
+    assert response.status_code == 422
+
+
+def test_update_event_already_started_rejected(client, db_session):
+    token = register_and_login(client, "owner@example.com")
+    create_event(client, token)
+    event = db_session.get(Event, 1)
+    event.starts_at = datetime.now(timezone.utc) - timedelta(minutes=5)
+    db_session.commit()
+
+    response = client.patch("/events/1", json=EVENT_PAYLOAD, headers=auth_headers(token))
+    assert response.status_code == 403
+
+
+def test_delete_event_already_started_rejected(client, db_session):
+    token = register_and_login(client, "owner@example.com")
+    create_event(client, token)
+    event = db_session.get(Event, 1)
+    event.starts_at = datetime.now(timezone.utc) - timedelta(minutes=5)
+    db_session.commit()
+
+    response = client.delete("/events/1", headers=auth_headers(token))
+    assert response.status_code == 403
 
 
 def test_delete_event_requires_owner(client):

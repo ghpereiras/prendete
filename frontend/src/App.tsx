@@ -49,6 +49,14 @@ export default function App() {
           }
         />
         <Route
+          path="/events/:eventId/edit"
+          element={
+            <ProtectedRoute>
+              <CreateEvent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/events/upcoming"
           element={
             <ProtectedRoute>

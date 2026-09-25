@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./client";
+import { apiDelete, apiGet, apiPatch, apiPost } from "./client";
 
 export interface Event {
   id: number;
@@ -38,6 +38,14 @@ export function getEvent(id: number): Promise<Event> {
 
 export function createEvent(data: EventCreateInput): Promise<Event> {
   return apiPost<Event>("/events", data);
+}
+
+export function updateEvent(id: number, data: EventCreateInput): Promise<Event> {
+  return apiPatch<Event>(`/events/${id}`, data);
+}
+
+export function deleteEvent(id: number): Promise<void> {
+  return apiDelete<void>(`/events/${id}`);
 }
 
 export function getInviteLink(eventId: number): Promise<{ invite_token: string }> {

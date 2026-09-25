@@ -65,6 +65,14 @@ def regenerate_invite_token(db: Session, event: Event) -> Event:
     return event
 
 
+def update_event(db: Session, event: Event, event_in: EventCreate) -> Event:
+    for field, value in event_in.model_dump().items():
+        setattr(event, field, value)
+    db.commit()
+    db.refresh(event)
+    return event
+
+
 def delete_event(db: Session, event: Event) -> None:
     db.delete(event)
     db.commit()

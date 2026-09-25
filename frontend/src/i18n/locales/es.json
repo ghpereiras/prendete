@@ -78,7 +78,12 @@
     "errorDurationRequired": "Ingresá una duración válida, mayor a 0",
     "errorMaxAttendeesRequired": "Ingresá un cupo máximo válido, mayor a 0",
     "errorRegistrationAlreadyClosed": "Con esos datos las inscripciones ya estarían cerradas al crear el evento; acortá el cierre de inscripciones o elegí otra fecha de inicio",
-    "hasErrors": "Hay errores que corregir antes de crear el evento"
+    "errorMaxAttendeesBelowAccepted": "El cupo máximo no puede ser menor a la cantidad de personas que ya confirmaron",
+    "hasErrors": "Hay errores que corregir antes de crear el evento",
+    "editTitle": "Editar evento",
+    "editSubmit": "Guardar cambios",
+    "editSubmitting": "Guardando...",
+    "editLoadError": "No se pudo cargar el evento para editar"
   },
   "eventDetail": {
     "spotsLeft": "Cupos disponibles: {{count}}",
@@ -92,7 +97,13 @@
     "registrationDeadline": "Inscripciones abiertas hasta el {{date}}",
     "registrationClosed": "Las inscripciones para este evento están cerradas",
     "notFound": "No se encontró el evento",
-    "linkError": "No se pudo obtener el link de invitación"
+    "linkError": "No se pudo obtener el link de invitación",
+    "edit": "Editar evento",
+    "delete": "Eliminar evento",
+    "confirmDelete": "Sí, eliminar",
+    "deleting": "Eliminando...",
+    "cancel": "Cancelar",
+    "deleteError": "No se pudo eliminar el evento"
   },
   "invitePreview": {
     "spotsLeft": "Quedan {{count}} lugares",

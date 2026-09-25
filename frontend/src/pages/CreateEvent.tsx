@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { createEvent, isRegistrationOpen } from "../api/events";
+import { useNavigate, useParams } from "react-router-dom";
+import { ApiError } from "../api/client";
+import { createEvent, getEvent, isRegistrationOpen, updateEvent } from "../api/events";
 import EventLocation from "../components/EventLocation";
 import LocationSearch from "../components/LocationSearch";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -22,6 +23,8 @@ interface FieldErrors {
 export default function CreateEvent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { eventId } = useParams<{ eventId: string }>();
+  const isEditing = Boolean(eventId);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -34,8 +37,32 @@ export default function CreateEvent() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(isEditing);
 
-  usePageTitle(t("createEvent.title"));
+  usePageTitle(t(isEditing ? "createEvent.editTitle" : "createEvent.title"));
+
+  useEffect(() => {
+    if (!eventId) return;
+    getEvent(Number(eventId))
+      .then((event) => {
+        setTitle(event.title);
+        setDescription(event.description ?? "");
+        setLocation(event.location ?? "");
+        setLocationDetails(event.location_details ?? "");
+        setMapsLink(event.maps_link ?? "");
+        setStartsAt(toDatetimeLocalValue(new Date(event.starts_at)));
+        setDurationHours(String(event.duration_minutes / 60));
+        setRegistrationDeadlineHours(
+          event.registration_deadline_minutes_before
+            ? String(event.registration_deadline_minutes_before / 60)
+            : "",
+        );
+        setMaxAttendees(String(event.max_attendees));
+      })
+      .catch(() => setLoadError("createEvent.editLoadError"))
+      .finally(() => setLoading(false));
+  }, [eventId]);
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
@@ -91,28 +118,46 @@ export default function CreateEvent() {
       ? Math.round(Number(registrationDeadlineHours) * 60)
       : null;
 
+    const payload = {
+      title,
+      description: description || undefined,
+      location: location || undefined,
+      location_details: locationDetails || undefined,
+      maps_link: mapsLink || undefined,
+      starts_at: startsAtIso,
+      duration_minutes: Math.round(Number(durationHours) * 60),
+      registration_deadline_minutes_before: registrationDeadlineMinutes ?? undefined,
+      max_attendees: Number(maxAttendees),
+    };
+
     setSubmitting(true);
     try {
-      const event = await createEvent({
-        title,
-        description: description || undefined,
-        location: location || undefined,
-        location_details: locationDetails || undefined,
-        maps_link: mapsLink || undefined,
-        starts_at: startsAtIso,
-        duration_minutes: Math.round(Number(durationHours) * 60),
-        registration_deadline_minutes_before: registrationDeadlineMinutes ?? undefined,
-        max_attendees: Number(maxAttendees),
-      });
+      const event = isEditing ? await updateEvent(Number(eventId), payload) : await createEvent(payload);
       navigate(`/events/${event.id}`);
-    } catch {
-      setSubmitError("createEvent.error");
+    } catch (err) {
+      setSubmitError(
+        err instanceof ApiError && err.status === 422
+          ? "createEvent.errorMaxAttendeesBelowAccepted"
+          : "createEvent.error",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+
+  if (loading) {
+    return <p className="page">{t("common.loading")}</p>;
+  }
+
+  if (loadError) {
+    return (
+      <div className="page">
+        <p className="error">{t(loadError)}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page">
@@ -202,7 +247,9 @@ export default function CreateEvent() {
           )}
         </label>
         <button type="submit" disabled={submitting}>
-          {submitting ? t("createEvent.submitting") : t("createEvent.submit")}
+          {submitting
+            ? t(isEditing ? "createEvent.editSubmitting" : "createEvent.submitting")
+            : t(isEditing ? "createEvent.editSubmit" : "createEvent.submit")}
         </button>
         {submitError ? (
           <p className="error">{t(submitError)}</p>

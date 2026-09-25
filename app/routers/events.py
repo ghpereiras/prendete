@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -93,6 +95,30 @@ def regenerate_invite_link(
     return EventInviteLink(invite_token=event.invite_token)
 
 
+@router.patch("/{event_id}", response_model=EventRead)
+def update_event(
+    event_id: int,
+    event_in: EventCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = crud.event.get_event(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the event owner can edit this event")
+    if event.starts_at <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=403, detail="Cannot edit an event that already happened")
+
+    accepted = crud.invitation.count_accepted(db, event.id, exclude_user_id=event.owner_id)
+    if event_in.max_attendees < accepted:
+        raise HTTPException(
+            status_code=422,
+            detail="max_attendees cannot be lower than the number of already accepted attendees",
+        )
+    return crud.event.update_event(db, event, event_in)
+
+
 @router.delete("/{event_id}", status_code=204)
 def delete_event(
     event_id: int,
@@ -104,4 +130,6 @@ def delete_event(
         raise HTTPException(status_code=404, detail="Event not found")
     if event.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event owner can delete this event")
+    if event.starts_at <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=403, detail="Cannot delete an event that already happened")
     crud.event.delete_event(db, event)
