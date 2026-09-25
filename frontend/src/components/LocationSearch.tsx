@@ -13,7 +13,8 @@ interface LocationSearchProps {
   onSelect: (result: LocationSearchResult) => void;
 }
 
-const DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 1000;
+const ADDRESS_TYPES = new Set(["street_address", "route", "premise", "subpremise"]);
 
 export default function LocationSearch({ value, onQueryChange, onSelect }: LocationSearchProps) {
   const { t } = useTranslation();
@@ -78,10 +79,14 @@ export default function LocationSearch({ value, onQueryChange, onSelect }: Locat
     setSearching(true);
     try {
       const { place } = await prediction.toPlace().fetchFields({
-        fields: ["id", "displayName", "formattedAddress", "location"],
+        fields: ["id", "displayName", "formattedAddress", "location", "types"],
       });
+      const isAddress = place.types?.some((type) => ADDRESS_TYPES.has(type)) ?? false;
+      const name = isAddress
+        ? place.formattedAddress ?? prediction.text.text
+        : place.displayName ?? place.formattedAddress ?? prediction.text.text;
       onSelect({
-        name: place.displayName ?? place.formattedAddress ?? prediction.text.text,
+        name,
         mapsLink: buildEmbedUrl(place.id),
       });
     } catch {
