@@ -11,6 +11,7 @@ import {
   leaveEvent,
   listAttendees,
   registrationDeadline,
+  updateAttendance,
   type Event,
   type EventAttendee,
 } from "../api/events";
@@ -37,6 +38,10 @@ export default function EventDetail() {
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
+  const [editingComment, setEditingComment] = useState(false);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [savingComment, setSavingComment] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   usePageTitle(event?.title ?? (error ? t(error) : t("common.loading")));
 
@@ -94,6 +99,29 @@ export default function EventDetail() {
     } catch {
       setLeaveError("eventDetail.leaveError");
       setLeaving(false);
+    }
+  }
+
+  function startEditingComment(currentComment: string | null) {
+    setCommentDraft(currentComment ?? "");
+    setCommentError(null);
+    setEditingComment(true);
+  }
+
+  async function handleSaveComment() {
+    if (!event) return;
+    setSavingComment(true);
+    setCommentError(null);
+    try {
+      const updated = await updateAttendance(event.id, commentDraft.trim() || null);
+      setAttendees((prev) =>
+        prev ? prev.map((a) => (a.user_id === user?.id ? { ...a, comment: updated.comment } : a)) : prev,
+      );
+      setEditingComment(false);
+    } catch {
+      setCommentError("eventDetail.commentError");
+    } finally {
+      setSavingComment(false);
     }
   }
 
@@ -157,18 +185,54 @@ export default function EventDetail() {
         <div className="attendee-list">
           <p>{t("eventDetail.attendees")}</p>
           <ul>
-            {attendees.map((attendee) => (
-              <li key={attendee.user_id}>
-                <div className="attendee-row">
-                  <Avatar avatarUrl={avatarUrl(attendee.avatar_url)} fullName={attendee.full_name} />
-                  {attendee.full_name}
-                  {attendee.is_owner && (
-                    <span className="owner-badge">{t("eventDetail.ownerBadge")}</span>
+            {attendees.map((attendee) => {
+              const isSelf = !attendee.is_owner && attendee.user_id === user?.id;
+              return (
+                <li key={attendee.user_id}>
+                  <div className="attendee-row">
+                    <Avatar avatarUrl={avatarUrl(attendee.avatar_url)} fullName={attendee.full_name} />
+                    {attendee.full_name}
+                    {attendee.is_owner && (
+                      <span className="owner-badge">{t("eventDetail.ownerBadge")}</span>
+                    )}
+                  </div>
+                  {isSelf && editingComment ? (
+                    <div className="join-form">
+                      <label className="sr-only" htmlFor="attendance-comment">
+                        {t("eventDetail.commentLabel")}
+                      </label>
+                      <textarea
+                        id="attendance-comment"
+                        value={commentDraft}
+                        onChange={(e) => setCommentDraft(e.target.value)}
+                        rows={2}
+                        maxLength={500}
+                      />
+                      <div className="form-actions">
+                        <button type="button" onClick={() => setEditingComment(false)} disabled={savingComment}>
+                          {t("eventDetail.cancel")}
+                        </button>
+                        <button type="button" onClick={handleSaveComment} disabled={savingComment}>
+                          {savingComment ? t("eventDetail.savingComment") : t("eventDetail.saveComment")}
+                        </button>
+                      </div>
+                      {commentError && <p className="error">{t(commentError)}</p>}
+                    </div>
+                  ) : (
+                    <>
+                      {attendee.comment && <p className="attendee-comment">"{attendee.comment}"</p>}
+                      {isSelf && (
+                        <button type="button" onClick={() => startEditingComment(attendee.comment)}>
+                          {attendee.comment
+                            ? t("eventDetail.editComment")
+                            : t("eventDetail.addComment")}
+                        </button>
+                      )}
+                    </>
                   )}
-                </div>
-                {attendee.comment && <p className="attendee-comment">"{attendee.comment}"</p>}
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

@@ -173,6 +173,8 @@ En `/events/:id`, el dueño ve los botones "Editar evento" y "Eliminar evento" �
 
 En `/events/:id`, quien participa y no es el dueño ve el botón "Salir del evento" (misma confirmación inline que "Eliminar evento"). Pega a `DELETE /events/{event_id}/attendance`, que borra directamente la fila de `attendees` — no queda ningún registro de que participaste, y el cupo se libera al instante para que otro pueda sumarse. Después te redirige al home. El dueño nunca ve este botón: para borrar su propio evento existe "Eliminar evento".
 
+En esa misma fila, quien participa también puede editar su propio comentario ("Editar comentario" / "Agregar comentario" si no había dejado uno) — abre el mismo tipo de textarea que al sumarse por primera vez y pega a `PATCH /events/{event_id}/attendance`. Nadie más puede editar el comentario ajeno: el endpoint solo actúa sobre la fila de `attendees` del propio usuario autenticado.
+
 ## Pendiente
 
 - Refresh tokens / logout server-side (los JWT actuales expiran solos, no hay revocación).

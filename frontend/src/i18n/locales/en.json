@@ -107,7 +107,13 @@
     "leave": "Leave event",
     "confirmLeave": "Yes, leave",
     "leaving": "Leaving...",
-    "leaveError": "Couldn't leave the event"
+    "leaveError": "Couldn't leave the event",
+    "commentLabel": "Comment",
+    "editComment": "Edit comment",
+    "addComment": "Add comment",
+    "saveComment": "Save",
+    "savingComment": "Saving...",
+    "commentError": "Couldn't save the comment"
   },
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",

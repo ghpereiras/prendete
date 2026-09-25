@@ -107,7 +107,13 @@
     "leave": "Salir del evento",
     "confirmLeave": "Sí, salir",
     "leaving": "Saliendo...",
-    "leaveError": "No se pudo salir del evento"
+    "leaveError": "No se pudo salir del evento",
+    "commentLabel": "Comentario",
+    "editComment": "Editar comentario",
+    "addComment": "Agregar comentario",
+    "saveComment": "Guardar",
+    "savingComment": "Guardando...",
+    "commentError": "No se pudo guardar el comentario"
   },
   "invitePreview": {
     "spotsLeft": "Quedan {{count}} lugares",
