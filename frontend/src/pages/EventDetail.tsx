@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ApiError, avatarUrl } from "../api/client";
 import {
   endsAt,
@@ -64,7 +64,6 @@ export default function EventDetail() {
     return (
       <div className="page">
         <p className="error">{t(error)}</p>
-        <Link to="/">{t("eventDetail.backHome")}</Link>
       </div>
     );
   }
@@ -134,7 +133,6 @@ export default function EventDetail() {
         </div>
       )}
 
-      <Link to="/">{t("eventDetail.backHome")}</Link>
     </div>
   );
 }

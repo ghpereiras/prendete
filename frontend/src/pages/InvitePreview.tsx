@@ -65,7 +65,6 @@ export default function InvitePreview() {
     return (
       <div className="page">
         <p className="error">{t("invitePreview.notFound")}</p>
-        <Link to="/">{t("eventDetail.backHome")}</Link>
       </div>
     );
   }

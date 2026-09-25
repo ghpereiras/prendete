@@ -92,8 +92,7 @@
     "registrationDeadline": "Inscripciones abiertas hasta el {{date}}",
     "registrationClosed": "Las inscripciones para este evento están cerradas",
     "notFound": "No se encontró el evento",
-    "linkError": "No se pudo obtener el link de invitación",
-    "backHome": "Volver al inicio"
+    "linkError": "No se pudo obtener el link de invitación"
   },
   "invitePreview": {
     "spotsLeft": "Quedan {{count}} lugares",

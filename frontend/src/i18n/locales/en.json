@@ -92,8 +92,7 @@
     "registrationDeadline": "Registration open until {{date}}",
     "registrationClosed": "Registration for this event is closed",
     "notFound": "Event not found",
-    "linkError": "Couldn't get the invite link",
-    "backHome": "Back home"
+    "linkError": "Couldn't get the invite link"
   },
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",
