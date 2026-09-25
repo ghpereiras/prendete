@@ -18,7 +18,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     events: Mapped[list["Event"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
-    invitations: Mapped[list["Invitation"]] = relationship(back_populates="invitee", cascade="all, delete-orphan")
+    attendances: Mapped[list["Attendee"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
     @property
     def avatar_url(self) -> str | None:

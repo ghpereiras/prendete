@@ -103,7 +103,11 @@
     "confirmDelete": "Yes, delete",
     "deleting": "Deleting...",
     "cancel": "Cancel",
-    "deleteError": "Couldn't delete the event"
+    "deleteError": "Couldn't delete the event",
+    "leave": "Leave event",
+    "confirmLeave": "Yes, leave",
+    "leaving": "Leaving...",
+    "leaveError": "Couldn't leave the event"
   },
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",

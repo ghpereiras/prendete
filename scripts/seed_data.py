@@ -1,9 +1,9 @@
-"""Populates the database with dummy users, events (past and future) and invitations.
+"""Populates the database with dummy users, events (past and future) and attendees.
 
 Usage (from the project root, with the backend venv active):
     python scripts/seed_data.py
 
-Safe to re-run: it wipes every user/event/invitation before seeding again
+Safe to re-run: it wipes every user/event/attendee before seeding again
 (only makes sense against a dev database — never point this at production).
 """
 
@@ -15,8 +15,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.database import SessionLocal  # noqa: E402
+from app.models.attendee import Attendee  # noqa: E402
 from app.models.event import Event  # noqa: E402
-from app.models.invitation import Invitation, InvitationStatus  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.security import hash_password  # noqa: E402
 
@@ -75,7 +75,7 @@ COMMENTS = [
 
 
 def wipe(db) -> None:
-    db.query(Invitation).delete()
+    db.query(Attendee).delete()
     db.query(Event).delete()
     db.query(User).delete()
     db.commit()
@@ -93,7 +93,7 @@ def seed_users(db) -> dict[str, User]:
     return users
 
 
-def seed_events(db, users: dict[str, User], specs: list[tuple], *, mostly_accepted: bool) -> None:
+def seed_events(db, users: dict[str, User], specs: list[tuple]) -> None:
     now = datetime.now(timezone.utc)
     for owner_email, title, days_offset, duration, max_attendees, location, deadline_minutes in specs:
         owner = users[owner_email]
@@ -111,26 +111,13 @@ def seed_events(db, users: dict[str, User], specs: list[tuple], *, mostly_accept
         db.flush()
 
         candidates = [u for email, u in users.items() if email != owner_email]
-        invitees = random.sample(candidates, k=random.randint(3, min(6, len(candidates))))
-        for invitee in invitees:
-            if mostly_accepted:
-                status = random.choices(
-                    [InvitationStatus.ACCEPTED, InvitationStatus.DECLINED],
-                    weights=[85, 15],
-                )[0]
-            else:
-                status = random.choices(
-                    [InvitationStatus.ACCEPTED, InvitationStatus.PENDING, InvitationStatus.DECLINED],
-                    weights=[50, 40, 10],
-                )[0]
-            responded_at = now if status != InvitationStatus.PENDING else None
+        attendees = random.sample(candidates, k=random.randint(3, min(6, len(candidates))))
+        for attendee in attendees:
             db.add(
-                Invitation(
+                Attendee(
                     event_id=event.id,
-                    invitee_id=invitee.id,
-                    status=status,
-                    responded_at=responded_at,
-                    comment=random.choice(COMMENTS) if status == InvitationStatus.ACCEPTED else None,
+                    user_id=attendee.id,
+                    comment=random.choice(COMMENTS),
                 )
             )
     db.commit()
@@ -142,8 +129,8 @@ def main() -> None:
     try:
         wipe(db)
         users = seed_users(db)
-        seed_events(db, users, PAST_EVENTS, mostly_accepted=True)
-        seed_events(db, users, FUTURE_EVENTS, mostly_accepted=False)
+        seed_events(db, users, PAST_EVENTS)
+        seed_events(db, users, FUTURE_EVENTS)
     finally:
         db.close()
 

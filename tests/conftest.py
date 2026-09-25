@@ -37,7 +37,7 @@ def engine():
 @pytest.fixture()
 def db_session(engine):
     with engine.connect() as conn:
-        conn.execute(text("TRUNCATE TABLE invitations, events, users RESTART IDENTITY CASCADE"))
+        conn.execute(text("TRUNCATE TABLE attendees, events, users RESTART IDENTITY CASCADE"))
         conn.commit()
 
     session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()

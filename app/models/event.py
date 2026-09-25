@@ -32,7 +32,7 @@ class Event(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     owner: Mapped["User"] = relationship(back_populates="events")
-    invitations: Mapped[list["Invitation"]] = relationship(back_populates="event", cascade="all, delete-orphan")
+    attendees: Mapped[list["Attendee"]] = relationship(back_populates="event", cascade="all, delete-orphan")
 
     @property
     def owner_name(self) -> str:

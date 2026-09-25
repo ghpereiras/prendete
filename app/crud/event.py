@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
+from app.models.attendee import Attendee
 from app.models.event import Event, generate_invite_token
-from app.models.invitation import Invitation, InvitationStatus
 from app.schemas.event import EventCreate
 
 
@@ -25,9 +25,7 @@ def get_event_by_token(db: Session, invite_token: str) -> Event | None:
 
 
 def list_events_for_user(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> list[Event]:
-    joined_event_ids = select(Invitation.event_id).where(
-        Invitation.invitee_id == user_id, Invitation.status == InvitationStatus.ACCEPTED
-    )
+    joined_event_ids = select(Attendee.event_id).where(Attendee.user_id == user_id)
     stmt = (
         select(Event)
         .options(joinedload(Event.owner))
@@ -42,14 +40,10 @@ def list_events_for_user(db: Session, user_id: int, skip: int = 0, limit: int = 
 def can_view_event(db: Session, event: Event, user_id: int) -> bool:
     if event.owner_id == user_id:
         return True
-    invitation = db.scalar(
-        select(Invitation).where(
-            Invitation.event_id == event.id,
-            Invitation.invitee_id == user_id,
-            Invitation.status == InvitationStatus.ACCEPTED,
-        )
+    attendee = db.scalar(
+        select(Attendee).where(Attendee.event_id == event.id, Attendee.user_id == user_id)
     )
-    return invitation is not None
+    return attendee is not None
 
 
 def is_registration_open(event: Event) -> bool:

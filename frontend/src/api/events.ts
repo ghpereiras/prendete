@@ -85,18 +85,24 @@ export function previewInvite(token: string): Promise<EventInvitePreview> {
   return apiGet<EventInvitePreview>(`/events/invite/${token}`);
 }
 
-export interface Invitation {
+export interface Attendance {
   id: number;
   event_id: number;
-  invitee_id: number;
-  status: "pending" | "accepted" | "declined";
+  user_id: number;
   comment: string | null;
-  invited_at: string;
-  responded_at: string | null;
+  joined_at: string;
 }
 
-export function joinEvent(token: string, comment?: string): Promise<Invitation> {
-  return apiPost<Invitation>(`/events/invite/${token}/join`, { comment: comment || undefined });
+export function joinEvent(token: string, comment?: string): Promise<Attendance> {
+  return apiPost<Attendance>(`/events/invite/${token}/join`, { comment: comment || undefined });
+}
+
+export function updateAttendance(eventId: number, comment: string | null): Promise<Attendance> {
+  return apiPatch<Attendance>(`/events/${eventId}/attendance`, { comment });
+}
+
+export function leaveEvent(eventId: number): Promise<void> {
+  return apiDelete<void>(`/events/${eventId}/attendance`);
 }
 
 export function endsAt(startsAt: string, durationMinutes: number): Date {

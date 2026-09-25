@@ -1,6 +1,6 @@
 # Privento
 
-Gestión de eventos: usuarios, eventos e invitaciones.
+Gestión de eventos: usuarios, eventos y asistentes.
 
 - Backend: FastAPI + SQLAlchemy + Alembic + PostgreSQL (raíz del repo)
 - Frontend: React + Vite + TypeScript ([frontend/](frontend))
@@ -44,13 +44,13 @@ Docs interactivas en `http://localhost:8000/docs`.
 
 ## Datos de prueba
 
-`scripts/seed_data.py` **borra** todos los usuarios/eventos/invitaciones existentes y carga 10 usuarios dummy con 10 eventos pasados y 10 futuros (con invitaciones en distintos estados). Solo para desarrollo, nunca contra producción:
+`scripts/seed_data.py` **borra** todos los usuarios/eventos/asistentes existentes y carga 10 usuarios dummy con 10 eventos pasados y 10 futuros (cada uno con un grupo aleatorio de asistentes). Solo para desarrollo, nunca contra producción:
 
 ```bash
 python scripts/seed_data.py
 ```
 
-Todos los usuarios comparten la contraseña `password123`; `demo@example.com` es una buena cuenta para explorar (mezcla de eventos propios e invitaciones a eventos de otros).
+Todos los usuarios comparten la contraseña `password123`; `demo@example.com` es una buena cuenta para explorar (mezcla de eventos propios y eventos de otros a los que asiste).
 
 ## Autenticación
 
@@ -84,15 +84,17 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `PATCH /events/{id}` — edita el evento (mismos campos y validaciones que `POST /events`); solo el dueño, y solo si el evento todavía no empezó (`403` si ya arrancó). `422` si el `max_attendees` nuevo queda por debajo de la cantidad de invitados ya aceptados
 - `DELETE /events/{id}` — solo el dueño, y solo si el evento todavía no empezó (`403` si ya arrancó)
 
-### Invitaciones por link
+### Invitaciones por link y asistentes
+
+El modelo es simple a propósito: una fila en `attendees` (`app/models/attendee.py`) significa "este usuario va a este evento", sin estados intermedios (no hay `pending`/`declined` — eso existió en una versión anterior y se simplificó). Sumarse crea la fila, abandonar la borra directamente y libera el cupo al instante.
 
 - `GET /events/{event_id}/invite-link` (solo el dueño) — devuelve el `invite_token` para armar el link a compartir
 - `POST /events/{event_id}/invite-link/regenerate` (solo el dueño) — invalida el link anterior y genera uno nuevo
 - `GET /events/invite/{invite_token}` (público, sin login) — preview del evento y cupos restantes, para mostrar antes de pedir login/registro
 - `POST /events/invite/{invite_token}/join` (autenticado) — se suma al evento; body opcional `{"comment": "..."}` (máx. 500 caracteres) que el dueño ve en la lista de asistentes; `409` si ya está sumado, si el evento está lleno, o si ya pasó el cierre de inscripciones (`registration_deadline_minutes_before`, o la fecha de inicio del evento si no se definió uno)
-- `GET /events/{event_id}/invitations` (solo el dueño) — lista las invitaciones (todas, cualquier estado), con `invitee_id`
-- `GET /events/{event_id}/attendees` (dueño o participante aceptado) — lista para mostrar en el frontend: dueño primero (`is_owner: true`) y después cada invitado aceptado, con nombre y email. El `comment` que cada uno dejó al sumarse solo viaja en la respuesta si quien consulta es el dueño del evento o el propio autor del comentario; para el resto de los participantes viene en `null`
-- `PATCH /invitations/{id}` — cambiar el propio estado (`declined` para salir del evento y liberar cupo, `accepted` para volver a sumarse si hay lugar), solo el invitado
+- `PATCH /events/{event_id}/attendance` — actualiza tu propio comentario; `404` si no estás participando en el evento
+- `DELETE /events/{event_id}/attendance` — **abandonar el evento**: borra tu fila de asistente y libera el cupo al instante; `403` si sos el dueño (para eso está `DELETE /events/{id}`), `404` si no estabas participando
+- `GET /events/{event_id}/attendees` (dueño o participante) — lista para mostrar en el frontend: dueño primero (`is_owner: true`) y después cada asistente, ordenados por `joined_at` (orden en que se sumaron), con nombre y email. El `comment` que cada uno dejó al sumarse solo viaja en la respuesta si quien consulta es el dueño del evento o el propio autor del comentario; para el resto de los participantes viene en `null`
 
 ## Tests
 
@@ -166,6 +168,10 @@ En `/profile`, el botón "Editar perfil" cambia a un formulario (mismo `AvatarPi
 ### Editar y eliminar eventos
 
 En `/events/:id`, el dueño ve los botones "Editar evento" y "Eliminar evento" — solo mientras el evento no haya empezado (`event.starts_at` a futuro); una vez que arrancó, dejan de mostrarse tanto para el dueño como para cualquier participante. "Editar evento" lleva a `/events/:id/edit`, que reusa el mismo formulario y componente de `CreateEvent.tsx` (incluida la búsqueda de ubicación) precargado con los datos actuales y pega a `PATCH /events/{id}` en vez de `POST /events`. "Eliminar evento" pide una confirmación inline (Cancelar / Sí, eliminar) antes de pegar a `DELETE /events/{id}` y volver al home. El backend valida ambas operaciones server-side además de ocultarlas en el frontend (dueño y evento no empezado), y `PATCH` además rechaza bajar el `max_attendees` por debajo de la cantidad de invitados ya aceptados.
+
+### Abandonar un evento
+
+En `/events/:id`, quien participa y no es el dueño ve el botón "Salir del evento" (misma confirmación inline que "Eliminar evento"). Pega a `DELETE /events/{event_id}/attendance`, que borra directamente la fila de `attendees` — no queda ningún registro de que participaste, y el cupo se libera al instante para que otro pueda sumarse. Después te redirige al home. El dueño nunca ve este botón: para borrar su propio evento existe "Eliminar evento".
 
 ## Pendiente
 

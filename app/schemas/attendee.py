@@ -2,25 +2,20 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.invitation import InvitationStatus
 
-
-class InvitationJoinInput(BaseModel):
+class JoinInput(BaseModel):
     comment: str | None = Field(default=None, max_length=500)
 
 
-class InvitationUpdate(BaseModel):
-    status: InvitationStatus
+class AttendanceUpdate(BaseModel):
     comment: str | None = Field(default=None, max_length=500)
 
 
-class InvitationRead(BaseModel):
+class AttendeeRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     event_id: int
-    invitee_id: int
-    status: InvitationStatus
+    user_id: int
     comment: str | None
-    invited_at: datetime
-    responded_at: datetime | None
+    joined_at: datetime

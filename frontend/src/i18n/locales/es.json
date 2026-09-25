@@ -103,7 +103,11 @@
     "confirmDelete": "Sí, eliminar",
     "deleting": "Eliminando...",
     "cancel": "Cancelar",
-    "deleteError": "No se pudo eliminar el evento"
+    "deleteError": "No se pudo eliminar el evento",
+    "leave": "Salir del evento",
+    "confirmLeave": "Sí, salir",
+    "leaving": "Saliendo...",
+    "leaveError": "No se pudo salir del evento"
   },
   "invitePreview": {
     "spotsLeft": "Quedan {{count}} lugares",

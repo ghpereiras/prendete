@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, events, invitations, users
+from app.routers import attendees, auth, events, users
 
 app = FastAPI(title="Privento API")
 
@@ -16,7 +16,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(events.router)
-app.include_router(invitations.router)
+app.include_router(attendees.router)
 
 
 @app.get("/health")

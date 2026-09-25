@@ -36,7 +36,7 @@ def preview_invite(invite_token: str, db: Session = Depends(get_db)):
     event = crud.event.get_event_by_token(db, invite_token)
     if not event:
         raise HTTPException(status_code=404, detail="Invalid invite link")
-    accepted = crud.invitation.count_accepted(db, event.id, exclude_user_id=event.owner_id)
+    accepted = crud.attendee.count_attendees(db, event.id)
     return EventInvitePreview(
         id=event.id,
         title=event.title,
@@ -110,7 +110,7 @@ def update_event(
     if event.starts_at <= datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Cannot edit an event that already happened")
 
-    accepted = crud.invitation.count_accepted(db, event.id, exclude_user_id=event.owner_id)
+    accepted = crud.attendee.count_attendees(db, event.id)
     if event_in.max_attendees < accepted:
         raise HTTPException(
             status_code=422,

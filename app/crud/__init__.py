@@ -1,3 +1,3 @@
-from app.crud import user, event, invitation
+from app.crud import user, event, attendee
 
-__all__ = ["user", "event", "invitation"]
+__all__ = ["user", "event", "attendee"]

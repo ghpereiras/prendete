@@ -8,6 +8,7 @@ import {
   getEvent,
   getInviteLink,
   isRegistrationOpen,
+  leaveEvent,
   listAttendees,
   registrationDeadline,
   type Event,
@@ -33,6 +34,9 @@ export default function EventDetail() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
 
   usePageTitle(event?.title ?? (error ? t(error) : t("common.loading")));
 
@@ -80,6 +84,19 @@ export default function EventDetail() {
     }
   }
 
+  async function handleLeave() {
+    if (!event) return;
+    setLeaving(true);
+    setLeaveError(null);
+    try {
+      await leaveEvent(event.id);
+      navigate("/");
+    } catch {
+      setLeaveError("eventDetail.leaveError");
+      setLeaving(false);
+    }
+  }
+
   if (error) {
     return (
       <div className="page">
@@ -94,7 +111,9 @@ export default function EventDetail() {
 
   const acceptedCount = attendees ? attendees.filter((a) => !a.is_owner).length : null;
   const spotsLeft = acceptedCount === null ? null : Math.max(event.max_attendees - acceptedCount, 0);
-  const canManage = user?.id === event.owner_id && new Date(event.starts_at).getTime() > Date.now();
+  const isOwner = user?.id === event.owner_id;
+  const canManage = isOwner && new Date(event.starts_at).getTime() > Date.now();
+  const canLeave = !isOwner;
 
   return (
     <div className="page">
@@ -178,6 +197,30 @@ export default function EventDetail() {
             </button>
           )}
           {deleteError && <p className="error">{t(deleteError)}</p>}
+        </div>
+      )}
+
+      {canLeave && (
+        <div className="event-actions">
+          {confirmingLeave ? (
+            <div className="form-actions">
+              <button type="button" onClick={() => setConfirmingLeave(false)} disabled={leaving}>
+                {t("eventDetail.cancel")}
+              </button>
+              <button type="button" className="danger" onClick={handleLeave} disabled={leaving}>
+                {leaving ? t("eventDetail.leaving") : t("eventDetail.confirmLeave")}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="button-link danger"
+              onClick={() => setConfirmingLeave(true)}
+            >
+              {t("eventDetail.leave")}
+            </button>
+          )}
+          {leaveError && <p className="error">{t(leaveError)}</p>}
         </div>
       )}
     </div>

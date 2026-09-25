@@ -48,8 +48,8 @@ export default function InvitePreview() {
     setJoinError(null);
     setJoining(true);
     try {
-      const invitation = await joinEvent(token, comment);
-      navigate(`/events/${invitation.event_id}`);
+      const attendance = await joinEvent(token, comment);
+      navigate(`/events/${attendance.event_id}`);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setJoinError("invitePreview.alreadyJoinedOrFull");

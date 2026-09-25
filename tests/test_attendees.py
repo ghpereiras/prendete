@@ -154,7 +154,6 @@ def test_join_event_success(client):
     response = client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
     assert response.status_code == 201
     body = response.json()
-    assert body["status"] == "accepted"
     assert body["event_id"] == 1
     assert body["comment"] is None
 
@@ -276,11 +275,8 @@ def test_leave_event_frees_capacity_and_allows_rejoin(client):
     full_response = client.post(f"/events/invite/{token}/join", headers=auth_headers(other_token))
     assert full_response.status_code == 409
 
-    leave_response = client.patch(
-        "/invitations/1", json={"status": "declined"}, headers=auth_headers(friend_token)
-    )
-    assert leave_response.status_code == 200
-    assert leave_response.json()["status"] == "declined"
+    leave_response = client.delete("/events/1/attendance", headers=auth_headers(friend_token))
+    assert leave_response.status_code == 204
 
     preview = client.get(f"/events/invite/{token}").json()
     assert preview["spots_left"] == 1
@@ -289,7 +285,30 @@ def test_leave_event_frees_capacity_and_allows_rejoin(client):
     assert rejoin_response.status_code == 201
 
 
-def test_update_invitation_can_set_comment(client):
+def test_leave_event_requires_being_a_participant(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    stranger_token = register_and_login(client, "stranger@example.com")
+    create_event(client, owner_token)
+
+    response = client.delete("/events/1/attendance", headers=auth_headers(stranger_token))
+    assert response.status_code == 404
+
+
+def test_leave_event_rejected_for_owner(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    create_event(client, owner_token)
+
+    response = client.delete("/events/1/attendance", headers=auth_headers(owner_token))
+    assert response.status_code == 403
+
+
+def test_leave_nonexistent_event_404(client):
+    token = register_and_login(client, "owner@example.com")
+    response = client.delete("/events/999/attendance", headers=auth_headers(token))
+    assert response.status_code == 404
+
+
+def test_update_attendance_can_set_comment(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")
     create_event(client, owner_token)
@@ -297,41 +316,23 @@ def test_update_invitation_can_set_comment(client):
     client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
 
     response = client.patch(
-        "/invitations/1",
-        json={"status": "accepted", "comment": "Llego un poco tarde"},
+        "/events/1/attendance",
+        json={"comment": "Llego un poco tarde"},
         headers=auth_headers(friend_token),
     )
     assert response.status_code == 200
     assert response.json()["comment"] == "Llego un poco tarde"
 
 
-def test_update_invitation_requires_being_the_invitee(client):
+def test_update_attendance_requires_being_a_participant(client):
     owner_token = register_and_login(client, "owner@example.com")
-    friend_token = register_and_login(client, "friend@example.com")
     stranger_token = register_and_login(client, "stranger@example.com")
     create_event(client, owner_token)
-    token = get_invite_token(client, 1, owner_token)
-    client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
 
     response = client.patch(
-        "/invitations/1", json={"status": "declined"}, headers=auth_headers(stranger_token)
+        "/events/1/attendance", json={"comment": "hola"}, headers=auth_headers(stranger_token)
     )
-    assert response.status_code == 403
-
-
-def test_list_invitations_requires_owner(client):
-    owner_token = register_and_login(client, "owner@example.com")
-    friend_token = register_and_login(client, "friend@example.com")
-    create_event(client, owner_token)
-    token = get_invite_token(client, 1, owner_token)
-    client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
-
-    response = client.get("/events/1/invitations", headers=auth_headers(friend_token))
-    assert response.status_code == 403
-
-    response = client.get("/events/1/invitations", headers=auth_headers(owner_token))
-    assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert response.status_code == 404
 
 
 def test_regenerate_invite_link_invalidates_old_token(client):
@@ -350,7 +351,7 @@ def test_regenerate_invite_link_invalidates_old_token(client):
     assert client.get(f"/events/invite/{new_token}").status_code == 200
 
 
-def test_list_attendees_shows_owner_first_then_accepted(client):
+def test_list_attendees_shows_owner_first_then_attendees(client):
     owner_token = register_and_login(client, "owner@example.com", full_name="Owner Person")
     friend_token = register_and_login(client, "friend@example.com", full_name="Friend Person")
     create_event(client, owner_token)
@@ -367,13 +368,13 @@ def test_list_attendees_shows_owner_first_then_accepted(client):
     assert body[1]["is_owner"] is False
 
 
-def test_list_attendees_excludes_declined(client):
+def test_list_attendees_excludes_users_who_left(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")
     create_event(client, owner_token)
     token = get_invite_token(client, 1, owner_token)
     client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
-    client.patch("/invitations/1", json={"status": "declined"}, headers=auth_headers(friend_token))
+    client.delete("/events/1/attendance", headers=auth_headers(friend_token))
 
     response = client.get("/events/1/attendees", headers=auth_headers(owner_token))
     assert len(response.json()) == 1
