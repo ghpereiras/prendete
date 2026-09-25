@@ -42,6 +42,16 @@ uvicorn app.main:app --reload
 
 Docs interactivas en `http://localhost:8000/docs`.
 
+## Datos de prueba
+
+`scripts/seed_data.py` **borra** todos los usuarios/eventos/invitaciones existentes y carga 10 usuarios dummy con 10 eventos pasados y 10 futuros (con invitaciones en distintos estados). Solo para desarrollo, nunca contra producción:
+
+```bash
+python scripts/seed_data.py
+```
+
+Todos los usuarios comparten la contraseña `password123`; `demo@example.com` es una buena cuenta para explorar (mezcla de eventos propios e invitaciones a eventos de otros).
+
 ## Autenticación
 
 Todas las rutas salvo `POST /users` (registro) y `POST /auth/login` requieren un JWT.
