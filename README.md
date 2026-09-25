@@ -119,6 +119,14 @@ npm run dev
 
 Corre en `http://localhost:5173`. El backend debe estar corriendo en `http://localhost:8000` (CORS ya configurado para ese origen en `app/main.py`).
 
+`VITE_GOOGLE_MAPS_API_KEY` en `.env` hace falta para poder cargar una ubicación al crear un evento — sin ella, el resto de la app funciona, pero el campo "Ubicación" queda deshabilitado (ver "Ubicación con Google Maps" más abajo, no hay forma manual de cargarla). Para conseguirla:
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → proyecto nuevo → activar facturación (Google pide una tarjeta, incluso para uso que queda dentro de las cuotas gratis).
+2. Habilitar, cada una por separado: **Maps JavaScript API** (puede figurar como "Dynamic Maps" en el buscador de APIs), **Places API (New)**, **Maps Embed API**.
+3. Credenciales → crear clave de API.
+4. Restringirla: por "Referentes HTTP" a tu dominio (`localhost:5173/*` en dev), y por "Restricciones de la API" a las tres de arriba.
+5. Pegarla en `frontend/.env` como `VITE_GOOGLE_MAPS_API_KEY=...`.
+
 Páginas:
 
 - `/login`, `/register` — públicas
@@ -140,12 +148,13 @@ El formulario de creación pide fecha de inicio + **duración en horas** (no una
 
 ### Ubicación con Google Maps
 
-El campo "Link de Google Maps" del formulario de creación es opcional y acepta dos tipos de link, sin necesidad de API key:
+El campo "Ubicación" del formulario de creación **es** el buscador de Google Maps (`components/LocationSearch.tsx`) — no hay forma de pegar un link a mano, ni un campo de link separado. Requiere `VITE_GOOGLE_MAPS_API_KEY` configurada en `frontend/.env`, con Maps JavaScript API + Places API (New) + Maps Embed API habilitadas en el proyecto de Google Cloud (ver "Frontend — Setup" más arriba); si la key no está o falla la carga, el campo se deshabilita y muestra un error — no hay fallback de texto libre.
 
-- **Link de "Compartir"** (`maps.app.goo.gl/...` o `google.com/maps/place/...`): Google no permite embeberlo en un iframe, así que se muestra un botón "Ver en Google Maps" que abre en pestaña nueva.
-- **Link de "Insertar un mapa"** (Compartir → *Insertar un mapa*): se muestra el mapa incrustado directamente en la página. El campo acepta tanto pegar solo el link (`google.com/maps/embed?pb=...`) como pegar el `<iframe>` completo que copia Google — el backend extrae la URL del `src` antes de guardar (`app/utils/maps.py: extract_maps_url`, aplicado en `EventCreate.maps_link`), así que no hace falta que el usuario edite el HTML a mano.
+Autocompletado en vivo mientras se escribe (Places API New — `AutocompleteSuggestion`, agrupado en sesiones con `AutocompleteSessionToken` para el billing). Al elegir un resultado, se pide el detalle del lugar (`Place.fetchFields`) y con el `place_id` exacto se arma directo `https://www.google.com/maps/embed/v1/place?key=...&q=place_id:<id>` (`utils/googleMaps.ts: buildEmbedUrl`), que se guarda tal cual en `maps_link` — el backend ya no transforma ni valida ese campo, confía en que el frontend siempre manda un link embebible real. El pin queda exacto (viene del `place_id`, no de coordenadas parseadas de una URL) y con el nombre real del lugar.
 
-La detección de si es embebible es automática en el frontend ([utils/maps.ts](frontend/src/utils/maps.ts)) según el formato de la URL ya normalizada. Si no se completa ningún link, el evento queda solo con el texto libre de "Ubicación".
+Si después de elegir un resultado el usuario edita el texto de "Ubicación" a mano, se descarta el link guardado (para no guardar un mapa que ya no corresponde al texto) — el evento queda con esa ubicación como texto libre, sin mapa incrustado.
+
+La detección de si un `maps_link` ya guardado es embebible sigue siendo automática en el frontend ([utils/maps.ts](frontend/src/utils/maps.ts)) para cuando se muestra el evento. Si no se elige ningún lugar, el evento queda sin mapa.
 
 ### Foto de perfil
 

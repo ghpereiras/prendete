@@ -375,6 +375,44 @@
   font-size: 12px;
 }
 
+.location-search {
+  position: relative;
+}
+
+.location-search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.location-search-suggestions button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.location-search-suggestions button:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
 .countdown {
   font-family: ui-monospace, Consolas, monospace;
   font-size: 18px;

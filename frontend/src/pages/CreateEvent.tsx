@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { createEvent, isRegistrationOpen } from "../api/events";
+import EventLocation from "../components/EventLocation";
+import LocationSearch from "../components/LocationSearch";
 import { usePageTitle } from "../context/PageTitleContext";
 
 function toDatetimeLocalValue(date: Date): string {
@@ -128,10 +130,17 @@ export default function CreateEvent() {
             rows={3}
           />
         </label>
-        <label>
-          {t("createEvent.location")}
-          <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
-        </label>
+        <LocationSearch
+          value={location}
+          onQueryChange={(value) => {
+            setLocation(value);
+            setMapsLink("");
+          }}
+          onSelect={(result) => {
+            setLocation(result.name);
+            setMapsLink(result.mapsLink);
+          }}
+        />
         <label>
           {t("createEvent.locationDetails")}
           <input
@@ -141,16 +150,7 @@ export default function CreateEvent() {
             placeholder={t("createEvent.locationDetailsPlaceholder")}
           />
         </label>
-        <label>
-          {t("createEvent.mapsLink")}
-          <input
-            type="text"
-            value={mapsLink}
-            onChange={(e) => setMapsLink(e.target.value)}
-            placeholder="https://www.google.com/maps/..."
-          />
-          <span className="field-hint">{t("createEvent.mapsLinkHint")}</span>
-        </label>
+        <EventLocation location={location || null} locationDetails={locationDetails || null} mapsLink={mapsLink || null} />
         <label>
           {t("createEvent.startsAt")}
           <input
