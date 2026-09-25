@@ -7,6 +7,15 @@ import AuthTopBar from "../components/AuthTopBar";
 import AvatarPicker from "../components/AvatarPicker";
 import { useAuth } from "../context/AuthContext";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 8;
+
+interface FieldErrors {
+  fullName?: string;
+  email?: string;
+  password?: string;
+}
+
 export default function Register() {
   const { t } = useTranslation();
   const { login } = useAuth();
@@ -17,12 +26,36 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  function validate(): FieldErrors {
+    const errors: FieldErrors = {};
+    if (!fullName.trim()) errors.fullName = "register.errorFullNameRequired";
+    if (!email.trim()) {
+      errors.email = "register.errorEmailRequired";
+    } else if (!EMAIL_RE.test(email.trim())) {
+      errors.email = "register.errorEmailInvalid";
+    }
+    if (!password) {
+      errors.password = "register.errorPasswordRequired";
+    } else if (password.length < MIN_PASSWORD_LENGTH) {
+      errors.password = "register.errorPasswordTooShort";
+    }
+    return errors;
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setSubmitting(true);
     try {
       await register(email, fullName, password, avatar);
@@ -42,27 +75,19 @@ export default function Register() {
   return (
     <div className="auth-page">
       <AuthTopBar />
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <h1>{t("register.title")}</h1>
         {error && <p className="error">{t(error)}</p>}
         <AvatarPicker value={avatar} onChange={setAvatar} />
         <label>
           {t("register.email")}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          {fieldErrors.email && <span className="field-error">{t(fieldErrors.email)}</span>}
         </label>
         <label>
           {t("register.fullName")}
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          {fieldErrors.fullName && <span className="field-error">{t(fieldErrors.fullName)}</span>}
         </label>
         <label>
           {t("register.password")}
@@ -70,9 +95,8 @@ export default function Register() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
-            required
           />
+          {fieldErrors.password && <span className="field-error">{t(fieldErrors.password)}</span>}
         </label>
         <button type="submit" disabled={submitting}>
           {submitting ? t("register.submitting") : t("register.submit")}

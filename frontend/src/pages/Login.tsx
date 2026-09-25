@@ -4,6 +4,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthTopBar from "../components/AuthTopBar";
 import { useAuth } from "../context/AuthContext";
 
+interface FieldErrors {
+  email?: string;
+  password?: string;
+}
+
 export default function Login() {
   const { t } = useTranslation();
   const { login } = useAuth();
@@ -12,12 +17,27 @@ export default function Login() {
   const from = (location.state as { from?: string } | null)?.from ?? "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  function validate(): FieldErrors {
+    const errors: FieldErrors = {};
+    if (!email.trim()) errors.email = "login.errorEmailRequired";
+    if (!password) errors.password = "login.errorPasswordRequired";
+    return errors;
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setSubmitting(true);
     try {
       await login(email, password);
@@ -32,17 +52,13 @@ export default function Login() {
   return (
     <div className="auth-page">
       <AuthTopBar />
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <h1>{t("login.title")}</h1>
         {error && <p className="error">{t(error)}</p>}
         <label>
           {t("login.email")}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          {fieldErrors.email && <span className="field-error">{t(fieldErrors.email)}</span>}
         </label>
         <label>
           {t("login.password")}
@@ -50,8 +66,8 @@ export default function Login() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
+          {fieldErrors.password && <span className="field-error">{t(fieldErrors.password)}</span>}
         </label>
         <button type="submit" disabled={submitting}>
           {submitting ? t("login.submitting") : t("login.submit")}

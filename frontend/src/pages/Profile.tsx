@@ -18,6 +18,7 @@ export default function Profile() {
   const [fullName, setFullName] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarChange, setAvatarChange] = useState<AvatarChange>("none");
+  const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,6 +26,7 @@ export default function Profile() {
     setFullName(user?.full_name ?? "");
     setAvatarPreview(avatarUrl(user?.avatar_url ?? null));
     setAvatarChange("none");
+    setNameError(null);
     setError(null);
     setEditing(true);
   }
@@ -37,6 +39,13 @@ export default function Profile() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!fullName.trim()) {
+      setNameError("profile.errorNameRequired");
+      return;
+    }
+    setNameError(null);
+
     setSubmitting(true);
     try {
       await updateProfile({
@@ -55,17 +64,13 @@ export default function Profile() {
   if (editing) {
     return (
       <div className="page">
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {error && <p className="error">{t(error)}</p>}
           <AvatarPicker value={avatarPreview} onChange={handleAvatarChange} />
           <label>
             {t("profile.name")}
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
+            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            {nameError && <span className="field-error">{t(nameError)}</span>}
           </label>
           <div className="form-actions">
             <button type="button" onClick={() => setEditing(false)} disabled={submitting}>

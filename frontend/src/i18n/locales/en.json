@@ -7,7 +7,9 @@
     "submitting": "Signing in...",
     "noAccount": "Don't have an account?",
     "registerLink": "Sign up",
-    "error": "Incorrect email or password"
+    "error": "Incorrect email or password",
+    "errorEmailRequired": "Enter your email",
+    "errorPasswordRequired": "Enter your password"
   },
   "register": {
     "title": "Create account",
@@ -19,7 +21,12 @@
     "haveAccount": "Already have an account?",
     "loginLink": "Sign in",
     "errorEmailTaken": "That email is already registered",
-    "errorGeneric": "Couldn't complete registration"
+    "errorGeneric": "Couldn't complete registration",
+    "errorFullNameRequired": "Enter your name",
+    "errorEmailRequired": "Enter your email",
+    "errorEmailInvalid": "Enter a valid email",
+    "errorPasswordRequired": "Enter a password",
+    "errorPasswordTooShort": "Password must be at least 8 characters"
   },
   "avatarPicker": {
     "label": "Profile photo (optional)",
@@ -50,7 +57,8 @@
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
-    "editError": "Couldn't save your changes"
+    "editError": "Couldn't save your changes",
+    "errorNameRequired": "Enter your name"
   },
   "createEvent": {
     "title": "Create event",

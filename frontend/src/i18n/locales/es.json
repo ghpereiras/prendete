@@ -7,7 +7,9 @@
     "submitting": "Ingresando...",
     "noAccount": "¿No tenés cuenta?",
     "registerLink": "Registrate",
-    "error": "Email o contraseña incorrectos"
+    "error": "Email o contraseña incorrectos",
+    "errorEmailRequired": "Completá tu email",
+    "errorPasswordRequired": "Completá tu contraseña"
   },
   "register": {
     "title": "Crear cuenta",
@@ -19,7 +21,12 @@
     "haveAccount": "¿Ya tenés cuenta?",
     "loginLink": "Iniciá sesión",
     "errorEmailTaken": "Ese email ya está registrado",
-    "errorGeneric": "No se pudo completar el registro"
+    "errorGeneric": "No se pudo completar el registro",
+    "errorFullNameRequired": "Completá tu nombre",
+    "errorEmailRequired": "Completá tu email",
+    "errorEmailInvalid": "Ingresá un email válido",
+    "errorPasswordRequired": "Completá tu contraseña",
+    "errorPasswordTooShort": "La contraseña tiene que tener al menos 8 caracteres"
   },
   "avatarPicker": {
     "label": "Foto de perfil (opcional)",
@@ -50,7 +57,8 @@
     "save": "Guardar",
     "saving": "Guardando...",
     "cancel": "Cancelar",
-    "editError": "No se pudieron guardar los cambios"
+    "editError": "No se pudieron guardar los cambios",
+    "errorNameRequired": "Completá tu nombre"
   },
   "createEvent": {
     "title": "Crear evento",
