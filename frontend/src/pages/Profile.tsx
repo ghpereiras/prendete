@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { avatarUrl } from "../api/auth";
+import { avatarUrl } from "../api/client";
+import Avatar from "../components/Avatar";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 
@@ -9,12 +10,9 @@ export default function Profile() {
 
   usePageTitle(t("profile.title"));
 
-  const photoUrl = user ? avatarUrl(user) : null;
-  const initial = user?.full_name.trim().charAt(0).toUpperCase();
-
   return (
     <div className="page">
-      <div className="profile-avatar">{photoUrl ? <img src={photoUrl} alt="" /> : initial}</div>
+      <Avatar avatarUrl={avatarUrl(user?.avatar_url ?? null)} fullName={user?.full_name ?? ""} large />
       <p>
         {t("profile.name")}: {user?.full_name}
       </p>

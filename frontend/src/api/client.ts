@@ -1,5 +1,11 @@
 export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
+// avatar_url from the API is a relative path (e.g. "/users/5/avatar"); this
+// resolves it against the backend origin for use in an <img src>.
+export function avatarUrl(path: string | null): string | null {
+  return path ? `${API_URL}${path}` : null;
+}
+
 export class ApiError extends Error {
   status: number;
 

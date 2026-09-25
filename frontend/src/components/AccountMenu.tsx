@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { avatarUrl } from "../api/auth";
+import { avatarUrl } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useTopBarMenu } from "../context/TopBarMenuContext";
 
@@ -14,7 +14,7 @@ export default function AccountMenu() {
   if (!user) return null;
 
   const initial = user.full_name.trim().charAt(0).toUpperCase();
-  const photoUrl = avatarUrl(user);
+  const photoUrl = avatarUrl(user.avatar_url);
 
   function goToProfile() {
     close();

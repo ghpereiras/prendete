@@ -42,10 +42,6 @@ export function register(
   });
 }
 
-export function avatarUrl(user: Pick<User, "avatar_url">): string | null {
-  return user.avatar_url ? `${API_URL}${user.avatar_url}` : null;
-}
-
 export function getCurrentUser(): Promise<User> {
   return apiGet<User>("/users/me");
 }

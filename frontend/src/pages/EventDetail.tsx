@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
-import { ApiError } from "../api/client";
+import { ApiError, avatarUrl } from "../api/client";
 import {
   endsAt,
   getEvent,
@@ -12,6 +12,7 @@ import {
   type Event,
   type EventAttendee,
 } from "../api/events";
+import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
 import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
@@ -120,6 +121,7 @@ export default function EventDetail() {
             {attendees.map((attendee) => (
               <li key={attendee.user_id}>
                 <div className="attendee-row">
+                  <Avatar avatarUrl={avatarUrl(attendee.avatar_url)} fullName={attendee.full_name} />
                   {attendee.full_name}
                   {attendee.is_owner && (
                     <span className="owner-badge">{t("eventDetail.ownerBadge")}</span>

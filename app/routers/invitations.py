@@ -69,13 +69,20 @@ def list_attendees(
     is_owner_viewing = current_user.id == event.owner_id
 
     attendees = [
-        EventAttendee(user_id=event.owner.id, full_name=event.owner.full_name, email=event.owner.email, is_owner=True)
+        EventAttendee(
+            user_id=event.owner.id,
+            full_name=event.owner.full_name,
+            email=event.owner.email,
+            avatar_url=event.owner.avatar_url,
+            is_owner=True,
+        )
     ]
     attendees += [
         EventAttendee(
             user_id=inv.invitee.id,
             full_name=inv.invitee.full_name,
             email=inv.invitee.email,
+            avatar_url=inv.invitee.avatar_url,
             is_owner=False,
             # Comments are only visible to the event owner and to their own author.
             comment=inv.comment if (is_owner_viewing or inv.invitee_id == current_user.id) else None,

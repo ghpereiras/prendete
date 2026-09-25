@@ -48,6 +48,7 @@ export interface EventAttendee {
   user_id: number;
   full_name: string;
   email: string;
+  avatar_url: string | null;
   is_owner: boolean;
   comment: string | null;
 }

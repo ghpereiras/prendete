@@ -82,5 +82,6 @@ class EventAttendee(BaseModel):
     user_id: int
     full_name: str
     email: str
+    avatar_url: str | None = None
     is_owner: bool
     comment: str | None = None
