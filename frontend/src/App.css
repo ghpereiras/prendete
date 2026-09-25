@@ -193,6 +193,143 @@
   color: var(--text);
 }
 
+.avatar-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar-picker .avatar-picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.avatar-picker-trigger img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-picker-trigger svg {
+  width: 36px;
+  height: 36px;
+}
+
+.avatar-picker-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.avatar-picker .link-button {
+  font: inherit;
+  font-size: 13px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.crop-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+}
+
+.crop-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.crop-modal h2 {
+  margin: 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+.cropper-container {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+}
+
+.zoom-slider {
+  display: flex;
+}
+
+.zoom-slider input {
+  width: 100%;
+}
+
+.crop-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.crop-modal .crop-modal-actions button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.crop-modal .crop-modal-actions button:last-child {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 32px;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .error {
   color: #e5484d;
   font-size: 14px;
@@ -241,6 +378,13 @@
   font: inherit;
   font-size: 18px;
   cursor: pointer;
+  overflow: hidden;
+}
+
+.icon-menu-trigger img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .account-menu-trigger {

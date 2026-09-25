@@ -6,11 +6,12 @@ from app.schemas.user import UserCreate
 from app.security import hash_password
 
 
-def create_user(db: Session, user_in: UserCreate) -> User:
+def create_user(db: Session, user_in: UserCreate, avatar: bytes | None = None) -> User:
     user = User(
         email=user_in.email,
         full_name=user_in.full_name,
         hashed_password=hash_password(user_in.password),
+        avatar=avatar,
     )
     db.add(user)
     db.commit()

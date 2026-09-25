@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { avatarUrl } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 import { useTopBarMenu } from "../context/TopBarMenuContext";
 
@@ -13,6 +14,7 @@ export default function AccountMenu() {
   if (!user) return null;
 
   const initial = user.full_name.trim().charAt(0).toUpperCase();
+  const photoUrl = avatarUrl(user);
 
   function goToProfile() {
     close();
@@ -39,7 +41,7 @@ export default function AccountMenu() {
         aria-expanded={open}
         aria-label={t("account.label")}
       >
-        {initial}
+        {photoUrl ? <img src={photoUrl} alt="" /> : initial}
       </button>
       {open && (
         <div className="icon-menu-dropdown" role="menu">

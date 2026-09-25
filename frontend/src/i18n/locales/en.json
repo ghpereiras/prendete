@@ -21,6 +21,18 @@
     "errorEmailTaken": "That email is already registered",
     "errorGeneric": "Couldn't complete registration"
   },
+  "avatarPicker": {
+    "label": "Profile photo (optional)",
+    "choose": "Choose photo",
+    "change": "Change photo",
+    "remove": "Remove photo",
+    "cropTitle": "Adjust your photo",
+    "zoom": "Zoom",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "errorTooLarge": "That image is too large (8MB max)",
+    "errorInvalidFile": "Pick a valid image file"
+  },
   "home": {
     "greeting": "Hi, {{name}}",
     "noEvents": "You don't have any events yet.",

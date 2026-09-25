@@ -21,6 +21,18 @@
     "errorEmailTaken": "Ese email ya está registrado",
     "errorGeneric": "No se pudo completar el registro"
   },
+  "avatarPicker": {
+    "label": "Foto de perfil (opcional)",
+    "choose": "Elegir foto",
+    "change": "Cambiar foto",
+    "remove": "Quitar foto",
+    "cropTitle": "Ajustá tu foto",
+    "zoom": "Zoom",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "errorTooLarge": "La imagen es muy pesada (máximo 8MB)",
+    "errorInvalidFile": "Elegí un archivo de imagen válido"
+  },
   "home": {
     "greeting": "Hola, {{name}}",
     "noEvents": "Todavía no tenés eventos.",

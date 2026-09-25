@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { register } from "../api/auth";
 import AuthTopBar from "../components/AuthTopBar";
+import AvatarPicker from "../components/AvatarPicker";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -15,6 +16,7 @@ export default function Register() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -23,7 +25,7 @@ export default function Register() {
     setError(null);
     setSubmitting(true);
     try {
-      await register(email, fullName, password);
+      await register(email, fullName, password, avatar);
       await login(email, password);
       navigate(from);
     } catch (err) {
@@ -43,6 +45,7 @@ export default function Register() {
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>{t("register.title")}</h1>
         {error && <p className="error">{t(error)}</p>}
+        <AvatarPicker value={avatar} onChange={setAvatar} />
         <label>
           {t("register.email")}
           <input

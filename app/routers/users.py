@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -6,6 +6,7 @@ from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
+from app.utils.avatar import InvalidAvatarError, process_avatar
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -14,7 +15,15 @@ router = APIRouter(prefix="/users", tags=["users"])
 def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     if crud.user.get_user_by_email(db, user_in.email):
         raise HTTPException(status_code=409, detail="Email already registered")
-    return crud.user.create_user(db, user_in)
+
+    avatar = None
+    if user_in.avatar_base64:
+        try:
+            avatar = process_avatar(user_in.avatar_base64)
+        except InvalidAvatarError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return crud.user.create_user(db, user_in, avatar=avatar)
 
 
 @router.get("/me", response_model=UserRead)
@@ -42,3 +51,18 @@ def get_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+@router.get("/{user_id}/avatar")
+def get_user_avatar(user_id: int, db: Session = Depends(get_db)):
+    # Unauthenticated on purpose: it's rendered via plain <img src="...">
+    # tags (header, profile, attendee lists), which never send the JWT
+    # bearer token used everywhere else in the API.
+    user = crud.user.get_user(db, user_id)
+    if not user or user.avatar is None:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    return Response(
+        content=user.avatar,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )

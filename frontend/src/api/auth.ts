@@ -1,9 +1,10 @@
-import { ApiError, apiGet, apiPost } from "./client";
+import { API_URL, ApiError, apiGet, apiPost } from "./client";
 
 export interface User {
   id: number;
   email: string;
   full_name: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -14,10 +15,11 @@ interface TokenResponse {
 
 export async function login(email: string, password: string): Promise<string> {
   const body = new URLSearchParams({ username: email, password });
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/auth/login`,
-    { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body },
-  );
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
     throw new ApiError(response.status, data.detail ?? "No se pudo iniciar sesión");
@@ -26,8 +28,22 @@ export async function login(email: string, password: string): Promise<string> {
   return data.access_token;
 }
 
-export function register(email: string, fullName: string, password: string): Promise<User> {
-  return apiPost<User>("/users", { email, full_name: fullName, password });
+export function register(
+  email: string,
+  fullName: string,
+  password: string,
+  avatarBase64?: string | null,
+): Promise<User> {
+  return apiPost<User>("/users", {
+    email,
+    full_name: fullName,
+    password,
+    avatar_base64: avatarBase64 || undefined,
+  });
+}
+
+export function avatarUrl(user: Pick<User, "avatar_url">): string | null {
+  return user.avatar_url ? `${API_URL}${user.avatar_url}` : null;
 }
 
 export function getCurrentUser(): Promise<User> {
