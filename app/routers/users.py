@@ -5,7 +5,7 @@ from app import crud
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.utils.avatar import InvalidAvatarError, process_avatar
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -29,6 +29,32 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserRead)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.patch("/me", response_model=UserRead)
+def update_me(
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    avatar = None
+    avatar_changed = False
+    if user_in.remove_avatar:
+        avatar_changed = True
+    elif user_in.avatar_base64:
+        try:
+            avatar = process_avatar(user_in.avatar_base64)
+        except InvalidAvatarError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        avatar_changed = True
+
+    return crud.user.update_user(
+        db,
+        current_user,
+        full_name=user_in.full_name,
+        avatar=avatar,
+        avatar_changed=avatar_changed,
+    )
 
 
 @router.get("", response_model=list[UserRead])

@@ -19,6 +19,23 @@ def create_user(db: Session, user_in: UserCreate, avatar: bytes | None = None) -
     return user
 
 
+def update_user(
+    db: Session,
+    user: User,
+    *,
+    full_name: str | None = None,
+    avatar: bytes | None = None,
+    avatar_changed: bool = False,
+) -> User:
+    if full_name is not None:
+        user.full_name = full_name
+    if avatar_changed:
+        user.avatar = avatar
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def get_user(db: Session, user_id: int) -> User | None:
     return db.get(User, user_id)
 

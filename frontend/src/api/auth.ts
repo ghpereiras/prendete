@@ -1,4 +1,4 @@
-import { API_URL, ApiError, apiGet, apiPost } from "./client";
+import { API_URL, ApiError, apiGet, apiPatch, apiPost } from "./client";
 
 export interface User {
   id: number;
@@ -44,4 +44,18 @@ export function register(
 
 export function getCurrentUser(): Promise<User> {
   return apiGet<User>("/users/me");
+}
+
+export interface ProfileUpdate {
+  fullName?: string;
+  avatarBase64?: string;
+  removeAvatar?: boolean;
+}
+
+export function updateProfile(update: ProfileUpdate): Promise<User> {
+  return apiPatch<User>("/users/me", {
+    full_name: update.fullName,
+    avatar_base64: update.avatarBase64,
+    remove_avatar: update.removeAvatar ?? false,
+  });
 }

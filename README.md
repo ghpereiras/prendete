@@ -75,7 +75,8 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 
 - `POST /users` (público) — registro; acepta `avatar_base64` opcional (bare base64 o data URL). Se decodifica, valida como imagen real, recorta al centro a cuadrado, se redimensiona a 256x256 y se re-comprimir como JPEG antes de guardar (`app/utils/avatar.py: process_avatar`) — nunca se confía en el recorte/tamaño que mandó el cliente. `422` si no es una imagen válida o pesa más de 8MB decodificada.
 - `GET /users`, `GET /users/me`, `GET /users/{id}` — incluyen `avatar_url` (`/users/{id}/avatar`) o `null` si no tiene foto
-- `GET /users/{id}/avatar` (público, sin login) — devuelve el JPEG crudo; no requiere auth a propósito porque se consume desde `<img src="...">` (header, perfil), que nunca manda el JWT
+- `PATCH /users/me` — edita el propio nombre y/o foto; todos los campos son opcionales e independientes: `full_name` (si se manda, reemplaza el nombre), `avatar_base64` (si se manda, reemplaza la foto, mismo procesamiento/validación que en el registro), `remove_avatar: true` (saca la foto actual). Mandar `avatar_base64` y `remove_avatar: true` juntos no tiene sentido — gana `remove_avatar`
+- `GET /users/{id}/avatar` (público, sin login) — devuelve el JPEG crudo; no requiere auth a propósito porque se consume desde `<img src="...">` (header, perfil, lista de asistentes), que nunca manda el JWT
 - `POST /auth/login` (público)
 - `POST /events` (dueño = usuario autenticado; requiere `starts_at`, `duration_minutes` y `max_attendees`; `location`, `location_details`, `maps_link` y `registration_deadline_minutes_before` son opcionales). `422` si `starts_at` ya pasó, o si con el `registration_deadline_minutes_before` elegido las inscripciones ya estarían cerradas en el momento de crear el evento (validado en `EventCreate.validate_start_and_registration_window`, `app/schemas/event.py`)
 - `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema), ordenados por `starts_at` ascendente (el que empieza más pronto primero); cada evento incluye `owner_name`
@@ -148,12 +149,14 @@ La detección de si es embebible es automática en el frontend ([utils/maps.ts](
 
 ### Foto de perfil
 
-En `/register`, `components/AvatarPicker.tsx` deja elegir una foto (opcional): abre el selector de archivos nativo, y con [react-easy-crop](https://github.com/ValentinH/react-easy-crop) muestra la imagen completa con una máscara circular y zoom para recortarla. Al confirmar, se extrae el recorte a un `<canvas>` de 256x256 y se comprime a JPEG (`utils/image.ts: cropImageToDataUrl`) antes de mandarlo como `avatar_base64` al backend, que igual vuelve a validar/normalizar todo (ver sección de Endpoints). Cuando el usuario tiene foto, reemplaza la inicial en el círculo de cuenta del header (`components/AccountMenu.tsx`) y se ve más grande en `/profile`.
+En `/register`, `components/AvatarPicker.tsx` deja elegir una foto (opcional): abre el selector de archivos nativo, y con [react-easy-crop](https://github.com/ValentinH/react-easy-crop) muestra la imagen completa con una máscara circular y zoom para recortarla. Al confirmar, se extrae el recorte a un `<canvas>` de 256x256 y se comprime a JPEG (`utils/image.ts: cropImageToDataUrl`) antes de mandarlo como `avatar_base64` al backend, que igual vuelve a validar/normalizar todo (ver sección de Endpoints). Cuando el usuario tiene foto, reemplaza la inicial en el círculo de cuenta del header (`components/AccountMenu.tsx`), se ve más grande en `/profile`, y aparece antes del nombre en la lista de asistentes de un evento (`components/Avatar.tsx`, usado en `EventDetail.tsx`).
+
+En `/profile`, el botón "Editar perfil" cambia a un formulario (mismo `AvatarPicker`, precargado con la foto actual) para cambiar nombre y/o foto — pega a `PATCH /users/me` y actualiza el usuario en `AuthContext` al instante (sin recargar la página), así el header y el resto de la app reflejan el cambio enseguida.
 
 ## Pendiente
 
 - Refresh tokens / logout server-side (los JWT actuales expiran solos, no hay revocación).
 - Endpoint para editar eventos (`PUT`/`PATCH /events/{id}`).
 - Frontend: pantalla para que el dueño vea/gestione la lista de invitados de un evento.
-- Cambiar/sacar la foto de perfil después de registrarse (hoy solo se puede elegir en `/register`; no hay `PATCH /users/me`).
+- Cambiar el email desde `/profile` (`PATCH /users/me` solo actualiza nombre y foto, no el email).
 - Sistema de roles (USER/ADMIN) — quedó en pausa, sin implementar.

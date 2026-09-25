@@ -89,3 +89,100 @@ def test_avatar_not_found_for_user_without_one(client):
 
     response = client.get(f"/users/{me['id']}/avatar", headers=auth_headers(token))
     assert response.status_code == 404
+
+
+def test_update_me_requires_auth(client):
+    response = client.patch("/users/me", json={"full_name": "New Name"})
+    assert response.status_code == 401
+
+
+def test_update_me_changes_full_name(client):
+    register(client, "owner@example.com")
+    token = login(client, "owner@example.com")
+
+    response = client.patch(
+        "/users/me", json={"full_name": "New Name"}, headers=auth_headers(token)
+    )
+    assert response.status_code == 200
+    assert response.json()["full_name"] == "New Name"
+
+
+def test_update_me_sets_avatar(client):
+    register(client, "owner@example.com")
+    token = login(client, "owner@example.com")
+
+    response = client.patch(
+        "/users/me",
+        json={"avatar_base64": _sample_image_base64()},
+        headers=auth_headers(token),
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["avatar_url"] == f"/users/{body['id']}/avatar"
+
+    avatar_response = client.get(body["avatar_url"], headers=auth_headers(token))
+    stored_image = Image.open(io.BytesIO(avatar_response.content))
+    assert stored_image.size == (AVATAR_SIZE, AVATAR_SIZE)
+
+
+def test_update_me_replaces_existing_avatar(client):
+    client.post(
+        "/users",
+        json={
+            "email": "owner@example.com",
+            "full_name": "Owner",
+            "password": "secret123",
+            "avatar_base64": _sample_image_base64(color=(10, 10, 10)),
+        },
+    )
+    token = login(client, "owner@example.com")
+
+    response = client.patch(
+        "/users/me",
+        json={"avatar_base64": _sample_image_base64(color=(240, 240, 240))},
+        headers=auth_headers(token),
+    )
+    assert response.status_code == 200
+    avatar_response = client.get(response.json()["avatar_url"], headers=auth_headers(token))
+    pixel = Image.open(io.BytesIO(avatar_response.content)).getpixel((128, 128))
+    assert pixel[0] > 200  # replaced with the light image, not the dark original
+
+
+def test_update_me_removes_avatar(client):
+    client.post(
+        "/users",
+        json={
+            "email": "owner@example.com",
+            "full_name": "Owner",
+            "password": "secret123",
+            "avatar_base64": _sample_image_base64(),
+        },
+    )
+    token = login(client, "owner@example.com")
+
+    response = client.patch(
+        "/users/me", json={"remove_avatar": True}, headers=auth_headers(token)
+    )
+    assert response.status_code == 200
+    assert response.json()["avatar_url"] is None
+
+
+def test_update_me_with_invalid_avatar_rejected(client):
+    register(client, "owner@example.com")
+    token = login(client, "owner@example.com")
+
+    response = client.patch(
+        "/users/me",
+        json={"avatar_base64": "!!!not-a-valid-image!!!"},
+        headers=auth_headers(token),
+    )
+    assert response.status_code == 422
+
+
+def test_update_me_without_fields_leaves_user_unchanged(client):
+    register(client, "owner@example.com", full_name="Original Name")
+    token = login(client, "owner@example.com")
+
+    response = client.patch("/users/me", json={}, headers=auth_headers(token))
+    assert response.status_code == 200
+    assert response.json()["full_name"] == "Original Name"

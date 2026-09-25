@@ -1,11 +1,18 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { getCurrentUser, login as apiLogin, type User } from "../api/auth";
+import {
+  getCurrentUser,
+  login as apiLogin,
+  updateProfile as apiUpdateProfile,
+  type ProfileUpdate,
+  type User,
+} from "../api/auth";
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (update: ProfileUpdate) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -49,8 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  async function updateProfile(update: ProfileUpdate) {
+    setUser(await apiUpdateProfile(update));
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

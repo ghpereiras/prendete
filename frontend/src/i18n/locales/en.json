@@ -46,7 +46,12 @@
   "profile": {
     "title": "My profile",
     "name": "Name",
-    "email": "Email"
+    "email": "Email",
+    "edit": "Edit profile",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "editError": "Couldn't save your changes"
   },
   "createEvent": {
     "title": "Create event",

@@ -46,7 +46,12 @@
   "profile": {
     "title": "Mi perfil",
     "name": "Nombre",
-    "email": "Email"
+    "email": "Email",
+    "edit": "Editar perfil",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "editError": "No se pudieron guardar los cambios"
   },
   "createEvent": {
     "title": "Crear evento",

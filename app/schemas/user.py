@@ -10,6 +10,12 @@ class UserCreate(BaseModel):
     avatar_base64: str | None = None
 
 
+class UserUpdate(BaseModel):
+    full_name: str | None = None
+    avatar_base64: str | None = None
+    remove_avatar: bool = False
+
+
 class UserRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

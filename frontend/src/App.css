@@ -167,7 +167,7 @@
   outline-offset: 1px;
 }
 
-.auth-form button {
+.auth-form > button {
   font: inherit;
   padding: 10px 12px;
   border-radius: 6px;
@@ -178,7 +178,35 @@
   margin-top: 8px;
 }
 
-.auth-form button:disabled {
+.auth-form > button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.form-actions button {
+  flex: 1;
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.form-actions button[type="submit"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.form-actions button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -445,10 +473,12 @@
   display: inline-block;
   font: inherit;
   padding: 10px 16px;
+  border: none;
   border-radius: 6px;
   background: var(--accent);
   color: #fff;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .event-list {
