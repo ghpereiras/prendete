@@ -16,6 +16,7 @@ import {
   type EventAttendee,
 } from "../api/events";
 import Avatar from "../components/Avatar";
+import ConfirmModal from "../components/ConfirmModal";
 import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -242,50 +243,50 @@ export default function EventDetail() {
           <Link to={`/events/${event.id}/edit`} className="button-link">
             {t("eventDetail.edit")}
           </Link>
-          {confirmingDelete ? (
-            <div className="form-actions">
-              <button type="button" onClick={() => setConfirmingDelete(false)} disabled={deleting}>
-                {t("eventDetail.cancel")}
-              </button>
-              <button type="button" className="danger" onClick={handleDelete} disabled={deleting}>
-                {deleting ? t("eventDetail.deleting") : t("eventDetail.confirmDelete")}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="button-link danger"
-              onClick={() => setConfirmingDelete(true)}
-            >
-              {t("eventDetail.delete")}
-            </button>
-          )}
-          {deleteError && <p className="error">{t(deleteError)}</p>}
+          <button
+            type="button"
+            className="button-link danger"
+            onClick={() => setConfirmingDelete(true)}
+          >
+            {t("eventDetail.delete")}
+          </button>
         </div>
       )}
 
       {canLeave && (
         <div className="event-actions">
-          {confirmingLeave ? (
-            <div className="form-actions">
-              <button type="button" onClick={() => setConfirmingLeave(false)} disabled={leaving}>
-                {t("eventDetail.cancel")}
-              </button>
-              <button type="button" className="danger" onClick={handleLeave} disabled={leaving}>
-                {leaving ? t("eventDetail.leaving") : t("eventDetail.confirmLeave")}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="button-link danger"
-              onClick={() => setConfirmingLeave(true)}
-            >
-              {t("eventDetail.leave")}
-            </button>
-          )}
-          {leaveError && <p className="error">{t(leaveError)}</p>}
+          <button
+            type="button"
+            className="button-link danger"
+            onClick={() => setConfirmingLeave(true)}
+          >
+            {t("eventDetail.leave")}
+          </button>
         </div>
+      )}
+
+      {confirmingDelete && (
+        <ConfirmModal
+          message={t("eventDetail.confirmDeleteMessage")}
+          confirmLabel={deleting ? t("eventDetail.deleting") : t("eventDetail.confirmDelete")}
+          cancelLabel={t("eventDetail.cancel")}
+          confirming={deleting}
+          error={deleteError ? t(deleteError) : null}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      )}
+
+      {confirmingLeave && (
+        <ConfirmModal
+          message={t("eventDetail.confirmLeaveMessage")}
+          confirmLabel={leaving ? t("eventDetail.leaving") : t("eventDetail.confirmLeave")}
+          cancelLabel={t("eventDetail.cancel")}
+          confirming={leaving}
+          error={leaveError ? t(leaveError) : null}
+          onConfirm={handleLeave}
+          onCancel={() => setConfirmingLeave(false)}
+        />
       )}
     </div>
   );

@@ -357,6 +357,60 @@
   color: #fff;
 }
 
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+}
+
+.confirm-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.confirm-modal p {
+  margin: 0;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-modal-actions button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.confirm-modal-actions button.danger {
+  border-color: #e5484d;
+  background: #e5484d;
+  color: #fff;
+}
+
+.confirm-modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .avatar-circle {
   display: flex;
   align-items: center;
