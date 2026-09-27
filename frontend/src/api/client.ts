@@ -32,6 +32,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     } catch {
       // response had no JSON body
     }
+    if (response.status === 401) {
+      // The JWT is missing/expired/invalid — every call through this helper
+      // is already authenticated, so a 401 here always means the session
+      // died underneath the user. Send them back to log in again.
+      localStorage.removeItem("access_token");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
     throw new ApiError(response.status, detail);
   }
 
