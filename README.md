@@ -148,7 +148,7 @@ Todas las páginas comparten un header fijo arriba de todo (`components/Header.t
 
 Ambos filtros se combinan sin alterar el orden de la lista.
 
-El token JWT se guarda en `localStorage`.
+El token JWT se guarda en `localStorage`. Si expira o deja de ser válido (por ejemplo, una pestaña quedó abierta con la sesión vieja), la primera request autenticada que falle con `401` limpia el token y redirige a `/login` automáticamente (`api/client.ts: request`) — no queda navegando la app con acciones que fallan en silencio.
 
 ### Duración y cierre de inscripciones
 
@@ -186,3 +186,4 @@ En esa misma fila, quien participa también puede editar su propio comentario ("
 - Frontend: pantalla para que el dueño vea/gestione la lista de invitados de un evento.
 - Cambiar el email desde `/profile` (`PATCH /users/me` solo actualiza nombre y foto, no el email).
 - Sistema de roles (USER/ADMIN) — quedó en pausa, sin implementar.
+- Productivizar la app (dominio ya comprado en nic.ar) — plan acordado en [DEPLOY.md](DEPLOY.md), todavía sin ejecutar.
