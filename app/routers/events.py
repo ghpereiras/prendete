@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud
+from app import crud, push
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
@@ -116,7 +116,20 @@ def update_event(
             status_code=422,
             detail="max_attendees cannot be lower than the number of already accepted attendees",
         )
-    return crud.event.update_event(db, event, event_in)
+
+    attendee_user_ids = [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
+    updated_event = crud.event.update_event(db, event, event_in)
+    for user_id in attendee_user_ids:
+        push.send_push_to_user(
+            db,
+            user_id,
+            {
+                "title": "Evento actualizado",
+                "body": f'"{updated_event.title}" fue modificado por el organizador.',
+                "url": f"/events/{updated_event.id}",
+            },
+        )
+    return updated_event
 
 
 @router.delete("/{event_id}", status_code=204)
@@ -132,4 +145,17 @@ def delete_event(
         raise HTTPException(status_code=403, detail="Only the event owner can delete this event")
     if event.starts_at <= datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Cannot delete an event that already happened")
+
+    attendee_user_ids = [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
+    event_title = event.title
     crud.event.delete_event(db, event)
+    for user_id in attendee_user_ids:
+        push.send_push_to_user(
+            db,
+            user_id,
+            {
+                "title": "Evento cancelado",
+                "body": f'"{event_title}" fue cancelado por el organizador.',
+                "url": "/events",
+            },
+        )

@@ -58,7 +58,12 @@
     "saving": "Guardando...",
     "cancel": "Cancelar",
     "editError": "No se pudieron guardar los cambios",
-    "errorNameRequired": "Completá tu nombre"
+    "errorNameRequired": "Completá tu nombre",
+    "pushEnable": "Activar notificaciones",
+    "pushDisable": "Desactivar notificaciones",
+    "pushSaving": "Guardando...",
+    "pushErrorDenied": "Bloqueaste las notificaciones para este sitio — para activarlas, habilitalas desde la configuración del navegador",
+    "pushErrorGeneric": "No se pudieron activar las notificaciones"
   },
   "createEvent": {
     "title": "Crear evento",

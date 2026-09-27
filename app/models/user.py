@@ -19,6 +19,9 @@ class User(Base):
 
     events: Mapped[list["Event"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     attendances: Mapped[list["Attendee"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    push_subscriptions: Mapped[list["PushSubscription"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     @property
     def avatar_url(self) -> str | None:

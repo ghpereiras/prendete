@@ -20,6 +20,27 @@ Editar `.env` y generar un `SECRET_KEY` propio:
 python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
+Generar el par de claves VAPID para notificaciones push (una sola vez — ver [Notificaciones push](#notificaciones-push)):
+
+```bash
+python3 -c "
+from py_vapid import Vapid02
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+import base64
+
+v = Vapid02()
+v.generate_keys()
+
+def b64url(b):
+    return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
+
+priv_raw = v.private_key.private_numbers().private_value.to_bytes(32, 'big')
+pub_raw = v.public_key.public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
+print('VAPID_PUBLIC_KEY=' + b64url(pub_raw))
+print('VAPID_PRIVATE_KEY=' + b64url(priv_raw))
+"
+```
+
 ## Base de datos
 
 Levantar Postgres con Docker:
@@ -77,6 +98,8 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `GET /users`, `GET /users/me`, `GET /users/{id}` — incluyen `avatar_url` (`/users/{id}/avatar`) o `null` si no tiene foto
 - `PATCH /users/me` — edita el propio nombre y/o foto; todos los campos son opcionales e independientes: `full_name` (si se manda, reemplaza el nombre), `avatar_base64` (si se manda, reemplaza la foto, mismo procesamiento/validación que en el registro), `remove_avatar: true` (saca la foto actual). Mandar `avatar_base64` y `remove_avatar: true` juntos no tiene sentido — gana `remove_avatar`
 - `GET /users/{id}/avatar` (público, sin login) — devuelve el JPEG crudo; no requiere auth a propósito porque se consume desde `<img src="...">` (header, perfil, lista de asistentes), que nunca manda el JWT
+- `POST /users/me/push-subscriptions` — guarda la suscripción push del navegador actual (`endpoint` + `keys.p256dh`/`keys.auth`, el mismo shape que devuelve `PushSubscription.toJSON()` del browser). Si el `endpoint` ya existe, actualiza el `user_id` y las keys en vez de duplicar — así si dos usuarios distintos se suscriben desde el mismo navegador, la fila se reasigna sola al último que se suscribió
+- `DELETE /users/me/push-subscriptions?endpoint=...` — da de baja esa suscripción
 - `POST /auth/login` (público)
 - `POST /events` (dueño = usuario autenticado; requiere `starts_at`, `duration_minutes` y `max_attendees`; `location`, `location_details`, `maps_link` y `registration_deadline_minutes_before` son opcionales). `422` si `starts_at` ya pasó, o si con el `registration_deadline_minutes_before` elegido las inscripciones ya estarían cerradas en el momento de crear el evento (validado en `EventCreate.validate_start_and_registration_window`, `app/schemas/event.py`)
 - `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema), ordenados por `starts_at` ascendente (el que empieza más pronto primero); cada evento incluye `owner_name`
@@ -130,6 +153,8 @@ Corre en `http://localhost:5173`. El backend debe estar corriendo en `http://loc
 4. Restringirla: por "Referentes HTTP" a tu dominio (`localhost:5173/*` en dev), y por "Restricciones de la API" a las tres de arriba.
 5. Pegarla en `frontend/.env` como `VITE_GOOGLE_MAPS_API_KEY=...`.
 
+`VITE_VAPID_PUBLIC_KEY` en `.env` tiene que ser la misma `VAPID_PUBLIC_KEY` que configuraste en el backend (ver "Notificaciones push" más abajo) — si no coincide, `pushManager.subscribe()` falla en el browser.
+
 Páginas:
 
 - `/login`, `/register` — públicas
@@ -179,6 +204,22 @@ En `/events/:id`, el dueño ve los botones "Editar evento" y "Eliminar evento" �
 En `/events/:id`, quien participa y no es el dueño ve el botón "Salir del evento" (mismo popup de confirmación, `ConfirmModal`, que "Eliminar evento"). Pega a `DELETE /events/{event_id}/attendance`, que borra directamente la fila de `attendees` — no queda ningún registro de que participaste, y el cupo se libera al instante para que otro pueda sumarse. Después te redirige al home. El dueño nunca ve este botón: para borrar su propio evento existe "Eliminar evento".
 
 En esa misma fila, quien participa también puede editar su propio comentario ("Editar comentario" / "Agregar comentario" si no había dejado uno) — abre el mismo tipo de textarea que al sumarse por primera vez y pega a `PATCH /events/{event_id}/attendance`. Nadie más puede editar el comentario ajeno: el endpoint solo actúa sobre la fila de `attendees` del propio usuario autenticado.
+
+### Notificaciones push
+
+Cuando el dueño edita o elimina un evento, cada asistente (no el dueño) recibe una notificación push del navegador — "Evento actualizado" / "Evento cancelado" — sin necesidad de tener la app abierta.
+
+**Cómo funciona:**
+- El navegador registra un service worker (`frontend/public/sw.js`) que escucha el evento `push` y muestra la notificación; al clickearla, enfoca o abre la app en el evento correspondiente.
+- En `/profile`, el botón "Activar notificaciones" pide permiso al navegador (`Notification.requestPermission()`) y, si se concede, crea una `PushSubscription` (`pushManager.subscribe`, `api/push.ts`) que se guarda en el backend vía `POST /users/me/push-subscriptions`.
+- Al editar (`PATCH /events/{id}`) o eliminar (`DELETE /events/{id}`) un evento, el backend junta los `user_id` de los asistentes *antes* de aplicar el cambio (al eliminar, el cascade se lleva las filas de `attendees`) y les manda un push a cada uno con `app/push.py: send_push_to_user`, usando [`pywebpush`](https://github.com/web-push-libs/pywebpush) + las claves VAPID. Se manda de forma síncrona dentro del mismo request — no hay cola de mensajes, para esta escala alcanza.
+- Si el navegador de alguien invalidó su suscripción (la desinstaló, borró datos del sitio), el push service devuelve `404`/`410` y esa fila de `push_subscriptions` se borra sola — no se reintenta ni queda basura acumulada.
+
+**Independiente de la sesión**: el envío del push no pasa por la API autenticada de la app — va del backend directo al push service del navegador (FCM, etc.) usando el `endpoint` guardado. Si al destinatario se le venció el JWT, igual le llega la notificación; el JWT solo hace falta en el momento de activar/desactivar (esos sí son requests autenticados).
+
+**Multi-usuario en el mismo navegador**: la suscripción se identifica por `endpoint` (única por navegador+origen), no por usuario. Si otra persona se loguea en el mismo dispositivo y activa notificaciones, `POST /users/me/push-subscriptions` hace upsert por `endpoint` y reasigna la fila al usuario nuevo — no queda duplicada ni atada al usuario viejo.
+
+**Setup**: hace falta un par de claves VAPID (ver "Backend — Setup" más arriba para el comando) cargadas como `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL` en el `.env` del backend, y la misma `VAPID_PUBLIC_KEY` como `VITE_VAPID_PUBLIC_KEY` en el `.env` del frontend.
 
 ## Pendiente
 

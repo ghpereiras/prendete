@@ -58,7 +58,12 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "editError": "Couldn't save your changes",
-    "errorNameRequired": "Enter your name"
+    "errorNameRequired": "Enter your name",
+    "pushEnable": "Enable notifications",
+    "pushDisable": "Disable notifications",
+    "pushSaving": "Saving...",
+    "pushErrorDenied": "You blocked notifications for this site — enable them from your browser settings to turn this on",
+    "pushErrorGeneric": "Couldn't enable notifications"
   },
   "createEvent": {
     "title": "Create event",

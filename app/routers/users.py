@@ -5,6 +5,7 @@ from app import crud
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
+from app.schemas.push_subscription import PushSubscriptionCreate
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.utils.avatar import InvalidAvatarError, process_avatar
 
@@ -55,6 +56,24 @@ def update_me(
         avatar=avatar,
         avatar_changed=avatar_changed,
     )
+
+
+@router.post("/me/push-subscriptions", status_code=204)
+def create_push_subscription(
+    sub_in: PushSubscriptionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    crud.push_subscription.upsert_subscription(db, current_user.id, sub_in)
+
+
+@router.delete("/me/push-subscriptions", status_code=204)
+def delete_push_subscription(
+    endpoint: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    crud.push_subscription.delete_subscription(db, current_user.id, endpoint)
 
 
 @router.get("", response_model=list[UserRead])
