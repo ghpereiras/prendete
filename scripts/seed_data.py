@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.database import SessionLocal  # noqa: E402
 from app.models.attendee import Attendee  # noqa: E402
 from app.models.event import Event  # noqa: E402
+from app.models.event_poll import EventPoll, EventPollDateOption, EventPollVote  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.security import hash_password  # noqa: E402
 
@@ -73,8 +74,43 @@ COMMENTS = [
     None,
 ]
 
+# (owner_email, title, location, duration_minutes, [days_offset for each proposed date])
+POLLS = [
+    (
+        "demo@example.com",
+        "Buscando fecha para el asado de otoño",
+        "Bosques de Palermo, Buenos Aires",
+        240,
+        [10, 17, 24],
+    ),
+    (
+        "carlos.ruiz@example.com",
+        "¿Cuándo hacemos el torneo de ping pong?",
+        "Club Ferro Carril Oeste, Caballito, Buenos Aires",
+        120,
+        [8, 15],
+    ),
+    (
+        "lucia.fernandez@example.com",
+        "Noche de karaoke, ¿qué día les viene mejor?",
+        "Bar Sur, San Telmo, Buenos Aires",
+        180,
+        [12, 19, 26, 33],
+    ),
+    (
+        "valentina.romero@example.com",
+        "Weekend de camping",
+        "Tigre, Buenos Aires",
+        2880,
+        [40, 55],
+    ),
+]
+
 
 def wipe(db) -> None:
+    db.query(EventPollVote).delete()
+    db.query(EventPollDateOption).delete()
+    db.query(EventPoll).delete()
     db.query(Attendee).delete()
     db.query(Event).delete()
     db.query(User).delete()
@@ -128,6 +164,41 @@ def seed_events(db, users: dict[str, User], specs: list[tuple]) -> None:
     db.commit()
 
 
+def seed_polls(db, users: dict[str, User]) -> None:
+    now = datetime.now(timezone.utc)
+    for owner_email, title, location, duration, day_offsets in POLLS:
+        owner = users[owner_email]
+        poll = EventPoll(
+            title=title,
+            description=f"{title} — organiza {owner.full_name}.",
+            location=location,
+            duration_minutes=duration,
+            owner_id=owner.id,
+        )
+        db.add(poll)
+        db.flush()
+
+        date_options = []
+        for offset in day_offsets:
+            option = EventPollDateOption(
+                poll_id=poll.id,
+                starts_at=now + timedelta(days=offset, hours=random.randint(0, 5)),
+            )
+            db.add(option)
+            date_options.append(option)
+        db.flush()
+
+        # Each voter marks one or more of the proposed dates as one they can
+        # make it to — not everyone invited necessarily votes for all of them.
+        candidates = [u for email, u in users.items() if email != owner_email]
+        voters = random.sample(candidates, k=random.randint(3, min(6, len(candidates))))
+        for voter in voters:
+            chosen_options = random.sample(date_options, k=random.randint(1, len(date_options)))
+            for option in chosen_options:
+                db.add(EventPollVote(date_option_id=option.id, user_id=voter.id))
+    db.commit()
+
+
 def main() -> None:
     random.seed(42)
     db = SessionLocal()
@@ -136,12 +207,14 @@ def main() -> None:
         users = seed_users(db)
         seed_events(db, users, PAST_EVENTS)
         seed_events(db, users, FUTURE_EVENTS)
+        seed_polls(db, users)
     finally:
         db.close()
 
     print(f"Seeded {len(USERS)} users, {len(PAST_EVENTS)} past events, {len(FUTURE_EVENTS)} future events.")
+    print(f"Seeded {len(POLLS)} date polls, each with voters already picked on some of the dates.")
     print(f"All users share the password: {PASSWORD}")
-    print("Log in as demo@example.com to see a mix of owned and joined events.")
+    print("Log in as demo@example.com to see a mix of owned and joined events, plus a pending poll.")
 
 
 if __name__ == "__main__":
