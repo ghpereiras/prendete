@@ -17,7 +17,7 @@ self.addEventListener("push", (event) => {
     data = { body: event.data ? event.data.text() : "" };
   }
 
-  const title = data.title || "Privento";
+  const title = data.title || "Prendete";
   const options = {
     body: data.body || "",
     icon: "/favicon.svg",

@@ -6,9 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from app.database import Base, get_db
 from app.main import app
 
-TEST_DB_NAME = "privento_test"
-ADMIN_DATABASE_URL = "postgresql+psycopg://privento:privento@localhost:5432/privento"
-TEST_DATABASE_URL = f"postgresql+psycopg://privento:privento@localhost:5432/{TEST_DB_NAME}"
+TEST_DB_NAME = "prendete_test"
+ADMIN_DATABASE_URL = "postgresql+psycopg://prendete:prendete@localhost:5432/prendete"
+TEST_DATABASE_URL = f"postgresql+psycopg://prendete:prendete@localhost:5432/{TEST_DB_NAME}"
 
 
 def _ensure_test_database() -> None:

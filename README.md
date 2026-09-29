@@ -1,4 +1,4 @@
-# Privento
+# Prendete
 
 Gestión de eventos: usuarios, eventos y asistentes.
 
@@ -125,7 +125,7 @@ El modelo es simple a propósito: una fila en `attendees` (`app/models/attendee.
 pytest
 ```
 
-Usan una base separada (`privento_test`, en el mismo Postgres) que se crea sola si no existe, y se truncan las tablas antes de cada test. No tocan la base de desarrollo.
+Usan una base separada (`prendete_test`, en el mismo Postgres) que se crea sola si no existe, y se truncan las tablas antes de cada test. No tocan la base de desarrollo.
 
 ## Migraciones nuevas
 

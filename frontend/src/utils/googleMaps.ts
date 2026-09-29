@@ -16,7 +16,7 @@ export function loadGoogleMaps(): Promise<typeof google> {
       return;
     }
 
-    const callbackName = "__privento_google_maps_loaded";
+    const callbackName = "__prendete_google_maps_loaded";
     (window as unknown as Record<string, () => void>)[callbackName] = () => resolve(window.google);
 
     const script = document.createElement("script");

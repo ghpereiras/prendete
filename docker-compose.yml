@@ -3,9 +3,9 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-privento}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-privento}
-      POSTGRES_DB: ${POSTGRES_DB:-privento}
+      POSTGRES_USER: ${POSTGRES_USER:-prendete}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prendete}
+      POSTGRES_DB: ${POSTGRES_DB:-prendete}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:

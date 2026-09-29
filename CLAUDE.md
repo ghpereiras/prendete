@@ -31,7 +31,7 @@ alembic revision --autogenerate -m "mensaje"              # nueva migración
 ## Testing
 
 - pytest con mocks (`unittest.mock.patch`) para todo lo que pegue a servicios externos — nunca llamadas reales a `webpush`/push services en tests. Ver `tests/test_push.py`.
-- `tests/conftest.py` trunca las tablas entre tests contra una DB real de test (`privento_test`), no usa sqlite ni mocks de DB.
+- `tests/conftest.py` trunca las tablas entre tests contra una DB real de test (`prendete_test`), no usa sqlite ni mocks de DB.
 
 ## Limitación de entorno conocida
 

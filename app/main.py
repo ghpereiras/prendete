@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import attendees, auth, event_polls, events, users
 
-app = FastAPI(title="Privento API")
+app = FastAPI(title="Prendete API")
 
 app.add_middleware(
     CORSMiddleware,

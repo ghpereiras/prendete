@@ -22,7 +22,7 @@ i18n
       // infer from the browser, so the default is always Spanish.
       order: ["localStorage"],
       caches: ["localStorage"],
-      lookupLocalStorage: "privento_language",
+      lookupLocalStorage: "prendete_language",
     },
     interpolation: { escapeValue: false },
   });
