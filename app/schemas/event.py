@@ -12,7 +12,7 @@ class EventCreate(BaseModel):
     starts_at: datetime
     duration_minutes: int = Field(gt=0)
     registration_deadline_minutes_before: int | None = Field(default=None, gt=0)
-    max_attendees: int = Field(gt=0)
+    max_attendees: int | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def validate_start_and_registration_window(self) -> "EventCreate":
@@ -45,7 +45,7 @@ class EventRead(BaseModel):
     starts_at: datetime
     duration_minutes: int
     registration_deadline_minutes_before: int | None
-    max_attendees: int
+    max_attendees: int | None
     owner_id: int
     owner_name: str
     created_at: datetime
@@ -67,8 +67,8 @@ class EventInvitePreview(BaseModel):
     starts_at: datetime
     duration_minutes: int
     registration_deadline_minutes_before: int | None
-    max_attendees: int
-    spots_left: int
+    max_attendees: int | None
+    spots_left: int | None
     registration_open: bool
     owner_id: int
 

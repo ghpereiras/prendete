@@ -48,7 +48,7 @@ def preview_invite(invite_token: str, db: Session = Depends(get_db)):
         duration_minutes=event.duration_minutes,
         registration_deadline_minutes_before=event.registration_deadline_minutes_before,
         max_attendees=event.max_attendees,
-        spots_left=max(event.max_attendees - accepted, 0),
+        spots_left=None if event.max_attendees is None else max(event.max_attendees - accepted, 0),
         registration_open=crud.event.is_registration_open(event),
         owner_id=event.owner_id,
     )
@@ -111,7 +111,7 @@ def update_event(
         raise HTTPException(status_code=403, detail="Cannot edit an event that already happened")
 
     accepted = crud.attendee.count_attendees(db, event.id)
-    if event_in.max_attendees < accepted:
+    if event_in.max_attendees is not None and event_in.max_attendees < accepted:
         raise HTTPException(
             status_code=422,
             detail="max_attendees cannot be lower than the number of already accepted attendees",

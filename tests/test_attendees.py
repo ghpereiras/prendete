@@ -246,6 +246,21 @@ def test_join_event_full_capacity_rejected(client):
     assert response.status_code == 409
 
 
+def test_join_unlimited_event_never_full(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    create_event(client, owner_token, max_attendees=None)
+    token = get_invite_token(client, 1, owner_token)
+
+    for i in range(5):
+        friend_token = register_and_login(client, f"friend{i}@example.com")
+        response = client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))
+        assert response.status_code == 201
+
+    preview = client.get(f"/events/invite/{token}").json()
+    assert preview["spots_left"] is None
+    assert preview["max_attendees"] is None
+
+
 def test_join_event_twice_rejected(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")

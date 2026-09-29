@@ -45,7 +45,6 @@
   "home": {
     "greeting": "Hi, {{name}}",
     "organizedBy": "organized by {{name}}",
-    "pendingPolls": "Pending polls",
     "pollBadge": "Poll",
     "dateOptionsCount": "{{count}} proposed dates"
   },
@@ -131,6 +130,7 @@
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",
+    "unlimitedSpots": "No spot limit",
     "shareLink": "Share this link with your friends so they can join:",
     "copy": "Copy link",
     "copied": "Copied!",
@@ -186,6 +186,7 @@
   },
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",
+    "unlimitedSpots": "Unlimited spots",
     "full": "This event is full",
     "registrationClosed": "Registration for this event has closed",
     "timeToRegister": "Time until registration closes: {{time}}",
@@ -202,7 +203,8 @@
   "timeFilter": {
     "label": "Filter by date",
     "upcoming": "Upcoming events",
-    "past": "Past events"
+    "past": "Past events",
+    "polls": "Polls"
   },
   "ownerFilter": {
     "label": "Filter by organizer",
@@ -227,6 +229,9 @@
   },
   "pastEvents": {
     "empty": "You don't have any past events."
+  },
+  "pollsFilter": {
+    "empty": "You don't have any pending polls."
   },
   "common": {
     "loading": "Loading..."

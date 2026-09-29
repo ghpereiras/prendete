@@ -139,7 +139,10 @@ export default function EventDetail() {
   }
 
   const acceptedCount = attendees ? attendees.filter((a) => !a.is_owner).length : null;
-  const spotsLeft = acceptedCount === null ? null : Math.max(event.max_attendees - acceptedCount, 0);
+  const spotsLeft =
+    acceptedCount === null || event.max_attendees === null
+      ? null
+      : Math.max(event.max_attendees - acceptedCount, 0);
   const isOwner = user?.id === event.owner_id;
   const canManage = isOwner && new Date(event.starts_at).getTime() > Date.now();
   const canLeave = !isOwner;
@@ -157,9 +160,11 @@ export default function EventDetail() {
         {formatDateTime(endsAt(event.starts_at, event.duration_minutes), lang)}
       </p>
       <p>
-        {spotsLeft === null
-          ? t("common.loading")
-          : t("eventDetail.spotsLeft", { count: spotsLeft })}
+        {event.max_attendees === null
+          ? t("eventDetail.unlimitedSpots")
+          : spotsLeft === null
+            ? t("common.loading")
+            : t("eventDetail.spotsLeft", { count: spotsLeft })}
       </p>
       <p className={isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before) ? undefined : "error"}>
         {isRegistrationOpen(event.starts_at, event.registration_deadline_minutes_before)

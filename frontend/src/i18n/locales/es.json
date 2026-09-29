@@ -45,7 +45,6 @@
   "home": {
     "greeting": "Hola, {{name}}",
     "organizedBy": "organiza {{name}}",
-    "pendingPolls": "Encuestas pendientes",
     "pollBadge": "Encuesta",
     "dateOptionsCount": "{{count}} fechas propuestas"
   },
@@ -131,6 +130,7 @@
   },
   "eventDetail": {
     "spotsLeft": "Cupos disponibles: {{count}}",
+    "unlimitedSpots": "Sin límite de cupo",
     "shareLink": "Compartí este link con tus amigos para que se sumen:",
     "copy": "Copiar link",
     "copied": "¡Copiado!",
@@ -186,6 +186,7 @@
   },
   "invitePreview": {
     "spotsLeft": "Quedan {{count}} lugares",
+    "unlimitedSpots": "Cupo sin límite",
     "full": "El evento está completo",
     "registrationClosed": "Las inscripciones para este evento ya cerraron",
     "timeToRegister": "Tiempo para el cierre de inscripciones: {{time}}",
@@ -202,7 +203,8 @@
   "timeFilter": {
     "label": "Filtrar por fecha",
     "upcoming": "Próximos eventos",
-    "past": "Eventos pasados"
+    "past": "Eventos pasados",
+    "polls": "Encuestas"
   },
   "ownerFilter": {
     "label": "Filtrar por organizador",
@@ -227,6 +229,9 @@
   },
   "pastEvents": {
     "empty": "No tenés eventos pasados."
+  },
+  "pollsFilter": {
+    "empty": "No tenés encuestas pendientes."
   },
   "common": {
     "loading": "Cargando..."

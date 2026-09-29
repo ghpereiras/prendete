@@ -31,7 +31,7 @@ def join_event(
     if not crud.event.is_registration_open(event):
         raise HTTPException(status_code=409, detail="Registration for this event is closed")
 
-    if crud.attendee.count_attendees(db, event.id) >= event.max_attendees:
+    if event.max_attendees is not None and crud.attendee.count_attendees(db, event.id) >= event.max_attendees:
         raise HTTPException(status_code=409, detail="This event is full")
 
     comment = join_in.comment if join_in else None

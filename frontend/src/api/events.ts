@@ -10,7 +10,7 @@ export interface Event {
   starts_at: string;
   duration_minutes: number;
   registration_deadline_minutes_before: number | null;
-  max_attendees: number;
+  max_attendees: number | null;
   owner_id: number;
   owner_name: string;
   created_at: string;
@@ -25,7 +25,7 @@ export interface EventCreateInput {
   starts_at: string;
   duration_minutes: number;
   registration_deadline_minutes_before?: number;
-  max_attendees: number;
+  max_attendees?: number | null;
 }
 
 export function listEvents(): Promise<Event[]> {
@@ -79,8 +79,8 @@ export interface EventInvitePreview {
   starts_at: string;
   duration_minutes: number;
   registration_deadline_minutes_before: number | null;
-  max_attendees: number;
-  spots_left: number;
+  max_attendees: number | null;
+  spots_left: number | null;
   registration_open: boolean;
   owner_id: number;
 }

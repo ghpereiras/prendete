@@ -24,7 +24,7 @@ class Event(Base):
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     registration_deadline_minutes_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    max_attendees: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_attendees: Mapped[int | None] = mapped_column(Integer, nullable=True)
     invite_token: Mapped[str] = mapped_column(
         String(32), unique=True, index=True, nullable=False, default=generate_invite_token
     )

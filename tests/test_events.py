@@ -70,6 +70,23 @@ def test_create_event_max_attendees_zero_rejected(client):
     assert response.status_code == 422
 
 
+def test_create_event_without_max_attendees_is_unlimited(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_event(client, token, max_attendees=None)
+    assert response.status_code == 201
+    assert response.json()["max_attendees"] is None
+
+
+def test_update_event_can_remove_max_attendees(client):
+    token = register_and_login(client, "owner@example.com")
+    create_event(client, token)
+    response = client.patch(
+        "/events/1", json={**EVENT_PAYLOAD, "max_attendees": None}, headers=auth_headers(token)
+    )
+    assert response.status_code == 200
+    assert response.json()["max_attendees"] is None
+
+
 def test_create_event_duration_zero_rejected(client):
     token = register_and_login(client, "owner@example.com")
     response = create_event(client, token, duration_minutes=0)

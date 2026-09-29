@@ -50,6 +50,7 @@ export default function CreateEvent() {
     fromPoll ? String(fromPoll.durationMinutes / 60) : "3",
   );
   const [registrationDeadlineHours, setRegistrationDeadlineHours] = useState("");
+  const [limitAttendees, setLimitAttendees] = useState(false);
   const [maxAttendees, setMaxAttendees] = useState("10");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -76,7 +77,10 @@ export default function CreateEvent() {
             ? String(event.registration_deadline_minutes_before / 60)
             : "",
         );
-        setMaxAttendees(String(event.max_attendees));
+        setLimitAttendees(event.max_attendees !== null);
+        if (event.max_attendees !== null) {
+          setMaxAttendees(String(event.max_attendees));
+        }
       })
       .catch(() => setLoadError("createEvent.editLoadError"))
       .finally(() => setLoading(false));
@@ -104,9 +108,11 @@ export default function CreateEvent() {
       errors.durationHours = "createEvent.errorDurationRequired";
     }
 
-    const maxAttendeesValue = Number(maxAttendees);
-    if (!maxAttendees || Number.isNaN(maxAttendeesValue) || maxAttendeesValue <= 0) {
-      errors.maxAttendees = "createEvent.errorMaxAttendeesRequired";
+    if (limitAttendees) {
+      const maxAttendeesValue = Number(maxAttendees);
+      if (!maxAttendees || Number.isNaN(maxAttendeesValue) || maxAttendeesValue <= 0) {
+        errors.maxAttendees = "createEvent.errorMaxAttendeesRequired";
+      }
     }
 
     if (startsAtIso && !errors.startsAt) {
@@ -154,7 +160,7 @@ export default function CreateEvent() {
       starts_at: startsAtIso,
       duration_minutes: Math.round(Number(durationHours) * 60),
       registration_deadline_minutes_before: registrationDeadlineMinutes ?? undefined,
-      max_attendees: Number(maxAttendees),
+      max_attendees: limitAttendees ? Number(maxAttendees) : null,
     };
 
     setConfirmingNotify(false);
@@ -280,18 +286,31 @@ export default function CreateEvent() {
             <span className="field-error">{t(fieldErrors.registrationDeadlineHours)}</span>
           )}
         </label>
-        <label>
-          {t("createEvent.maxAttendees")}
-          <input
-            type="number"
-            min={1}
-            value={maxAttendees}
-            onChange={(e) => setMaxAttendees(e.target.value)}
-          />
-          {fieldErrors.maxAttendees && (
-            <span className="field-error">{t(fieldErrors.maxAttendees)}</span>
-          )}
-        </label>
+        <div className="toggle-row">
+          <span>{t("createEvent.maxAttendees")}</span>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={limitAttendees}
+              onChange={(e) => setLimitAttendees(e.target.checked)}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+        {limitAttendees && (
+          <label>
+            <span className="sr-only">{t("createEvent.maxAttendees")}</span>
+            <input
+              type="number"
+              min={1}
+              value={maxAttendees}
+              onChange={(e) => setMaxAttendees(e.target.value)}
+            />
+            {fieldErrors.maxAttendees && (
+              <span className="field-error">{t(fieldErrors.maxAttendees)}</span>
+            )}
+          </label>
+        )}
         <button type="submit" disabled={submitting}>
           {submitting
             ? t(isEditing ? "createEvent.editSubmitting" : "createEvent.submitting")

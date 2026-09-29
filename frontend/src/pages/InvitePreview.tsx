@@ -74,7 +74,7 @@ export default function InvitePreview() {
   }
 
   const isOwner = user?.id === event.owner_id;
-  const isFull = event.spots_left <= 0;
+  const isFull = event.spots_left !== null && event.spots_left <= 0;
 
   return (
     <div className="page">
@@ -91,7 +91,9 @@ export default function InvitePreview() {
       <p>
         {isFull
           ? t("invitePreview.full")
-          : t("invitePreview.spotsLeft", { count: event.spots_left })}
+          : event.spots_left === null
+            ? t("invitePreview.unlimitedSpots")
+            : t("invitePreview.spotsLeft", { count: event.spots_left })}
       </p>
 
       {registrationClosed ? (
