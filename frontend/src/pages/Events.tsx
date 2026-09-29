@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { listEventPolls, type EventPoll } from "../api/eventPolls";
 import { listEvents, type Event } from "../api/events";
 import EventList from "../components/EventList";
+import PollList from "../components/PollList";
 import SegmentedFilter from "../components/SegmentedFilter";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -13,6 +15,7 @@ export default function Events() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [events, setEvents] = useState<Event[] | null>(null);
+  const [polls, setPolls] = useState<EventPoll[]>([]);
   const [timeFilter, setTimeFilter] = useState<TimeFilterValue>("upcoming");
   const [ownerFilter, setOwnerFilter] = useState<OwnerFilterValue>("all");
 
@@ -20,6 +23,7 @@ export default function Events() {
 
   useEffect(() => {
     listEvents().then(setEvents);
+    listEventPolls().then(setPolls);
   }, []);
 
   const now = Date.now();
@@ -38,6 +42,7 @@ export default function Events() {
 
   return (
     <div className="page">
+      <PollList polls={polls} />
       <div className="event-filters">
         <SegmentedFilter
           value={timeFilter}

@@ -14,3 +14,9 @@ export function formatDateTime(dateInput: string | Date, locale: string): string
   const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(date);
   return `${formatDate(date, locale)}, ${time}`;
 }
+
+// Formats a Date as the value a `datetime-local` input expects (no timezone).
+export function toDatetimeLocalValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}

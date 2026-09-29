@@ -19,8 +19,8 @@ export default function Header() {
       </Link>
       <h1 className="app-header-title">{title}</h1>
       <div className="top-bar">
-        <CreateEventButton />
         <TopBarMenuProvider>
+          <CreateEventButton />
           <LanguageSwitcher />
           <AccountMenu />
         </TopBarMenuProvider>

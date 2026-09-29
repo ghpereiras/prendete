@@ -739,3 +739,131 @@
   white-space: nowrap;
   border: 0;
 }
+
+.poll-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.poll-list-section {
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 20px;
+}
+
+.poll-list-heading {
+  font-size: 16px;
+  margin: 0 0 8px;
+  text-align: left;
+}
+
+.poll-list-item {
+  border-style: dashed;
+}
+
+.poll-voters-box {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.poll-voters-box p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.poll-voters-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.poll-voter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-h);
+}
+
+.poll-date-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.poll-date-option-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.poll-date-option-row input {
+  flex: 1;
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.poll-date-option-row button {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.poll-add-date {
+  align-self: flex-start;
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.poll-options-list {
+  width: 100%;
+  max-width: 360px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poll-option-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.poll-option-date {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.poll-option-vote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-h);
+  cursor: pointer;
+}

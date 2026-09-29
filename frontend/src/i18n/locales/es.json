@@ -44,7 +44,10 @@
   },
   "home": {
     "greeting": "Hola, {{name}}",
-    "organizedBy": "organiza {{name}}"
+    "organizedBy": "organiza {{name}}",
+    "pendingPolls": "Encuestas pendientes",
+    "pollBadge": "Encuesta",
+    "dateOptionsCount": "{{count}} fechas propuestas"
   },
   "account": {
     "label": "Cuenta",
@@ -102,7 +105,29 @@
     "editLoadError": "No se pudo cargar el evento para editar",
     "notifyAttendeesPrompt": "¿Querés avisarle a los asistentes que hubo cambios en el evento?",
     "notifyAttendeesConfirm": "Sí, avisar",
-    "notifyAttendeesDecline": "No avisar"
+    "notifyAttendeesDecline": "No avisar",
+    "pollVotersLabel": "Dijeron que pueden:"
+  },
+  "createPoll": {
+    "title": "Crear encuesta de fecha",
+    "name": "Nombre",
+    "description": "Descripción",
+    "location": "Ubicación",
+    "locationDetails": "Datos adicionales",
+    "locationDetailsPlaceholder": "Piso, depto, referencias...",
+    "durationHours": "Duración (en horas)",
+    "dateOptionsLabel": "Fechas propuestas",
+    "addDate": "+ Agregar otra fecha",
+    "removeDate": "Sacar",
+    "submit": "Crear encuesta",
+    "submitting": "Creando encuesta...",
+    "error": "No se pudo crear la encuesta",
+    "errorTitleRequired": "Completá el nombre del plan",
+    "errorDurationRequired": "Ingresá una duración válida, mayor a 0",
+    "errorAtLeastTwoDates": "Proponé al menos dos fechas",
+    "errorDatesInPast": "Las fechas propuestas tienen que ser futuras",
+    "errorDuplicateDates": "No repitas la misma fecha",
+    "hasErrors": "Hay errores que corregir antes de crear la encuesta"
   },
   "eventDetail": {
     "spotsLeft": "Cupos disponibles: {{count}}",
@@ -135,6 +160,29 @@
     "saveComment": "Guardar",
     "savingComment": "Guardando...",
     "commentError": "No se pudo guardar el comentario"
+  },
+  "pollDetail": {
+    "notFound": "No se encontró la encuesta",
+    "shareLink": "Compartí este link con tus amigos para que voten:",
+    "copy": "Copiar link",
+    "copied": "¡Copiado!",
+    "dateOptionsLabel": "Fechas propuestas",
+    "chooseThisSlot": "Elegir este horario",
+    "canAttend": "Puedo",
+    "saveAvailability": "Guardar mis disponibilidades",
+    "savingAvailability": "Guardando...",
+    "voteError": "No se pudo guardar tu disponibilidad",
+    "alreadyResolved": "Esta encuesta ya se resolvió, el evento quedó armado.",
+    "viewEvent": "Ver evento"
+  },
+  "pollInvitePreview": {
+    "notFound": "Este link de invitación no es válido",
+    "isOwner": "Sos el organizador de esta encuesta.",
+    "pickDates": "Marcá las fechas en las que podés:",
+    "vote": "Guardar mi disponibilidad",
+    "voting": "Guardando...",
+    "voteError": "No se pudo guardar tu disponibilidad",
+    "needsAuth": "Iniciá sesión o creá una cuenta para votar"
   },
   "invitePreview": {
     "spotsLeft": "Quedan {{count}} lugares",

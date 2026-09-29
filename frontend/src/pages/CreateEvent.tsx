@@ -1,15 +1,26 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
-import { ApiError } from "../api/client";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { avatarUrl, ApiError } from "../api/client";
 import { createEvent, getEvent, isRegistrationOpen, updateEvent } from "../api/events";
+import { resolveEventPoll, type EventPollVoter } from "../api/eventPolls";
+import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
 import LocationSearch from "../components/LocationSearch";
 import { usePageTitle } from "../context/PageTitleContext";
+import { toDatetimeLocalValue } from "../utils/date";
 
-function toDatetimeLocalValue(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+interface FromPoll {
+  pollId: number;
+  dateOptionId: number;
+  title: string;
+  description: string | null;
+  location: string | null;
+  locationDetails: string | null;
+  mapsLink: string | null;
+  durationMinutes: number;
+  startsAt: string;
+  voters: EventPollVoter[];
 }
 
 interface FieldErrors {
@@ -23,15 +34,21 @@ interface FieldErrors {
 export default function CreateEvent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const routerLocation = useLocation();
   const { eventId } = useParams<{ eventId: string }>();
   const isEditing = Boolean(eventId);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [locationDetails, setLocationDetails] = useState("");
-  const [mapsLink, setMapsLink] = useState("");
-  const [startsAt, setStartsAt] = useState("");
-  const [durationHours, setDurationHours] = useState("3");
+  const fromPoll = (routerLocation.state as { fromPoll?: FromPoll } | null)?.fromPoll ?? null;
+  const [title, setTitle] = useState(fromPoll?.title ?? "");
+  const [description, setDescription] = useState(fromPoll?.description ?? "");
+  const [location, setLocation] = useState(fromPoll?.location ?? "");
+  const [locationDetails, setLocationDetails] = useState(fromPoll?.locationDetails ?? "");
+  const [mapsLink, setMapsLink] = useState(fromPoll?.mapsLink ?? "");
+  const [startsAt, setStartsAt] = useState(
+    fromPoll ? toDatetimeLocalValue(new Date(fromPoll.startsAt)) : "",
+  );
+  const [durationHours, setDurationHours] = useState(
+    fromPoll ? String(fromPoll.durationMinutes / 60) : "3",
+  );
   const [registrationDeadlineHours, setRegistrationDeadlineHours] = useState("");
   const [maxAttendees, setMaxAttendees] = useState("10");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -146,6 +163,9 @@ export default function CreateEvent() {
       const event = isEditing
         ? await updateEvent(Number(eventId), payload, notifyAttendees)
         : await createEvent(payload);
+      if (fromPoll) {
+        await resolveEventPoll(fromPoll.pollId, event.id, fromPoll.dateOptionId);
+      }
       navigate(`/events/${event.id}`);
     } catch (err) {
       setSubmitError(
@@ -175,6 +195,19 @@ export default function CreateEvent() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        {fromPoll && fromPoll.voters.length > 0 && (
+          <div className="poll-voters-box">
+            <p>{t("createEvent.pollVotersLabel")}</p>
+            <div className="poll-voters-list">
+              {fromPoll.voters.map((voter) => (
+                <span key={voter.user_id} className="poll-voter">
+                  <Avatar avatarUrl={avatarUrl(voter.avatar_url)} fullName={voter.full_name} />
+                  {voter.full_name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <label>
           {t("createEvent.name")}
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />

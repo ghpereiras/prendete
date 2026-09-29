@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
-type MenuId = "language" | "account";
+type MenuId = "language" | "account" | "create";
 
 const CLOSE_DELAY_MS = 150;
 

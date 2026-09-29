@@ -7,10 +7,13 @@ import NotificationPrompt from "./components/NotificationPrompt";
 import { PageTitleProvider } from "./context/PageTitleContext";
 import ProtectedRoute from "./context/ProtectedRoute";
 import CreateEvent from "./pages/CreateEvent";
+import CreatePoll from "./pages/CreatePoll";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
 import InvitePreview from "./pages/InvitePreview";
 import Login from "./pages/Login";
+import PollDetail from "./pages/PollDetail";
+import PollInvitePreview from "./pages/PollInvitePreview";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 
@@ -32,6 +35,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/invite/:token" element={<InvitePreview />} />
+        <Route path="/polls/invite/:token" element={<PollInvitePreview />} />
         <Route
           path="/"
           element={
@@ -69,6 +73,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EventDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/polls/new"
+          element={
+            <ProtectedRoute>
+              <CreatePoll />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/polls/:pollId"
+          element={
+            <ProtectedRoute>
+              <PollDetail />
             </ProtectedRoute>
           }
         />

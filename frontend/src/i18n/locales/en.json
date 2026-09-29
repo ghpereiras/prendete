@@ -44,7 +44,10 @@
   },
   "home": {
     "greeting": "Hi, {{name}}",
-    "organizedBy": "organized by {{name}}"
+    "organizedBy": "organized by {{name}}",
+    "pendingPolls": "Pending polls",
+    "pollBadge": "Poll",
+    "dateOptionsCount": "{{count}} proposed dates"
   },
   "account": {
     "label": "Account",
@@ -102,7 +105,29 @@
     "editLoadError": "Couldn't load the event to edit",
     "notifyAttendeesPrompt": "Do you want to let attendees know the event changed?",
     "notifyAttendeesConfirm": "Yes, notify",
-    "notifyAttendeesDecline": "Don't notify"
+    "notifyAttendeesDecline": "Don't notify",
+    "pollVotersLabel": "They said they can make it:"
+  },
+  "createPoll": {
+    "title": "Create date poll",
+    "name": "Name",
+    "description": "Description",
+    "location": "Location",
+    "locationDetails": "Additional details",
+    "locationDetailsPlaceholder": "Floor, apartment number, notes...",
+    "durationHours": "Duration (hours)",
+    "dateOptionsLabel": "Proposed dates",
+    "addDate": "+ Add another date",
+    "removeDate": "Remove",
+    "submit": "Create poll",
+    "submitting": "Creating poll...",
+    "error": "Couldn't create the poll",
+    "errorTitleRequired": "Enter the plan's name",
+    "errorDurationRequired": "Enter a valid duration, greater than 0",
+    "errorAtLeastTwoDates": "Propose at least two dates",
+    "errorDatesInPast": "Proposed dates must be in the future",
+    "errorDuplicateDates": "Don't repeat the same date",
+    "hasErrors": "There are errors to fix before creating the poll"
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",
@@ -135,6 +160,29 @@
     "saveComment": "Save",
     "savingComment": "Saving...",
     "commentError": "Couldn't save the comment"
+  },
+  "pollDetail": {
+    "notFound": "Poll not found",
+    "shareLink": "Share this link with your friends so they can vote:",
+    "copy": "Copy link",
+    "copied": "Copied!",
+    "dateOptionsLabel": "Proposed dates",
+    "chooseThisSlot": "Choose this time",
+    "canAttend": "I can make it",
+    "saveAvailability": "Save my availability",
+    "savingAvailability": "Saving...",
+    "voteError": "Couldn't save your availability",
+    "alreadyResolved": "This poll was already resolved, the event is set.",
+    "viewEvent": "View event"
+  },
+  "pollInvitePreview": {
+    "notFound": "This invite link isn't valid",
+    "isOwner": "You're the organizer of this poll.",
+    "pickDates": "Mark the dates you can make it:",
+    "vote": "Save my availability",
+    "voting": "Saving...",
+    "voteError": "Couldn't save your availability",
+    "needsAuth": "Sign in or create an account to vote"
   },
   "invitePreview": {
     "spotsLeft": "{{count}} spots left",
