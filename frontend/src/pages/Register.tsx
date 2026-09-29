@@ -11,7 +11,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 interface FieldErrors {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   password?: string;
 }
@@ -22,7 +23,8 @@ export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? "/";
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -32,7 +34,8 @@ export default function Register() {
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
-    if (!fullName.trim()) errors.fullName = "register.errorFullNameRequired";
+    if (!firstName.trim()) errors.firstName = "register.errorFirstNameRequired";
+    if (!lastName.trim()) errors.lastName = "register.errorLastNameRequired";
     if (!email.trim()) {
       errors.email = "register.errorEmailRequired";
     } else if (!EMAIL_RE.test(email.trim())) {
@@ -58,7 +61,7 @@ export default function Register() {
 
     setSubmitting(true);
     try {
-      await register(email, fullName, password, avatar);
+      await register(email, firstName, lastName, password, avatar);
       await login(email, password);
       navigate(from);
     } catch (err) {
@@ -85,9 +88,14 @@ export default function Register() {
           {fieldErrors.email && <span className="field-error">{t(fieldErrors.email)}</span>}
         </label>
         <label>
-          {t("register.fullName")}
-          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          {fieldErrors.fullName && <span className="field-error">{t(fieldErrors.fullName)}</span>}
+          {t("register.firstName")}
+          <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+          {fieldErrors.firstName && <span className="field-error">{t(fieldErrors.firstName)}</span>}
+        </label>
+        <label>
+          {t("register.lastName")}
+          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          {fieldErrors.lastName && <span className="field-error">{t(fieldErrors.lastName)}</span>}
         </label>
         <label>
           {t("register.password")}

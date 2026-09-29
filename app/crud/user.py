@@ -9,7 +9,8 @@ from app.security import hash_password
 def create_user(db: Session, user_in: UserCreate, avatar: bytes | None = None) -> User:
     user = User(
         email=user_in.email,
-        full_name=user_in.full_name,
+        first_name=user_in.first_name,
+        last_name=user_in.last_name,
         hashed_password=hash_password(user_in.password),
         avatar=avatar,
     )
@@ -23,12 +24,15 @@ def update_user(
     db: Session,
     user: User,
     *,
-    full_name: str | None = None,
+    first_name: str | None = None,
+    last_name: str | None = None,
     avatar: bytes | None = None,
     avatar_changed: bool = False,
 ) -> User:
-    if full_name is not None:
-        user.full_name = full_name
+    if first_name is not None:
+        user.first_name = first_name
+    if last_name is not None:
+        user.last_name = last_name
     if avatar_changed:
         user.avatar = avatar
     db.commit()

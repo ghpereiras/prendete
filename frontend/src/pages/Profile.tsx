@@ -21,7 +21,8 @@ export default function Profile() {
   usePageTitle(t("profile.title"));
 
   const [editing, setEditing] = useState(false);
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarChange, setAvatarChange] = useState<AvatarChange>("none");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -62,7 +63,8 @@ export default function Profile() {
   }
 
   function startEditing() {
-    setFullName(user?.full_name ?? "");
+    setFirstName(user?.first_name ?? "");
+    setLastName(user?.last_name ?? "");
     setAvatarPreview(avatarUrl(user?.avatar_url ?? null));
     setAvatarChange("none");
     setNameError(null);
@@ -79,7 +81,7 @@ export default function Profile() {
     e.preventDefault();
     setError(null);
 
-    if (!fullName.trim()) {
+    if (!firstName.trim() || !lastName.trim()) {
       setNameError("profile.errorNameRequired");
       return;
     }
@@ -88,7 +90,8 @@ export default function Profile() {
     setSubmitting(true);
     try {
       await updateProfile({
-        fullName,
+        firstName,
+        lastName,
         avatarBase64: typeof avatarChange === "object" ? avatarChange.dataUrl : undefined,
         removeAvatar: avatarChange === "removed",
       });
@@ -107,10 +110,14 @@ export default function Profile() {
           {error && <p className="error">{t(error)}</p>}
           <AvatarPicker value={avatarPreview} onChange={handleAvatarChange} />
           <label>
-            {t("profile.name")}
-            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            {nameError && <span className="field-error">{t(nameError)}</span>}
+            {t("profile.firstName")}
+            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </label>
+          <label>
+            {t("profile.lastName")}
+            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          </label>
+          {nameError && <span className="field-error">{t(nameError)}</span>}
           <div className="form-actions">
             <button type="button" onClick={() => setEditing(false)} disabled={submitting}>
               {t("profile.cancel")}

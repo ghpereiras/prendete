@@ -56,8 +56,17 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
-def register(client: TestClient, email: str, password: str = "secret123", full_name: str = "Test User"):
-    return client.post("/users", json={"email": email, "full_name": full_name, "password": password})
+def register(
+    client: TestClient,
+    email: str,
+    password: str = "secret123",
+    first_name: str = "Test",
+    last_name: str = "User",
+):
+    return client.post(
+        "/users",
+        json={"email": email, "first_name": first_name, "last_name": last_name, "password": password},
+    )
 
 
 def login(client: TestClient, email: str, password: str = "secret123") -> str:
@@ -65,8 +74,14 @@ def login(client: TestClient, email: str, password: str = "secret123") -> str:
     return response.json()["access_token"]
 
 
-def register_and_login(client: TestClient, email: str, password: str = "secret123", full_name: str = "Test User") -> str:
-    register(client, email, password, full_name)
+def register_and_login(
+    client: TestClient,
+    email: str,
+    password: str = "secret123",
+    first_name: str = "Test",
+    last_name: str = "User",
+) -> str:
+    register(client, email, password, first_name, last_name)
     return login(client, email, password)
 
 

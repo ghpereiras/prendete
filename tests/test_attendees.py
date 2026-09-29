@@ -352,8 +352,8 @@ def test_regenerate_invite_link_invalidates_old_token(client):
 
 
 def test_list_attendees_shows_owner_first_then_attendees(client):
-    owner_token = register_and_login(client, "owner@example.com", full_name="Owner Person")
-    friend_token = register_and_login(client, "friend@example.com", full_name="Friend Person")
+    owner_token = register_and_login(client, "owner@example.com", first_name="Owner", last_name="Person")
+    friend_token = register_and_login(client, "friend@example.com", first_name="Friend", last_name="Person")
     create_event(client, owner_token)
     token = get_invite_token(client, 1, owner_token)
     client.post(f"/events/invite/{token}/join", headers=auth_headers(friend_token))

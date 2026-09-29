@@ -52,7 +52,8 @@ def update_me(
     return crud.user.update_user(
         db,
         current_user,
-        full_name=user_in.full_name,
+        first_name=user_in.first_name,
+        last_name=user_in.last_name,
         avatar=avatar,
         avatar_changed=avatar_changed,
     )

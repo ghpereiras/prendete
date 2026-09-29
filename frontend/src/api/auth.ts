@@ -3,6 +3,8 @@ import { API_URL, ApiError, apiGet, apiPatch, apiPost } from "./client";
 export interface User {
   id: number;
   email: string;
+  first_name: string;
+  last_name: string;
   full_name: string;
   avatar_url: string | null;
   created_at: string;
@@ -30,13 +32,15 @@ export async function login(email: string, password: string): Promise<string> {
 
 export function register(
   email: string,
-  fullName: string,
+  firstName: string,
+  lastName: string,
   password: string,
   avatarBase64?: string | null,
 ): Promise<User> {
   return apiPost<User>("/users", {
     email,
-    full_name: fullName,
+    first_name: firstName,
+    last_name: lastName,
     password,
     avatar_base64: avatarBase64 || undefined,
   });
@@ -47,14 +51,16 @@ export function getCurrentUser(): Promise<User> {
 }
 
 export interface ProfileUpdate {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   avatarBase64?: string;
   removeAvatar?: boolean;
 }
 
 export function updateProfile(update: ProfileUpdate): Promise<User> {
   return apiPatch<User>("/users/me", {
-    full_name: update.fullName,
+    first_name: update.firstName,
+    last_name: update.lastName,
     avatar_base64: update.avatarBase64,
     remove_avatar: update.removeAvatar ?? false,
   });

@@ -23,16 +23,16 @@ from app.security import hash_password  # noqa: E402
 PASSWORD = "password123"
 
 USERS = [
-    ("demo@example.com", "Demo User"),
-    ("ana.garcia@example.com", "Ana García"),
-    ("carlos.ruiz@example.com", "Carlos Ruiz"),
-    ("lucia.fernandez@example.com", "Lucía Fernández"),
-    ("martin.lopez@example.com", "Martín López"),
-    ("sofia.martinez@example.com", "Sofía Martínez"),
-    ("diego.sanchez@example.com", "Diego Sánchez"),
-    ("valentina.romero@example.com", "Valentina Romero"),
-    ("tomas.diaz@example.com", "Tomás Díaz"),
-    ("camila.torres@example.com", "Camila Torres"),
+    ("demo@example.com", "Demo", "User"),
+    ("ana.garcia@example.com", "Ana", "García"),
+    ("carlos.ruiz@example.com", "Carlos", "Ruiz"),
+    ("lucia.fernandez@example.com", "Lucía", "Fernández"),
+    ("martin.lopez@example.com", "Martín", "López"),
+    ("sofia.martinez@example.com", "Sofía", "Martínez"),
+    ("diego.sanchez@example.com", "Diego", "Sánchez"),
+    ("valentina.romero@example.com", "Valentina", "Romero"),
+    ("tomas.diaz@example.com", "Tomás", "Díaz"),
+    ("camila.torres@example.com", "Camila", "Torres"),
 ]
 
 # (owner_email, title, days_offset, duration_minutes, max_attendees, location, registration_deadline_minutes_before)
@@ -83,8 +83,13 @@ def wipe(db) -> None:
 
 def seed_users(db) -> dict[str, User]:
     users = {}
-    for email, full_name in USERS:
-        user = User(email=email, full_name=full_name, hashed_password=hash_password(PASSWORD))
+    for email, first_name, last_name in USERS:
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            hashed_password=hash_password(PASSWORD),
+        )
         db.add(user)
         users[email] = user
     db.commit()

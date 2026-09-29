@@ -50,7 +50,8 @@ def test_register_with_avatar_stores_and_serves_it(client):
         "/users",
         json={
             "email": "owner@example.com",
-            "full_name": "Owner",
+            "first_name": "Owner",
+            "last_name": "Test",
             "password": "secret123",
             "avatar_base64": _sample_image_base64(),
         },
@@ -74,7 +75,8 @@ def test_register_with_invalid_avatar_rejected(client):
         "/users",
         json={
             "email": "owner@example.com",
-            "full_name": "Owner",
+            "first_name": "Owner",
+            "last_name": "Test",
             "password": "secret123",
             "avatar_base64": "!!!not-a-valid-image!!!",
         },
@@ -101,7 +103,7 @@ def test_update_me_changes_full_name(client):
     token = login(client, "owner@example.com")
 
     response = client.patch(
-        "/users/me", json={"full_name": "New Name"}, headers=auth_headers(token)
+        "/users/me", json={"first_name": "New", "last_name": "Name"}, headers=auth_headers(token)
     )
     assert response.status_code == 200
     assert response.json()["full_name"] == "New Name"
@@ -130,7 +132,8 @@ def test_update_me_replaces_existing_avatar(client):
         "/users",
         json={
             "email": "owner@example.com",
-            "full_name": "Owner",
+            "first_name": "Owner",
+            "last_name": "Test",
             "password": "secret123",
             "avatar_base64": _sample_image_base64(color=(10, 10, 10)),
         },
@@ -153,7 +156,8 @@ def test_update_me_removes_avatar(client):
         "/users",
         json={
             "email": "owner@example.com",
-            "full_name": "Owner",
+            "first_name": "Owner",
+            "last_name": "Test",
             "password": "secret123",
             "avatar_base64": _sample_image_base64(),
         },
@@ -180,7 +184,7 @@ def test_update_me_with_invalid_avatar_rejected(client):
 
 
 def test_update_me_without_fields_leaves_user_unchanged(client):
-    register(client, "owner@example.com", full_name="Original Name")
+    register(client, "owner@example.com", first_name="Original", last_name="Name")
     token = login(client, "owner@example.com")
 
     response = client.patch("/users/me", json={}, headers=auth_headers(token))

@@ -148,7 +148,7 @@ def test_list_events_scoped_to_owner_and_participants(client):
 
 
 def test_list_events_includes_owner_name(client):
-    token = register_and_login(client, "owner@example.com", full_name="Owner Person")
+    token = register_and_login(client, "owner@example.com", first_name="Owner", last_name="Person")
     create_event(client, token)
 
     events = client.get("/events", headers=auth_headers(token)).json()
