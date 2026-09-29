@@ -95,7 +95,10 @@
     "editTitle": "Edit event",
     "editSubmit": "Save changes",
     "editSubmitting": "Saving...",
-    "editLoadError": "Couldn't load the event to edit"
+    "editLoadError": "Couldn't load the event to edit",
+    "notifyAttendeesPrompt": "Do you want to let attendees know the event changed?",
+    "notifyAttendeesConfirm": "Yes, notify",
+    "notifyAttendeesDecline": "Don't notify"
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",

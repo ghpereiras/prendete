@@ -60,7 +60,8 @@ def regenerate_invite_token(db: Session, event: Event) -> Event:
 
 
 def update_event(db: Session, event: Event, event_in: EventCreate) -> Event:
-    for field, value in event_in.model_dump().items():
+    data = event_in.model_dump(exclude={"notify_attendees"}, exclude_unset=False)
+    for field, value in data.items():
         setattr(event, field, value)
     db.commit()
     db.refresh(event)

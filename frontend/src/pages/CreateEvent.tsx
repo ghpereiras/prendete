@@ -39,6 +39,7 @@ export default function CreateEvent() {
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(isEditing);
+  const [confirmingNotify, setConfirmingNotify] = useState(false);
 
   usePageTitle(t(isEditing ? "createEvent.editTitle" : "createEvent.title"));
 
@@ -103,7 +104,7 @@ export default function CreateEvent() {
     return errors;
   }
 
-  async function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitError(null);
 
@@ -113,6 +114,15 @@ export default function CreateEvent() {
       return;
     }
 
+    if (isEditing) {
+      setConfirmingNotify(true);
+      return;
+    }
+
+    void save(false);
+  }
+
+  async function save(notifyAttendees: boolean) {
     const startsAtIso = new Date(startsAt).toISOString();
     const registrationDeadlineMinutes = registrationDeadlineHours
       ? Math.round(Number(registrationDeadlineHours) * 60)
@@ -130,9 +140,12 @@ export default function CreateEvent() {
       max_attendees: Number(maxAttendees),
     };
 
+    setConfirmingNotify(false);
     setSubmitting(true);
     try {
-      const event = isEditing ? await updateEvent(Number(eventId), payload) : await createEvent(payload);
+      const event = isEditing
+        ? await updateEvent(Number(eventId), payload, notifyAttendees)
+        : await createEvent(payload);
       navigate(`/events/${event.id}`);
     } catch (err) {
       setSubmitError(
@@ -257,6 +270,29 @@ export default function CreateEvent() {
           hasFieldErrors && <p className="error">{t("createEvent.hasErrors")}</p>
         )}
       </form>
+
+      {confirmingNotify && (
+        <div
+          className="confirm-modal-backdrop"
+          onClick={() => {
+            if (!submitting) setConfirmingNotify(false);
+          }}
+        >
+          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <p>{t("createEvent.notifyAttendeesPrompt")}</p>
+            <div className="confirm-modal-actions">
+              <button type="button" onClick={() => save(false)} disabled={submitting}>
+                {t("createEvent.notifyAttendeesDecline")}
+              </button>
+              <button type="button" onClick={() => save(true)} disabled={submitting}>
+                {submitting
+                  ? t("createEvent.editSubmitting")
+                  : t("createEvent.notifyAttendeesConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

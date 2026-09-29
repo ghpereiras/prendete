@@ -95,7 +95,10 @@
     "editTitle": "Editar evento",
     "editSubmit": "Guardar cambios",
     "editSubmitting": "Guardando...",
-    "editLoadError": "No se pudo cargar el evento para editar"
+    "editLoadError": "No se pudo cargar el evento para editar",
+    "notifyAttendeesPrompt": "¿Querés avisarle a los asistentes que hubo cambios en el evento?",
+    "notifyAttendeesConfirm": "Sí, avisar",
+    "notifyAttendeesDecline": "No avisar"
   },
   "eventDetail": {
     "spotsLeft": "Cupos disponibles: {{count}}",

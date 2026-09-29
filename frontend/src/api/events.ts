@@ -40,8 +40,12 @@ export function createEvent(data: EventCreateInput): Promise<Event> {
   return apiPost<Event>("/events", data);
 }
 
-export function updateEvent(id: number, data: EventCreateInput): Promise<Event> {
-  return apiPatch<Event>(`/events/${id}`, data);
+export function updateEvent(
+  id: number,
+  data: EventCreateInput,
+  notifyAttendees: boolean,
+): Promise<Event> {
+  return apiPatch<Event>(`/events/${id}`, { ...data, notify_attendees: notifyAttendees });
 }
 
 export function deleteEvent(id: number): Promise<void> {

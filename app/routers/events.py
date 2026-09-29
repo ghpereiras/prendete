@@ -7,7 +7,7 @@ from app import crud, push
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
-from app.schemas.event import EventCreate, EventInviteLink, EventInvitePreview, EventRead
+from app.schemas.event import EventCreate, EventInviteLink, EventInvitePreview, EventRead, EventUpdate
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -98,7 +98,7 @@ def regenerate_invite_link(
 @router.patch("/{event_id}", response_model=EventRead)
 def update_event(
     event_id: int,
-    event_in: EventCreate,
+    event_in: EventUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -119,15 +119,16 @@ def update_event(
 
     attendee_user_ids = [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
     updated_event = crud.event.update_event(db, event, event_in)
-    push.send_push_to_users(
-        db,
-        attendee_user_ids,
-        {
-            "title": "Evento actualizado",
-            "body": f'"{updated_event.title}" fue modificado por el organizador.',
-            "url": f"/events/{updated_event.id}",
-        },
-    )
+    if event_in.notify_attendees:
+        push.send_push_to_users(
+            db,
+            attendee_user_ids,
+            {
+                "title": "Evento actualizado",
+                "body": f'"{updated_event.title}" fue modificado por el organizador.',
+                "url": f"/events/{updated_event.id}",
+            },
+        )
     return updated_event
 
 

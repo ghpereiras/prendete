@@ -29,6 +29,10 @@ class EventCreate(BaseModel):
         return self
 
 
+class EventUpdate(EventCreate):
+    notify_attendees: bool = True
+
+
 class EventRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

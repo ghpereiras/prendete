@@ -280,6 +280,25 @@ def test_update_event_sends_push_to_attendees_not_owner(client):
     assert "Asado actualizado" in payload["body"]
 
 
+def test_update_event_notify_attendees_false_skips_push(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    create_event(client, owner_token)
+    invite_token = client.get(
+        "/events/1/invite-link", headers=auth_headers(owner_token)
+    ).json()["invite_token"]
+    client.post(f"/events/invite/{invite_token}/join", headers=auth_headers(friend_token))
+
+    with patch("app.routers.events.push.send_push_to_user") as mock_send:
+        response = client.patch(
+            "/events/1",
+            json={**EVENT_PAYLOAD, "title": "Asado actualizado", "notify_attendees": False},
+            headers=auth_headers(owner_token),
+        )
+    assert response.status_code == 200
+    mock_send.assert_not_called()
+
+
 def test_delete_event_sends_push_to_attendees(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")
