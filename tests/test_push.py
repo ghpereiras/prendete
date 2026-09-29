@@ -70,6 +70,10 @@ def test_send_push_to_user_calls_webpush_for_each_subscription(client, db_sessio
 
     mock_webpush.assert_called_once()
     assert mock_webpush.call_args.kwargs["subscription_info"]["endpoint"] == "https://example.com/ep1"
+    # A subscriber who's offline right now should still get it once they
+    # reconnect — pywebpush defaults to ttl=0 (drop if not connected right
+    # now), so this must be passed explicitly.
+    assert mock_webpush.call_args.kwargs["ttl"] > 0
 
 
 def test_send_push_to_user_removes_subscription_invalidated_by_push_service(client, db_session):

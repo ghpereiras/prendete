@@ -36,6 +36,34 @@
   height: 20px;
 }
 
+.notification-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--accent-bg);
+  text-align: center;
+}
+
+.notification-prompt p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.notification-prompt .form-actions {
+  margin-top: 0;
+  width: auto;
+}
+
+.notification-prompt .error {
+  width: 100%;
+  margin: 0;
+}
+
 @media (max-width: 640px) {
   .app-header {
     padding: 10px 12px;

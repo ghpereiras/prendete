@@ -155,6 +155,15 @@
     "mine": "Mine",
     "others": "Others"
   },
+  "notificationPrompt": {
+    "ask": "Want to get notified when your events change?",
+    "enable": "Enable",
+    "enabling": "Enabling...",
+    "decline": "No, thanks",
+    "error": "Couldn't enable notifications",
+    "iosInstall": "To get notifications on iPhone, add Privento to your Home Screen: tap the Share button and choose \"Add to Home Screen\".",
+    "gotIt": "Got it"
+  },
   "header": {
     "home": "Go home"
   },

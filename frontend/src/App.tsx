@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header";
+import NotificationPrompt from "./components/NotificationPrompt";
 import { PageTitleProvider } from "./context/PageTitleContext";
 import ProtectedRoute from "./context/ProtectedRoute";
 import CreateEvent from "./pages/CreateEvent";
@@ -26,6 +27,7 @@ export default function App() {
   return (
     <PageTitleProvider>
       {!NO_HEADER_PATHS.includes(location.pathname) && <Header />}
+      {!NO_HEADER_PATHS.includes(location.pathname) && <NotificationPrompt />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
