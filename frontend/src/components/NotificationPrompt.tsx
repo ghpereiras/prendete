@@ -52,28 +52,37 @@ export default function NotificationPrompt() {
   if (state === "hidden") return null;
 
   return (
-    <div className="notification-prompt">
-      {state === "ios-install" ? (
-        <>
-          <p>{t("notificationPrompt.iosInstall")}</p>
-          <button type="button" onClick={() => dismiss(false)}>
-            {t("notificationPrompt.gotIt")}
-          </button>
-        </>
-      ) : (
-        <>
-          <p>{t("notificationPrompt.ask")}</p>
-          {error && <p className="error">{t(error)}</p>}
-          <div className="form-actions">
-            <button type="button" onClick={() => dismiss(true)} disabled={enabling}>
-              {t("notificationPrompt.decline")}
-            </button>
-            <button type="button" onClick={handleEnable} disabled={enabling}>
-              {enabling ? t("notificationPrompt.enabling") : t("notificationPrompt.enable")}
-            </button>
-          </div>
-        </>
-      )}
+    <div
+      className="confirm-modal-backdrop"
+      onClick={() => {
+        if (!enabling) dismiss(state === "ask");
+      }}
+    >
+      <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+        {state === "ios-install" ? (
+          <>
+            <p>{t("notificationPrompt.iosInstall")}</p>
+            <div className="confirm-modal-actions">
+              <button type="button" onClick={() => dismiss(false)}>
+                {t("notificationPrompt.gotIt")}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p>{t("notificationPrompt.ask")}</p>
+            {error && <p className="error">{t(error)}</p>}
+            <div className="confirm-modal-actions">
+              <button type="button" onClick={() => dismiss(true)} disabled={enabling}>
+                {t("notificationPrompt.decline")}
+              </button>
+              <button type="button" onClick={handleEnable} disabled={enabling}>
+                {enabling ? t("notificationPrompt.enabling") : t("notificationPrompt.enable")}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
