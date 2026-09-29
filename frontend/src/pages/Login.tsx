@@ -20,6 +20,7 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [slowServer, setSlowServer] = useState(false);
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
@@ -39,12 +40,16 @@ export default function Login() {
     }
 
     setSubmitting(true);
+    setSlowServer(false);
+    const slowServerTimeout = setTimeout(() => setSlowServer(true), 4000);
     try {
       await login(email, password);
       navigate(from);
     } catch {
       setError("login.error");
     } finally {
+      clearTimeout(slowServerTimeout);
+      setSlowServer(false);
       setSubmitting(false);
     }
   }
@@ -72,6 +77,7 @@ export default function Login() {
         <button type="submit" disabled={submitting}>
           {submitting ? t("login.submitting") : t("login.submit")}
         </button>
+        {slowServer && <p className="hint">{t("login.slowServer")}</p>}
         <p>
           {t("login.noAccount")}{" "}
           <Link to="/register" state={from !== "/" ? { from } : undefined}>

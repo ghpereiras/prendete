@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
+import { API_URL } from "./api/client";
 import Header from "./components/Header";
 import NotificationPrompt from "./components/NotificationPrompt";
 import { PageTitleProvider } from "./context/PageTitleContext";
@@ -26,6 +27,12 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = i18n.resolvedLanguage ?? "es";
   }, [i18n.resolvedLanguage]);
+
+  useEffect(() => {
+    // Free-tier backends can be asleep on the first visit — wake it up as
+    // soon as the app loads instead of waiting for the user's first request.
+    fetch(`${API_URL}/health`).catch(() => {});
+  }, []);
 
   return (
     <PageTitleProvider>

@@ -9,7 +9,8 @@
     "registerLink": "Registrate",
     "error": "Email o contraseña incorrectos",
     "errorEmailRequired": "Completá tu email",
-    "errorPasswordRequired": "Completá tu contraseña"
+    "errorPasswordRequired": "Completá tu contraseña",
+    "slowServer": "El servidor puede tardar unos segundos en responder si estaba inactivo."
   },
   "register": {
     "title": "Crear cuenta",

@@ -456,6 +456,11 @@
   font-size: 14px;
 }
 
+.hint {
+  color: var(--text);
+  font-size: 14px;
+}
+
 .field-error {
   color: #e5484d;
   font-size: 12px;

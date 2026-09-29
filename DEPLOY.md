@@ -5,9 +5,13 @@ Todavía no productivizado — esto es el plan acordado, no algo ya implementado
 ## Stack elegido
 
 - **Frontend**: Render Static Site (gratis, sin sleep — solo sirve archivos estáticos, no corre un proceso).
-- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-50s al despertar).
+- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-60s al despertar; el workspace tiene 750 hs/mes gratis compartidas entre servicios free, lo justo para un solo servicio corriendo todo el mes con poco margen — no alcanza para mantenerlo siempre despierto con un ping externo sin arriesgarse a agotarlas).
 - **DB**: [Neon](https://neon.tech) (Postgres serverless, free tier permanente).
-- **Dominio**: comprado en nic.ar.
+- **Dominio**: `prendete.ar`, comprado en nic.ar.
+
+### Cold-start del backend
+
+En vez de pagar un upgrade o mantenerlo siempre despierto con un cron externo (ver nota de las 750 hs arriba), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
 
 ### Por qué Neon y no la Postgres de Render
 
@@ -35,7 +39,7 @@ Entre las alternativas gratis evaluadas:
 
 ### Variables de entorno a cargar en Render
 
-- Backend: `DATABASE_URL` (connection string de Neon), `SECRET_KEY` (nueva, generada para prod — nunca la de dev).
+- Backend: `DATABASE_URL` (connection string de Neon), `SECRET_KEY` (nueva, generada para prod — nunca la de dev), `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL`.
 - Frontend (build-time): `VITE_API_URL` (URL del backend en prod), `VITE_GOOGLE_MAPS_API_KEY`.
 - En Google Cloud Console, agregar el dominio real a las "Referentes HTTP" permitidos de la API key (hoy solo tiene `localhost:5173/*`).
 
@@ -51,4 +55,37 @@ Tanto en Render como en Neon, pasar de free a un plan pago es cambiar el plan de
 
 ## Dominio (nic.ar)
 
-Agregar el dominio custom en cada servicio de Render (el static site para `tudominio.ar`, el web service para `api.tudominio.ar` u otro subdominio elegido). Render da los registros DNS exactos (normalmente CNAME para subdominios) para cargar en el panel de "Zona DNS" de nic.ar. Para el dominio raíz sin subdominio, evaluar redirigir a `www` para evitar problemas de DNS con el apex.
+Agregar el dominio custom en cada servicio de Render (el static site para `prendete.ar`, el web service para `api.prendete.ar`). Render da los registros DNS exactos (normalmente CNAME para subdominios) para cargar en el panel de "Zona DNS" de nic.ar. Para el dominio raíz sin subdominio, evaluar redirigir a `www` para evitar problemas de DNS con el apex.
+
+## Email
+
+No se envía ningún email desde la app todavía (solo push notifications) — esto es exclusivamente para casillas humanas y para dejar reservado el remitente que se usará el día que se implemente envío transaccional (reset de contraseña, etc.), que **no está en el alcance actual**.
+
+- **`redes@prendete.ar` / `info@prendete.ar`**: [Zoho Mail](https://www.zoho.com/mail/) plan gratuito — hasta 5 casillas reales con dominio propio (webmail + IMAP/SMTP), no es solo un forward.
+- **`no-reply@prendete.ar`**: se crea también como casilla de Zoho por ahora (entra en el límite de 5 gratis), solo para que exista y no rebote si alguien le escribe. No se usa como remitente hasta implementar el envío transaccional — en ese momento se evalúa si conviene migrarla a un proveedor tipo Resend (DKIM propio, no choca con el de Zoho porque usan selectores distintos).
+- **`admin@prendete.ar`**: cuarta casilla de Zoho, dedicada a las altas de las cuentas de infraestructura (Render, Neon) — ver orden de altas más abajo. Mantiene esas notificaciones (billing, seguridad, outages) separadas de `redes@`, que es la que va a recibir mensajes públicos de gente escribiendo por redes sociales.
+
+### DNS de email (misma zona que el resto)
+
+- MX + TXT de verificación de dominio → los que pida Zoho Mail al agregar `prendete.ar`.
+- **SPF**: un único TXT (no puede haber dos registros SPF en la misma zona) con el `include:` de Zoho — dejar la sintaxis lista para agregar otro `include:` el día que se sume un proveedor transaccional.
+- DKIM → TXT con el selector que dé Zoho.
+- DMARC (recomendado, opcional en esta etapa) → TXT en `_dmarc` con política `p=none` para solo monitorear al principio.
+
+### Orden de altas de cuentas
+
+1. Zoho Mail: alta con el email personal actual (todavía no existe ninguna dirección `@prendete.ar`).
+2. Verificar el dominio en Zoho (TXT en nic.ar) y crear las 4 casillas: `redes@`, `info@`, `no-reply@`, `admin@`.
+3. Usar `admin@prendete.ar` para las altas en Render y Neon, no el email personal ni `redes@`.
+4. `nic.ar` (registro del dominio) queda con el email que ya tiene de antes — cambiar el contacto/WHOIS es una operación aparte y más sensible, fuera de alcance salvo que se pida explícitamente.
+
+### Orden sugerido de ejecución completo
+
+1. Zoho Mail: alta + verificación de dominio + crear las 4 casillas.
+2. Neon: crear la DB con `admin@prendete.ar` — **no correr `scripts/seed_data.py` contra producción** (crea usuarios demo con contraseña conocida, `password123`).
+3. Backend en Render: alta con `admin@prendete.ar`, deploy, confirmar que responde en su URL `*.onrender.com` antes de tocar DNS.
+4. Frontend en Render: deploy, mismo chequeo en su URL temporal.
+5. Cargar todos los registros DNS juntos en nic.ar (dominio, `api`, y los de Zoho) para minimizar idas y vueltas de propagación.
+6. Verificar los dominios custom en Render (frontend y backend).
+7. Verificar Zoho Mail: mandar y recibir un email de prueba en cada casilla.
+8. Confirmar los referrers de la Maps API key en Google Cloud Console.

@@ -9,7 +9,8 @@
     "registerLink": "Sign up",
     "error": "Incorrect email or password",
     "errorEmailRequired": "Enter your email",
-    "errorPasswordRequired": "Enter your password"
+    "errorPasswordRequired": "Enter your password",
+    "slowServer": "The server can take a few seconds to respond if it was idle."
   },
   "register": {
     "title": "Create account",
