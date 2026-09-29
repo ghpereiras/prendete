@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud
+from app import crud, push
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.event_poll import EventPoll
@@ -200,4 +200,21 @@ def resolve_poll(
         crud.attendee.add_attendee(db, resulting_event.id, vote.user_id)
 
     poll = crud.event_poll.resolve_poll(db, poll, resolve_in.resulting_event_id, resolve_in.date_option_id)
+
+    voter_ids = {
+        vote.user_id
+        for option in poll.date_options
+        for vote in option.votes
+        if vote.user_id != resulting_event.owner_id
+    }
+    push.send_push_to_users(
+        db,
+        voter_ids,
+        {
+            "title": "Se confirmó la fecha",
+            "body": f'"{resulting_event.title}" quedó confirmado para el '
+            f'{chosen_option.starts_at.strftime("%d/%m/%Y a las %H:%M")}.',
+            "url": f"/events/{resulting_event.id}",
+        },
+    )
     return _build_poll_read(poll, current_user.id)

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 
 from tests.conftest import auth_headers, register_and_login
 from tests.test_events import EVENT_PAYLOAD, create_event
@@ -319,6 +320,46 @@ def test_resolve_adds_voters_of_chosen_option_as_attendees(client):
     attendee_ids = {a["user_id"] for a in attendees if not a["is_owner"]}
     assert chosen_voter_id in attendee_ids
     assert other_voter_id not in attendee_ids
+
+
+def test_resolve_notifies_all_voters_regardless_of_chosen_option(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    chosen_voter_token = register_and_login(client, "chosen-voter@example.com")
+    other_voter_token = register_and_login(client, "other-voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    chosen_option, other_option = poll["date_options"][0]["id"], poll["date_options"][1]["id"]
+
+    client.post(
+        f"/event-polls/invite/{token}/vote",
+        json={"option_ids": [chosen_option]},
+        headers=auth_headers(chosen_voter_token),
+    )
+    client.post(
+        f"/event-polls/invite/{token}/vote",
+        json={"option_ids": [other_option]},
+        headers=auth_headers(other_voter_token),
+    )
+    chosen_voter_id = client.get("/users/me", headers=auth_headers(chosen_voter_token)).json()["id"]
+    other_voter_id = client.get("/users/me", headers=auth_headers(other_voter_token)).json()["id"]
+
+    event_id = create_event(
+        client, owner_token, starts_at=poll["date_options"][0]["starts_at"]
+    ).json()["id"]
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        response = client.post(
+            f"/event-polls/{poll['id']}/resolve",
+            json={"resulting_event_id": event_id, "date_option_id": chosen_option},
+            headers=auth_headers(owner_token),
+        )
+    assert response.status_code == 200
+    notified_user_ids = {call.args[1] for call in mock_send.call_args_list}
+    assert notified_user_ids == {chosen_voter_id, other_voter_id}
+    for call in mock_send.call_args_list:
+        payload = call.args[2]
+        assert EVENT_PAYLOAD["title"] in payload["body"]
+        assert payload["url"] == f"/events/{event_id}"
 
 
 def test_resolve_twice_rejected(client):
