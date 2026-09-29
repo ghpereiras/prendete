@@ -284,6 +284,43 @@ def test_resolve_success_hides_poll_from_pending_list(client):
     assert client.get("/event-polls", headers=auth_headers(voter_token)).json() == []
 
 
+def test_resolve_adds_voters_of_chosen_option_as_attendees(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    chosen_voter_token = register_and_login(client, "chosen-voter@example.com")
+    other_voter_token = register_and_login(client, "other-voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    chosen_option, other_option = poll["date_options"][0]["id"], poll["date_options"][1]["id"]
+
+    client.post(
+        f"/event-polls/invite/{token}/vote",
+        json={"option_ids": [chosen_option]},
+        headers=auth_headers(chosen_voter_token),
+    )
+    client.post(
+        f"/event-polls/invite/{token}/vote",
+        json={"option_ids": [other_option]},
+        headers=auth_headers(other_voter_token),
+    )
+    chosen_voter_id = client.get("/users/me", headers=auth_headers(chosen_voter_token)).json()["id"]
+    other_voter_id = client.get("/users/me", headers=auth_headers(other_voter_token)).json()["id"]
+
+    event_id = create_event(
+        client, owner_token, starts_at=poll["date_options"][0]["starts_at"]
+    ).json()["id"]
+    resolve_response = client.post(
+        f"/event-polls/{poll['id']}/resolve",
+        json={"resulting_event_id": event_id, "date_option_id": chosen_option},
+        headers=auth_headers(owner_token),
+    )
+    assert resolve_response.status_code == 200
+
+    attendees = client.get(f"/events/{event_id}/attendees", headers=auth_headers(owner_token)).json()
+    attendee_ids = {a["user_id"] for a in attendees if not a["is_owner"]}
+    assert chosen_voter_id in attendee_ids
+    assert other_voter_id not in attendee_ids
+
+
 def test_resolve_twice_rejected(client):
     owner_token = register_and_login(client, "owner@example.com")
     poll = create_poll(client, owner_token).json()

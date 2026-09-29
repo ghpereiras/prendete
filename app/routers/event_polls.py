@@ -188,8 +188,16 @@ def resolve_poll(
     resulting_event = crud.event.get_event(db, resolve_in.resulting_event_id)
     if not resulting_event or resulting_event.owner_id != current_user.id:
         raise HTTPException(status_code=422, detail="resulting_event_id must be an event you own")
-    if not any(option.id == resolve_in.date_option_id for option in poll.date_options):
+    chosen_option = next(
+        (option for option in poll.date_options if option.id == resolve_in.date_option_id), None
+    )
+    if not chosen_option:
         raise HTTPException(status_code=422, detail="date_option_id must belong to this poll")
+
+    for vote in chosen_option.votes:
+        if vote.user_id == resulting_event.owner_id:
+            continue
+        crud.attendee.add_attendee(db, resulting_event.id, vote.user_id)
 
     poll = crud.event_poll.resolve_poll(db, poll, resolve_in.resulting_event_id, resolve_in.date_option_id)
     return _build_poll_read(poll, current_user.id)
