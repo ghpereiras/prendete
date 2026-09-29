@@ -1,12 +1,15 @@
 import json
 import logging
-from typing import Iterable
+from typing import Any, Iterable
 
 from pywebpush import WebPushException, webpush
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.crud import push_subscription as push_subscription_crud
+from app.models.user import User
+from app.push_messages import build_message
 
 logger = logging.getLogger(__name__)
 
@@ -51,4 +54,23 @@ def send_push_to_users(db: Session, user_ids: Iterable[int], payload: dict) -> N
             # being notified, nor bubble up into the caller's HTTP response —
             # by the time this runs, the actual event change is already
             # committed, so a push failure here is not the caller's error.
+            logger.exception("Push notification failed for user %s", user_id)
+
+
+def send_localized_push_to_users(
+    db: Session, user_ids: Iterable[int], message_key: str, url: str, **params: Any
+) -> None:
+    """Like send_push_to_users, but renders the title/body in each
+    recipient's own saved language instead of a single fixed payload."""
+    user_ids = list(user_ids)
+    if not user_ids:
+        return
+
+    languages = dict(db.execute(select(User.id, User.language).where(User.id.in_(user_ids))).all())
+    for user_id in user_ids:
+        payload = build_message(message_key, languages.get(user_id), **params)
+        payload["url"] = url
+        try:
+            send_push_to_user(db, user_id, payload)
+        except Exception:
             logger.exception("Push notification failed for user %s", user_id)

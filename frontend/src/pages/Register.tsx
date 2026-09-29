@@ -6,6 +6,7 @@ import { register } from "../api/auth";
 import AuthTopBar from "../components/AuthTopBar";
 import AvatarPicker from "../components/AvatarPicker";
 import { useAuth } from "../context/AuthContext";
+import type { Language } from "../i18n";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -18,7 +19,7 @@ interface FieldErrors {
 }
 
 export default function Register() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,7 +62,7 @@ export default function Register() {
 
     setSubmitting(true);
     try {
-      await register(email, firstName, lastName, password, avatar);
+      await register(email, firstName, lastName, password, (i18n.resolvedLanguage as Language) ?? "es", avatar);
       await login(email, password);
       navigate(from);
     } catch (err) {

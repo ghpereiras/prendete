@@ -1,3 +1,4 @@
+import type { Language } from "../i18n";
 import { API_URL, ApiError, apiGet, apiPatch, apiPost } from "./client";
 
 export interface User {
@@ -6,6 +7,7 @@ export interface User {
   first_name: string;
   last_name: string;
   full_name: string;
+  language: Language;
   avatar_url: string | null;
   created_at: string;
 }
@@ -35,6 +37,7 @@ export function register(
   firstName: string,
   lastName: string,
   password: string,
+  language: Language,
   avatarBase64?: string | null,
 ): Promise<User> {
   return apiPost<User>("/users", {
@@ -42,6 +45,7 @@ export function register(
     first_name: firstName,
     last_name: lastName,
     password,
+    language,
     avatar_base64: avatarBase64 || undefined,
   });
 }
@@ -53,6 +57,7 @@ export function getCurrentUser(): Promise<User> {
 export interface ProfileUpdate {
   firstName?: string;
   lastName?: string;
+  language?: Language;
   avatarBase64?: string;
   removeAvatar?: boolean;
 }
@@ -61,6 +66,7 @@ export function updateProfile(update: ProfileUpdate): Promise<User> {
   return apiPatch<User>("/users/me", {
     first_name: update.firstName,
     last_name: update.lastName,
+    language: update.language,
     avatar_base64: update.avatarBase64,
     remove_avatar: update.removeAvatar ?? false,
   });

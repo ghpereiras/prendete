@@ -13,6 +13,7 @@ def create_user(db: Session, user_in: UserCreate, avatar: bytes | None = None) -
         last_name=user_in.last_name,
         hashed_password=hash_password(user_in.password),
         avatar=avatar,
+        **({"language": user_in.language} if user_in.language else {}),
     )
     db.add(user)
     db.commit()
@@ -26,6 +27,7 @@ def update_user(
     *,
     first_name: str | None = None,
     last_name: str | None = None,
+    language: str | None = None,
     avatar: bytes | None = None,
     avatar_changed: bool = False,
 ) -> User:
@@ -33,6 +35,8 @@ def update_user(
         user.first_name = first_name
     if last_name is not None:
         user.last_name = last_name
+    if language is not None:
+        user.language = language
     if avatar_changed:
         user.avatar = avatar
     db.commit()

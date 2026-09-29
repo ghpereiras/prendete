@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, type Language } from "../i18n";
+import { useAuth } from "../context/AuthContext";
 import { useTopBarMenu } from "../context/TopBarMenuContext";
 
 // Each language's own name, in that language — never translated, so it's
@@ -16,6 +17,7 @@ const FLAGS: Record<Language, string> = {
 
 export default function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
+  const { user, updateProfile } = useAuth();
   const current = (i18n.resolvedLanguage ?? "es") as Language;
   const { open, containerRef, handleMouseEnter, handleMouseLeave, close, toggle } =
     useTopBarMenu("language");
@@ -23,6 +25,11 @@ export default function LanguageSwitcher() {
   function selectLanguage(lng: Language) {
     close();
     i18n.changeLanguage(lng);
+    // Keep it saved on the account so it follows the user to other devices,
+    // and so backend-sent push notifications can be rendered in it too.
+    if (user && user.language !== lng) {
+      updateProfile({ language: lng });
+    }
   }
 
   return (

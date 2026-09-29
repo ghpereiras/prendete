@@ -362,6 +362,41 @@ def test_resolve_notifies_all_voters_regardless_of_chosen_option(client):
         assert payload["url"] == f"/events/{event_id}"
 
 
+def test_resolve_push_localized_per_recipient_language(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    es_voter_token = register_and_login(client, "es-voter@example.com")
+    en_voter_token = register_and_login(client, "en-voter@example.com")
+    client.patch("/users/me", json={"language": "en"}, headers=auth_headers(en_voter_token))
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    chosen_option = poll["date_options"][0]["id"]
+
+    for voter_token in (es_voter_token, en_voter_token):
+        client.post(
+            f"/event-polls/invite/{token}/vote",
+            json={"option_ids": [chosen_option]},
+            headers=auth_headers(voter_token),
+        )
+    es_voter_id = client.get("/users/me", headers=auth_headers(es_voter_token)).json()["id"]
+    en_voter_id = client.get("/users/me", headers=auth_headers(en_voter_token)).json()["id"]
+
+    event_id = create_event(
+        client, owner_token, starts_at=poll["date_options"][0]["starts_at"]
+    ).json()["id"]
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        client.post(
+            f"/event-polls/{poll['id']}/resolve",
+            json={"resulting_event_id": event_id, "date_option_id": chosen_option},
+            headers=auth_headers(owner_token),
+        )
+
+    payloads_by_user = {call.args[1]: call.args[2] for call in mock_send.call_args_list}
+    assert payloads_by_user[es_voter_id]["title"] == "Se confirmó la fecha"
+    assert payloads_by_user[en_voter_id]["title"] == "Date confirmed"
+    assert "is confirmed for" in payloads_by_user[en_voter_id]["body"]
+
+
 def test_resolve_twice_rejected(client):
     owner_token = register_and_login(client, "owner@example.com")
     poll = create_poll(client, owner_token).json()

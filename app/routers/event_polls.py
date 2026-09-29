@@ -207,14 +207,12 @@ def resolve_poll(
         for vote in option.votes
         if vote.user_id != resulting_event.owner_id
     }
-    push.send_push_to_users(
+    push.send_localized_push_to_users(
         db,
         voter_ids,
-        {
-            "title": "Se confirmó la fecha",
-            "body": f'"{resulting_event.title}" quedó confirmado para el '
-            f'{chosen_option.starts_at.strftime("%d/%m/%Y a las %H:%M")}.',
-            "url": f"/events/{resulting_event.id}",
-        },
+        "poll_resolved",
+        f"/events/{resulting_event.id}",
+        title=resulting_event.title,
+        date=chosen_option.starts_at,
     )
     return _build_poll_read(poll, current_user.id)

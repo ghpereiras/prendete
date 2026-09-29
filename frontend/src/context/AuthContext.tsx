@@ -6,6 +6,16 @@ import {
   type ProfileUpdate,
   type User,
 } from "../api/auth";
+import i18n from "../i18n";
+
+// The account's saved language is the source of truth once logged in (it's
+// what backend push notifications are rendered in too) — apply it so the UI
+// matches, even if this browser had a different language selected before.
+function syncLanguage(user: User) {
+  if (user.language && user.language !== i18n.resolvedLanguage) {
+    i18n.changeLanguage(user.language);
+  }
+}
 
 interface AuthContextValue {
   user: User | null;
@@ -21,6 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  function applyUser(loadedUser: User) {
+    syncLanguage(loadedUser);
+    setUser(loadedUser);
+    return loadedUser;
+  }
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -28,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     getCurrentUser()
-      .then(setUser)
+      .then(applyUser)
       .catch(() => localStorage.removeItem("access_token"))
       .finally(() => setLoading(false));
   }, []);
@@ -48,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(email: string, password: string) {
     const token = await apiLogin(email, password);
     localStorage.setItem("access_token", token);
-    setUser(await getCurrentUser());
+    applyUser(await getCurrentUser());
   }
 
   function logout() {
@@ -57,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function updateProfile(update: ProfileUpdate) {
-    setUser(await apiUpdateProfile(update));
+    applyUser(await apiUpdateProfile(update));
   }
 
   return (

@@ -297,6 +297,30 @@ def test_update_event_sends_push_to_attendees_not_owner(client):
     assert "Asado actualizado" in payload["body"]
 
 
+def test_update_event_push_localized_to_recipient_language(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    client.patch("/users/me", json={"language": "en"}, headers=auth_headers(friend_token))
+    create_event(client, owner_token)
+    invite_token = client.get(
+        "/events/1/invite-link", headers=auth_headers(owner_token)
+    ).json()["invite_token"]
+    client.post(f"/events/invite/{invite_token}/join", headers=auth_headers(friend_token))
+
+    with patch("app.routers.events.push.send_push_to_user") as mock_send:
+        response = client.patch(
+            "/events/1",
+            json={**EVENT_PAYLOAD, "title": "Asado actualizado"},
+            headers=auth_headers(owner_token),
+        )
+    assert response.status_code == 200
+    mock_send.assert_called_once()
+    _, _, payload = mock_send.call_args.args
+    assert payload["title"] == "Event updated"
+    assert "Asado actualizado" in payload["body"]
+    assert "was changed by the organizer" in payload["body"]
+
+
 def test_update_event_notify_attendees_false_skips_push(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")

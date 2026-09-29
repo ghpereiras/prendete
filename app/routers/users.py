@@ -54,6 +54,7 @@ def update_me(
         current_user,
         first_name=user_in.first_name,
         last_name=user_in.last_name,
+        language=user_in.language,
         avatar=avatar,
         avatar_changed=avatar_changed,
     )
