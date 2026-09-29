@@ -119,16 +119,15 @@ def update_event(
 
     attendee_user_ids = [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
     updated_event = crud.event.update_event(db, event, event_in)
-    for user_id in attendee_user_ids:
-        push.send_push_to_user(
-            db,
-            user_id,
-            {
-                "title": "Evento actualizado",
-                "body": f'"{updated_event.title}" fue modificado por el organizador.',
-                "url": f"/events/{updated_event.id}",
-            },
-        )
+    push.send_push_to_users(
+        db,
+        attendee_user_ids,
+        {
+            "title": "Evento actualizado",
+            "body": f'"{updated_event.title}" fue modificado por el organizador.',
+            "url": f"/events/{updated_event.id}",
+        },
+    )
     return updated_event
 
 
@@ -149,13 +148,12 @@ def delete_event(
     attendee_user_ids = [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
     event_title = event.title
     crud.event.delete_event(db, event)
-    for user_id in attendee_user_ids:
-        push.send_push_to_user(
-            db,
-            user_id,
-            {
-                "title": "Evento cancelado",
-                "body": f'"{event_title}" fue cancelado por el organizador.',
-                "url": "/events",
-            },
-        )
+    push.send_push_to_users(
+        db,
+        attendee_user_ids,
+        {
+            "title": "Evento cancelado",
+            "body": f'"{event_title}" fue cancelado por el organizador.',
+            "url": "/events",
+        },
+    )

@@ -4,7 +4,7 @@ from pywebpush import WebPushException
 
 from app.models.push_subscription import PushSubscription
 from app.models.user import User
-from app.push import send_push_to_user
+from app.push import send_push_to_user, send_push_to_users
 from tests.conftest import auth_headers, register_and_login
 
 SUBSCRIPTION_PAYLOAD = {
@@ -91,6 +91,33 @@ def test_list_push_subscriptions_reflects_ownership_after_shared_device_reassign
     other_subs = client.get("/users/me/push-subscriptions", headers=auth_headers(other_token))
     assert owner_subs.json() == []
     assert other_subs.json() == [SUBSCRIPTION_PAYLOAD["endpoint"]]
+
+
+def test_send_push_to_users_keeps_going_after_one_user_fails(client, db_session):
+    register_and_login(client, "flaky@example.com")
+    register_and_login(client, "fine@example.com")
+    flaky_user = db_session.query(User).filter_by(email="flaky@example.com").first()
+    fine_user = db_session.query(User).filter_by(email="fine@example.com").first()
+    db_session.add_all(
+        [
+            PushSubscription(user_id=flaky_user.id, endpoint="https://example.com/flaky", p256dh="p", auth="a"),
+            PushSubscription(user_id=fine_user.id, endpoint="https://example.com/fine", p256dh="p", auth="a"),
+        ]
+    )
+    db_session.commit()
+
+    # A network-level failure (timeout, DNS, ...) talking to the push
+    # service isn't a WebPushException, so send_push_to_user alone doesn't
+    # catch it — send_push_to_users must, so one flaky delivery doesn't
+    # stop the rest of the attendees from being notified.
+    def fake_webpush(subscription_info, **kwargs):
+        if subscription_info["endpoint"] == "https://example.com/flaky":
+            raise ConnectionError("network blip")
+
+    with patch("app.push.webpush", side_effect=fake_webpush) as mock_webpush:
+        send_push_to_users(db_session, [flaky_user.id, fine_user.id], {"title": "Hola", "body": "Mundo"})
+
+    assert mock_webpush.call_count == 2
 
 
 def test_send_push_to_user_calls_webpush_for_each_subscription(client, db_session):

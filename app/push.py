@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Iterable
 
 from pywebpush import WebPushException, webpush
 from sqlalchemy.orm import Session
@@ -36,3 +37,18 @@ def send_push_to_user(db: Session, user_id: int, payload: dict) -> None:
                 push_subscription_crud.delete_by_endpoint(db, subscription.endpoint)
             else:
                 logger.warning("Push notification failed for user %s: %s", user_id, exc)
+
+
+def send_push_to_users(db: Session, user_ids: Iterable[int], payload: dict) -> None:
+    for user_id in user_ids:
+        try:
+            send_push_to_user(db, user_id, payload)
+        except Exception:
+            # webpush() talks to a third-party service over the network and
+            # can raise things other than WebPushException (timeouts,
+            # connection errors, ...) that send_push_to_user doesn't catch.
+            # One bad delivery must not stop the rest of the attendees from
+            # being notified, nor bubble up into the caller's HTTP response —
+            # by the time this runs, the actual event change is already
+            # committed, so a push failure here is not the caller's error.
+            logger.exception("Push notification failed for user %s", user_id)
