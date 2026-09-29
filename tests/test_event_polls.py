@@ -38,6 +38,33 @@ def test_create_poll_success(client):
     assert body["resulting_event_id"] is None
 
 
+def test_date_options_are_sorted_chronologically(client):
+    token = register_and_login(client, "owner@example.com")
+    response = create_poll(
+        client,
+        token,
+        date_options=["2026-11-15T20:00:00Z", "2026-11-01T20:00:00Z", "2026-11-08T20:00:00Z"],
+    )
+    assert response.status_code == 201
+    starts = [option["starts_at"] for option in response.json()["date_options"]]
+    assert starts == sorted(starts)
+
+
+def test_invite_preview_date_options_are_sorted_chronologically(client):
+    token = register_and_login(client, "owner@example.com")
+    poll = create_poll(
+        client,
+        token,
+        date_options=["2026-11-15T20:00:00Z", "2026-11-01T20:00:00Z", "2026-11-08T20:00:00Z"],
+    ).json()
+    invite_token = get_invite_token(client, poll["id"], token)
+
+    response = client.get(f"/event-polls/invite/{invite_token}")
+    assert response.status_code == 200
+    starts = [option["starts_at"] for option in response.json()["date_options"]]
+    assert starts == sorted(starts)
+
+
 def test_create_poll_requires_at_least_two_dates(client):
     token = register_and_login(client, "owner@example.com")
     response = create_poll(client, token, date_options=["2026-11-01T20:00:00Z"])

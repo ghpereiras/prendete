@@ -42,6 +42,7 @@ class EventPoll(Base):
         back_populates="poll",
         cascade="all, delete-orphan",
         foreign_keys="EventPollDateOption.poll_id",
+        order_by="EventPollDateOption.starts_at",
     )
 
     @property
