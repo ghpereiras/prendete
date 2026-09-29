@@ -58,6 +58,18 @@ def update_me(
     )
 
 
+@router.get("/me/push-subscriptions", response_model=list[str])
+def list_push_subscriptions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # A browser only ever holds one PushManager subscription per origin, so
+    # on a shared device it may belong to a different app user than the one
+    # currently logged in. The frontend uses this to tell "the browser has a
+    # subscription" apart from "that subscription is mine".
+    return [sub.endpoint for sub in crud.push_subscription.list_for_user(db, current_user.id)]
+
+
 @router.post("/me/push-subscriptions", status_code=204)
 def create_push_subscription(
     sub_in: PushSubscriptionCreate,

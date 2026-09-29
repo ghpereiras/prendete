@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getPushSubscription, isPushSupported, subscribeToPush } from "../api/push";
+import { getMyPushSubscription, isPushSupported, subscribeToPush } from "../api/push";
 import { useAuth } from "../context/AuthContext";
 import { isIos, isStandalone } from "../utils/platform";
 
-const DISMISSED_KEY = "push_prompt_dismissed";
+const DISMISSED_KEY_PREFIX = "push_prompt_dismissed_";
 
 type PromptState = "hidden" | "ios-install" | "ask";
 
@@ -17,12 +17,15 @@ export default function NotificationPrompt() {
 
   useEffect(() => {
     if (!user) return;
-    if (localStorage.getItem(DISMISSED_KEY)) return;
+    // Scoped per user id: a device's browser is often shared between app
+    // accounts, and one user's dismissal (or subscription) shouldn't hide
+    // the prompt for another user who never actually enabled push.
+    if (localStorage.getItem(DISMISSED_KEY_PREFIX + user.id)) return;
     if (!isPushSupported()) return;
     if (Notification.permission === "denied") return;
 
     let cancelled = false;
-    getPushSubscription().then((subscription) => {
+    getMyPushSubscription().then((subscription) => {
       if (cancelled || subscription) return;
       setState(isIos() && !isStandalone() ? "ios-install" : "ask");
     });
@@ -32,7 +35,7 @@ export default function NotificationPrompt() {
   }, [user]);
 
   function dismiss(persist: boolean) {
-    if (persist) localStorage.setItem(DISMISSED_KEY, "1");
+    if (persist && user) localStorage.setItem(DISMISSED_KEY_PREFIX + user.id, "1");
     setState("hidden");
   }
 

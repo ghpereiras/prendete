@@ -59,6 +59,40 @@ def test_delete_push_subscription_requires_auth(client):
     assert response.status_code == 401
 
 
+def test_list_push_subscriptions_only_returns_current_users_endpoints(client, db_session):
+    owner_token = register_and_login(client, "owner@example.com")
+    client.post(
+        "/users/me/push-subscriptions", json=SUBSCRIPTION_PAYLOAD, headers=auth_headers(owner_token)
+    )
+
+    other_token = register_and_login(client, "other@example.com")
+    other_payload = {**SUBSCRIPTION_PAYLOAD, "endpoint": "https://fcm.googleapis.com/fcm/send/other"}
+    client.post("/users/me/push-subscriptions", json=other_payload, headers=auth_headers(other_token))
+
+    response = client.get("/users/me/push-subscriptions", headers=auth_headers(owner_token))
+    assert response.status_code == 200
+    assert response.json() == [SUBSCRIPTION_PAYLOAD["endpoint"]]
+
+
+def test_list_push_subscriptions_reflects_ownership_after_shared_device_reassign(client, db_session):
+    # Same endpoint (same browser/device) subscribes as owner, then as a
+    # different user logging in on that shared device — upsert reassigns it.
+    owner_token = register_and_login(client, "owner@example.com")
+    client.post(
+        "/users/me/push-subscriptions", json=SUBSCRIPTION_PAYLOAD, headers=auth_headers(owner_token)
+    )
+
+    other_token = register_and_login(client, "other@example.com")
+    client.post(
+        "/users/me/push-subscriptions", json=SUBSCRIPTION_PAYLOAD, headers=auth_headers(other_token)
+    )
+
+    owner_subs = client.get("/users/me/push-subscriptions", headers=auth_headers(owner_token))
+    other_subs = client.get("/users/me/push-subscriptions", headers=auth_headers(other_token))
+    assert owner_subs.json() == []
+    assert other_subs.json() == [SUBSCRIPTION_PAYLOAD["endpoint"]]
+
+
 def test_send_push_to_user_calls_webpush_for_each_subscription(client, db_session):
     register_and_login(client, "owner@example.com")
     user = db_session.query(User).filter_by(email="owner@example.com").first()

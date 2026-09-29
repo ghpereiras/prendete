@@ -1,4 +1,4 @@
-import { apiDelete, apiPost } from "./client";
+import { apiDelete, apiGet, apiPost } from "./client";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
@@ -27,6 +27,18 @@ export async function getPushSubscription(): Promise<PushSubscription | null> {
   if (!isPushSupported()) return null;
   const registration = await navigator.serviceWorker.ready;
   return registration.pushManager.getSubscription();
+}
+
+// A browser only ever keeps one PushManager subscription per origin. On a
+// shared device, whoever last called subscribeToPush() owns it — so a
+// subscription existing in the browser doesn't mean it's registered to the
+// currently logged-in app user. This checks with the backend to be sure.
+export async function getMyPushSubscription(): Promise<PushSubscription | null> {
+  const subscription = await getPushSubscription();
+  if (!subscription) return null;
+
+  const myEndpoints = await apiGet<string[]>("/users/me/push-subscriptions");
+  return myEndpoints.includes(subscription.endpoint) ? subscription : null;
 }
 
 export async function subscribeToPush(): Promise<void> {

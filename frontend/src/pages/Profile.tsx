@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { avatarUrl } from "../api/client";
 import {
-  getPushSubscription,
+  getMyPushSubscription,
   isPushSupported,
   subscribeToPush,
   unsubscribeFromPush,
@@ -36,7 +36,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!pushSupported) return;
-    getPushSubscription().then((sub) => setPushEnabled(sub !== null));
+    getMyPushSubscription().then((sub) => setPushEnabled(sub !== null));
   }, [pushSupported]);
 
   async function handleTogglePush() {
