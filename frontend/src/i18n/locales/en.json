@@ -10,7 +10,12 @@
     "error": "Incorrect email or password",
     "errorEmailRequired": "Enter your email",
     "errorPasswordRequired": "Enter your password",
-    "slowServer": "The server can take a few seconds to respond if it was idle."
+    "slowServer": "The server can take a few seconds to respond if it was idle.",
+    "forgotPasswordLink": "Forgot your password?",
+    "errorNotVerified": "You haven't verified your email and the 7-day grace period is over — you need to verify it to sign in.",
+    "resendVerification": "Resend verification email",
+    "resending": "Sending...",
+    "verificationResent": "We resent the email. Check your inbox."
   },
   "register": {
     "title": "Create account",
@@ -239,5 +244,32 @@
   },
   "language": {
     "label": "Language"
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "instructions": "Enter your email and we'll send you a link to choose a new password.",
+    "submit": "Send",
+    "submitting": "Sending...",
+    "success": "If that email is registered, we sent a link to reset your password.",
+    "errorEmailRequired": "Enter your email",
+    "backToLogin": "Back to sign in"
+  },
+  "resetPassword": {
+    "title": "Choose your new password",
+    "newPassword": "New password",
+    "submit": "Save password",
+    "submitting": "Saving...",
+    "error": "Couldn't reset your password",
+    "errorInvalidToken": "This link expired or isn't valid. Request a new one."
+  },
+  "verifyEmail": {
+    "title": "Verify email",
+    "verifying": "Verifying your email...",
+    "success": "Done! Your email is now verified.",
+    "error": "This link expired or isn't valid. Request a new one from the login page."
+  },
+  "verifyEmailBanner": {
+    "reminder": "Verify your email — you have {{count}} days left before your account gets locked.",
+    "resent": "We resent the verification email."
   }
 }

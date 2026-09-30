@@ -10,7 +10,12 @@
     "error": "Email o contraseña incorrectos",
     "errorEmailRequired": "Completá tu email",
     "errorPasswordRequired": "Completá tu contraseña",
-    "slowServer": "El servidor puede tardar unos segundos en responder si estaba inactivo."
+    "slowServer": "El servidor puede tardar unos segundos en responder si estaba inactivo.",
+    "forgotPasswordLink": "¿Olvidaste tu contraseña?",
+    "errorNotVerified": "Todavía no verificaste tu email y ya pasaron los 7 días de gracia — tenés que verificarlo para poder entrar.",
+    "resendVerification": "Reenviar email de verificación",
+    "resending": "Enviando...",
+    "verificationResent": "Te reenviamos el email. Revisá tu bandeja de entrada."
   },
   "register": {
     "title": "Crear cuenta",
@@ -239,5 +244,32 @@
   },
   "language": {
     "label": "Idioma"
+  },
+  "forgotPassword": {
+    "title": "Recuperar contraseña",
+    "instructions": "Ingresá tu email y te mandamos un link para elegir una contraseña nueva.",
+    "submit": "Enviar",
+    "submitting": "Enviando...",
+    "success": "Si ese email está registrado, te mandamos un link para restablecer tu contraseña.",
+    "errorEmailRequired": "Completá tu email",
+    "backToLogin": "Volver a iniciar sesión"
+  },
+  "resetPassword": {
+    "title": "Elegí tu nueva contraseña",
+    "newPassword": "Contraseña nueva",
+    "submit": "Guardar contraseña",
+    "submitting": "Guardando...",
+    "error": "No se pudo restablecer la contraseña",
+    "errorInvalidToken": "Este link venció o no es válido. Pedí uno nuevo."
+  },
+  "verifyEmail": {
+    "title": "Verificar email",
+    "verifying": "Verificando tu email...",
+    "success": "¡Listo! Tu email quedó verificado.",
+    "error": "Este link venció o no es válido. Pedí uno nuevo desde el login."
+  },
+  "verifyEmailBanner": {
+    "reminder": "Verificá tu email — te quedan {{count}} días antes de que se bloquee tu cuenta.",
+    "resent": "Te reenviamos el email de verificación."
   }
 }

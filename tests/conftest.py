@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
@@ -43,6 +45,15 @@ def db_session(engine):
     session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
     yield session
     session.close()
+
+
+@pytest.fixture(autouse=True)
+def mock_send_email():
+    # Registering a user always sends a verification email — autouse so
+    # every test gets this for free instead of every caller of register()
+    # needing to remember to mock it (never hit Brevo for real in tests).
+    with patch("app.email.send_email") as mock:
+        yield mock
 
 
 @pytest.fixture()

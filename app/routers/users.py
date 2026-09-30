@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from app import crud
+from app import crud, email
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
@@ -24,7 +24,9 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
         except InvalidAvatarError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    return crud.user.create_user(db, user_in, avatar=avatar)
+    user = crud.user.create_user(db, user_in, avatar=avatar)
+    email.send_verification_email(db, user)
+    return user
 
 
 @router.get("/me", response_model=UserRead)

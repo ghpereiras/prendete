@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { resendVerification } from "../api/auth";
+import { ApiError } from "../api/client";
 import AuthTopBar from "../components/AuthTopBar";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +21,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
+  const [notVerified, setNotVerified] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [slowServer, setSlowServer] = useState(false);
 
@@ -32,6 +37,8 @@ export default function Login() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setNotVerified(false);
+    setResent(false);
 
     const errors = validate();
     setFieldErrors(errors);
@@ -45,12 +52,26 @@ export default function Login() {
     try {
       await login(email, password);
       navigate(from);
-    } catch {
-      setError("login.error");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403 && err.message === "email_not_verified") {
+        setNotVerified(true);
+      } else {
+        setError("login.error");
+      }
     } finally {
       clearTimeout(slowServerTimeout);
       setSlowServer(false);
       setSubmitting(false);
+    }
+  }
+
+  async function handleResend() {
+    setResending(true);
+    try {
+      await resendVerification(email);
+      setResent(true);
+    } finally {
+      setResending(false);
     }
   }
 
@@ -60,6 +81,18 @@ export default function Login() {
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <h1>{t("login.title")}</h1>
         {error && <p className="error">{t(error)}</p>}
+        {notVerified && (
+          <div className="error">
+            <p>{t("login.errorNotVerified")}</p>
+            {resent ? (
+              <p className="hint">{t("login.verificationResent")}</p>
+            ) : (
+              <button type="button" onClick={handleResend} disabled={resending}>
+                {resending ? t("login.resending") : t("login.resendVerification")}
+              </button>
+            )}
+          </div>
+        )}
         <label>
           {t("login.email")}
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -78,6 +111,9 @@ export default function Login() {
           {submitting ? t("login.submitting") : t("login.submit")}
         </button>
         {slowServer && <p className="hint">{t("login.slowServer")}</p>}
+        <p>
+          <Link to="/forgot-password">{t("login.forgotPasswordLink")}</Link>
+        </p>
         <p>
           {t("login.noAccount")}{" "}
           <Link to="/register" state={from !== "/" ? { from } : undefined}>

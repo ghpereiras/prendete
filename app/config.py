@@ -13,6 +13,11 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173"
 
+    brevo_api_key: str
+    email_from_address: str = "no-reply@prendete.ar"
+    email_from_name: str = "Prendete"
+    frontend_url: str = "http://localhost:5173"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

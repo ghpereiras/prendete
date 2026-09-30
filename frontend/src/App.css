@@ -36,6 +36,28 @@
   height: 20px;
 }
 
+.verify-email-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 8px 20px;
+  background: var(--accent-bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  text-align: center;
+}
+
+.verify-email-banner button {
+  font: inherit;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: transparent;
+  color: var(--text-h);
+}
+
 @media (max-width: 640px) {
   .app-header {
     padding: 10px 12px;

@@ -8,6 +8,7 @@ export interface User {
   last_name: string;
   full_name: string;
   language: Language;
+  email_verified_at: string | null;
   avatar_url: string | null;
   created_at: string;
 }
@@ -70,4 +71,20 @@ export function updateProfile(update: ProfileUpdate): Promise<User> {
     avatar_base64: update.avatarBase64,
     remove_avatar: update.removeAvatar ?? false,
   });
+}
+
+export function verifyEmail(token: string): Promise<void> {
+  return apiPost<void>("/auth/verify-email", { token });
+}
+
+export function resendVerification(email: string): Promise<void> {
+  return apiPost<void>("/auth/resend-verification", { email });
+}
+
+export function requestPasswordReset(email: string): Promise<void> {
+  return apiPost<void>("/auth/password-reset/request", { email });
+}
+
+export function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  return apiPost<void>("/auth/password-reset/confirm", { token, new_password: newPassword });
 }

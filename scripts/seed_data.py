@@ -125,6 +125,7 @@ def seed_users(db) -> dict[str, User]:
             first_name=first_name,
             last_name=last_name,
             hashed_password=hash_password(PASSWORD),
+            email_verified_at=datetime.now(timezone.utc),
         )
         db.add(user)
         users[email] = user

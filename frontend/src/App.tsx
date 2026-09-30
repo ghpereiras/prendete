@@ -11,18 +11,23 @@ import CreateEvent from "./pages/CreateEvent";
 import CreatePoll from "./pages/CreatePoll";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
+import ForgotPassword from "./pages/ForgotPassword";
 import InvitePreview from "./pages/InvitePreview";
 import Login from "./pages/Login";
 import PollDetail from "./pages/PollDetail";
 import PollInvitePreview from "./pages/PollInvitePreview";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import VerifyEmailBanner from "./components/VerifyEmailBanner";
 
-const NO_HEADER_PATHS = ["/login", "/register"];
+const NO_HEADER_PATHS = ["/login", "/register", "/verify-email", "/forgot-password", "/reset-password"];
 
 export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
+  const hideHeader = NO_HEADER_PATHS.some((path) => location.pathname.startsWith(path));
 
   useEffect(() => {
     document.documentElement.lang = i18n.resolvedLanguage ?? "es";
@@ -36,11 +41,15 @@ export default function App() {
 
   return (
     <PageTitleProvider>
-      {!NO_HEADER_PATHS.includes(location.pathname) && <Header />}
-      {!NO_HEADER_PATHS.includes(location.pathname) && <NotificationPrompt />}
+      {!hideHeader && <Header />}
+      {!hideHeader && <VerifyEmailBanner />}
+      {!hideHeader && <NotificationPrompt />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/invite/:token" element={<InvitePreview />} />
         <Route path="/polls/invite/:token" element={<PollInvitePreview />} />
         <Route
