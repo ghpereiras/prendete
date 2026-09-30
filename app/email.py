@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
-def send_email(to: str, subject: str, html_body: str) -> None:
+def send_email(to: str, subject: str, html_body: str, text_body: str) -> None:
     try:
         response = httpx.post(
             BREVO_API_URL,
@@ -22,6 +22,10 @@ def send_email(to: str, subject: str, html_body: str) -> None:
                 "to": [{"email": to}],
                 "subject": subject,
                 "htmlContent": html_body,
+                # A plain-text alternative alongside the HTML part is a basic
+                # deliverability signal — html-only mail is more likely to be
+                # flagged as spam, especially from a brand-new sending domain.
+                "textContent": text_body,
             },
             timeout=10,
         )
@@ -39,7 +43,7 @@ def send_verification_email(db: Session, user: User) -> None:
     message = email_messages.build_message(
         "email_verification", user.language, first_name=user.first_name, link=link
     )
-    send_email(user.email, message["subject"], message["html"])
+    send_email(user.email, message["subject"], message["html"], message["text"])
 
 
 def send_password_reset_email(db: Session, user: User) -> None:
@@ -48,4 +52,4 @@ def send_password_reset_email(db: Session, user: User) -> None:
     message = email_messages.build_message(
         "password_reset", user.language, first_name=user.first_name, link=link
     )
-    send_email(user.email, message["subject"], message["html"])
+    send_email(user.email, message["subject"], message["html"], message["text"])

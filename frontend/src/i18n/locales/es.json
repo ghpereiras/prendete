@@ -15,7 +15,7 @@
     "errorNotVerified": "Todavía no verificaste tu email y ya pasaron los 7 días de gracia — tenés que verificarlo para poder entrar.",
     "resendVerification": "Reenviar email de verificación",
     "resending": "Enviando...",
-    "verificationResent": "Te reenviamos el email. Revisá tu bandeja de entrada."
+    "verificationResent": "Te reenviamos el email. Revisá tu bandeja de entrada (y la carpeta de spam)."
   },
   "register": {
     "title": "Crear cuenta",
@@ -250,7 +250,7 @@
     "instructions": "Ingresá tu email y te mandamos un link para elegir una contraseña nueva.",
     "submit": "Enviar",
     "submitting": "Enviando...",
-    "success": "Si ese email está registrado, te mandamos un link para restablecer tu contraseña.",
+    "success": "Si ese email está registrado, te mandamos un link para restablecer tu contraseña. Si no lo ves en unos minutos, revisá la carpeta de spam.",
     "errorEmailRequired": "Completá tu email",
     "backToLogin": "Volver a iniciar sesión"
   },
@@ -269,7 +269,7 @@
     "error": "Este link venció o no es válido. Pedí uno nuevo desde el login."
   },
   "verifyEmailBanner": {
-    "reminder": "Verificá tu email — te quedan {{count}} días antes de que se bloquee tu cuenta.",
-    "resent": "Te reenviamos el email de verificación."
+    "reminder": "Verificá tu email — te quedan {{count}} días antes de que se bloquee tu cuenta. Si no lo encontrás, revisá spam.",
+    "resent": "Te reenviamos el email de verificación. Si no te llega, revisá spam."
   }
 }

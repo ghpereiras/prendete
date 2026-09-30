@@ -13,6 +13,12 @@ _MESSAGES: dict[str, dict[str, dict[str, str]]] = {
                 '<p><a href="{link}">Confirmar mi email</a></p>'
                 "<p>Este link vence en 7 días.</p>"
             ),
+            "text": (
+                "Hola {first_name},\n\n"
+                "Confirmá tu email para activar tu cuenta en Prendete:\n"
+                "{link}\n\n"
+                "Este link vence en 7 días."
+            ),
         },
         "password_reset": {
             "subject": "Recuperar contraseña en Prendete",
@@ -21,6 +27,12 @@ _MESSAGES: dict[str, dict[str, dict[str, str]]] = {
                 "<p>Pediste restablecer tu contraseña. Hacé click para elegir una nueva:</p>"
                 '<p><a href="{link}">Restablecer contraseña</a></p>'
                 "<p>Este link vence en 1 hora. Si no fuiste vos, ignorá este mail.</p>"
+            ),
+            "text": (
+                "Hola {first_name},\n\n"
+                "Pediste restablecer tu contraseña. Entrá a este link para elegir una nueva:\n"
+                "{link}\n\n"
+                "Este link vence en 1 hora. Si no fuiste vos, ignorá este mail."
             ),
         },
     },
@@ -33,6 +45,12 @@ _MESSAGES: dict[str, dict[str, dict[str, str]]] = {
                 '<p><a href="{link}">Confirm my email</a></p>'
                 "<p>This link expires in 7 days.</p>"
             ),
+            "text": (
+                "Hi {first_name},\n\n"
+                "Confirm your email to activate your Prendete account:\n"
+                "{link}\n\n"
+                "This link expires in 7 days."
+            ),
         },
         "password_reset": {
             "subject": "Reset your password on Prendete",
@@ -41,6 +59,12 @@ _MESSAGES: dict[str, dict[str, dict[str, str]]] = {
                 "<p>You asked to reset your password. Click to choose a new one:</p>"
                 '<p><a href="{link}">Reset password</a></p>'
                 "<p>This link expires in 1 hour. If this wasn't you, ignore this email.</p>"
+            ),
+            "text": (
+                "Hi {first_name},\n\n"
+                "You asked to reset your password. Open this link to choose a new one:\n"
+                "{link}\n\n"
+                "This link expires in 1 hour. If this wasn't you, ignore this email."
             ),
         },
     },

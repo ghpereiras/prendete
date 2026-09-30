@@ -15,7 +15,7 @@
     "errorNotVerified": "You haven't verified your email and the 7-day grace period is over — you need to verify it to sign in.",
     "resendVerification": "Resend verification email",
     "resending": "Sending...",
-    "verificationResent": "We resent the email. Check your inbox."
+    "verificationResent": "We resent the email. Check your inbox (and your spam folder)."
   },
   "register": {
     "title": "Create account",
@@ -250,7 +250,7 @@
     "instructions": "Enter your email and we'll send you a link to choose a new password.",
     "submit": "Send",
     "submitting": "Sending...",
-    "success": "If that email is registered, we sent a link to reset your password.",
+    "success": "If that email is registered, we sent a link to reset your password. If you don't see it in a few minutes, check your spam folder.",
     "errorEmailRequired": "Enter your email",
     "backToLogin": "Back to sign in"
   },
@@ -269,7 +269,7 @@
     "error": "This link expired or isn't valid. Request a new one from the login page."
   },
   "verifyEmailBanner": {
-    "reminder": "Verify your email — you have {{count}} days left before your account gets locked.",
-    "resent": "We resent the verification email."
+    "reminder": "Verify your email — you have {{count}} days left before your account gets locked. Can't find it? Check your spam folder.",
+    "resent": "We resent the verification email. If it doesn't arrive, check your spam folder."
   }
 }
