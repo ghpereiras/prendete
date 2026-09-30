@@ -55,7 +55,14 @@ Tanto en Render como en Neon, pasar de free a un plan pago es cambiar el plan de
 
 ## Dominio (nic.ar)
 
-Agregar el dominio custom en cada servicio de Render (el static site para `prendete.ar`, el web service para `api.prendete.ar`). Render da los registros DNS exactos (normalmente CNAME para subdominios) para cargar en el panel de "Zona DNS" de nic.ar. Para el dominio raíz sin subdominio, evaluar redirigir a `www` para evitar problemas de DNS con el apex.
+**nic.ar no tiene editor de zona DNS propio** — no se pueden cargar registros A/CNAME/TXT/MX directamente ahí. Solo permite "delegar" el dominio a los nameservers de un proveedor DNS externo, que es donde se cargan todos los registros de verdad. Camino elegido:
+
+1. Cuenta gratis en [Cloudflare](https://www.cloudflare.com/) (DNS gratis, soporta todos los tipos de registro que hacen falta: TXT/MX/SPF/DKIM de Zoho, CNAME de Render).
+2. Agregar `prendete.ar` como sitio en Cloudflare — da 2 nameservers propios.
+3. En nic.ar: botón **"Delegar"** (no "Transferir", que es cambio de registrador/titular) → "Agregar una nueva delegación" → cargar esos 2 nameservers → Guardar. Propagación: horas hasta 24-48hs.
+4. De ahí en adelante, **todos** los registros (el TXT de verificación de Zoho, MX, SPF, DKIM, DMARC, y los CNAME/A de Render para el static site y `api.prendete.ar`) se cargan en el panel de Cloudflare, no en nic.ar.
+
+Para el dominio raíz sin subdominio, evaluar redirigir a `www` para evitar problemas de DNS con el apex (Cloudflare soporta CNAME flattening en el apex, así que probablemente no haga falta el redirect).
 
 ## Email
 
