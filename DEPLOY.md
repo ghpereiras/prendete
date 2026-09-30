@@ -13,6 +13,16 @@ Todavía no productivizado — esto es el plan acordado, no algo ya implementado
 
 En vez de pagar un upgrade o mantenerlo siempre despierto con un cron externo (ver nota de las 750 hs arriba), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
 
+### SPA fallback (rutas del frontend)
+
+El static site de Render sirve archivos por path exacto — abrir directamente una ruta de React Router (ej. un link de invitación `/invite/:token` en otro navegador, no navegado por click dentro de la app) devuelve 404 porque no existe un archivo físico en ese path. Se soluciona con `frontend/public/_redirects` (Vite lo copia a `dist/` en el build):
+
+```
+/*    /index.html   200
+```
+
+Así cualquier path devuelve `index.html` y React Router se hace cargo del ruteo del lado del cliente. Ya implementado — si se recrea el static site desde cero no hace falta configurar nada aparte en el dashboard de Render, viaja con el build.
+
 ### Por qué Neon y no la Postgres de Render
 
 El free tier de Postgres de Render **expira a los 30 días** (borra la base si no se upgradea a pago) — a diferencia de sus web services, que duermen pero no expiran. Por eso la DB va aparte.
