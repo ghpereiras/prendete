@@ -158,6 +158,9 @@
 .auth-form input,
 .auth-form textarea {
   font: inherit;
+  /* Below 16px, iOS/Chrome mobile auto-zoom the page on focus (labels are
+     14px and inputs inherit it) and leave the layout zoomed after blur. */
+  font-size: 16px;
   padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid var(--border);
