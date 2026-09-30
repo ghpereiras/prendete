@@ -58,14 +58,14 @@ def verify_email(body: EmailVerifyConfirm, db: Session = Depends(get_db)):
 def resend_verification(body: ResendVerificationRequest, db: Session = Depends(get_db)):
     user = crud.user.get_user_by_email(db, body.email)
     if user and user.email_verified_at is None:
-        email.send_verification_email(db, user)
+        email.send_verification_email(db, user, language=body.language)
 
 
 @router.post("/password-reset/request", status_code=204)
 def request_password_reset(body: PasswordResetRequest, db: Session = Depends(get_db)):
     user = crud.user.get_user_by_email(db, body.email)
     if user:
-        email.send_password_reset_email(db, user)
+        email.send_password_reset_email(db, user, language=body.language)
 
 
 @router.post("/password-reset/confirm", status_code=204)

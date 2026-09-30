@@ -37,19 +37,21 @@ def send_email(to: str, subject: str, html_body: str, text_body: str) -> None:
         logger.exception("Email send failed for %s", to)
 
 
-def send_verification_email(db: Session, user: User) -> None:
+def send_verification_email(db: Session, user: User, language: str | None = None) -> None:
+    # `language` is the page's language right now (if the caller has it) —
+    # preferred over the account's saved language, which may be stale.
     token = crud.email_verification_token.create_token(db, user.id)
     link = f"{settings.frontend_url}/verify-email/{token.token}"
     message = email_messages.build_message(
-        "email_verification", user.language, first_name=user.first_name, link=link
+        "email_verification", language or user.language, first_name=user.first_name, link=link
     )
     send_email(user.email, message["subject"], message["html"], message["text"])
 
 
-def send_password_reset_email(db: Session, user: User) -> None:
+def send_password_reset_email(db: Session, user: User, language: str | None = None) -> None:
     token = crud.password_reset_token.create_token(db, user.id)
     link = f"{settings.frontend_url}/reset-password/{token.token}"
     message = email_messages.build_message(
-        "password_reset", user.language, first_name=user.first_name, link=link
+        "password_reset", language or user.language, first_name=user.first_name, link=link
     )
     send_email(user.email, message["subject"], message["html"], message["text"])

@@ -4,13 +4,14 @@ import { Link } from "react-router-dom";
 import { requestPasswordReset } from "../api/auth";
 import AuthTopBar from "../components/AuthTopBar";
 import { usePageTitle } from "../context/PageTitleContext";
+import type { Language } from "../i18n";
 
 interface FieldErrors {
   email?: string;
 }
 
 export default function ForgotPassword() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -29,7 +30,7 @@ export default function ForgotPassword() {
 
     setSubmitting(true);
     try {
-      await requestPasswordReset(email);
+      await requestPasswordReset(email, i18n.resolvedLanguage as Language);
     } finally {
       // Always show the same success message, whether or not the email is
       // registered — the backend never leaks that either.

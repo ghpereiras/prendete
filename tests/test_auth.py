@@ -117,6 +117,21 @@ def test_resend_verification_issues_new_token(client, db_session, mock_send_emai
     assert tokens[0].token != old_token
 
 
+def test_resend_verification_uses_requested_language_not_saved_language(client, mock_send_email):
+    # Account was created with the default saved language ("es"), but the
+    # page asking to resend is in English right now — the email should
+    # follow the page, not the (possibly stale) saved account language.
+    register(client, "owner@example.com")
+    mock_send_email.reset_mock()
+
+    response = client.post(
+        "/auth/resend-verification", json={"email": "owner@example.com", "language": "en"}
+    )
+    assert response.status_code == 204
+    subject = mock_send_email.call_args.args[1]
+    assert subject == "Confirm your email on Prendete"
+
+
 def test_resend_verification_noop_once_verified(client, db_session, mock_send_email):
     register(client, "owner@example.com")
     user = db_session.query(User).filter_by(email="owner@example.com").first()
@@ -178,6 +193,18 @@ def test_password_reset_request_sends_email_for_known_user(client, mock_send_ema
     response = client.post("/auth/password-reset/request", json={"email": "owner@example.com"})
     assert response.status_code == 204
     mock_send_email.assert_called_once()
+
+
+def test_password_reset_request_uses_requested_language_not_saved_language(client, mock_send_email):
+    register(client, "owner@example.com")
+    mock_send_email.reset_mock()
+
+    response = client.post(
+        "/auth/password-reset/request", json={"email": "owner@example.com", "language": "en"}
+    )
+    assert response.status_code == 204
+    subject = mock_send_email.call_args.args[1]
+    assert subject == "Reset your password on Prendete"
 
 
 def test_password_reset_confirm_changes_password(client, db_session):

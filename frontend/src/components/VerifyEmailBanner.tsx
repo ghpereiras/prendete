@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { resendVerification } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import type { Language } from "../i18n";
 
 const GRACE_DAYS = 7;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export default function VerifyEmailBanner() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
@@ -20,7 +21,7 @@ export default function VerifyEmailBanner() {
   async function handleResend() {
     setResending(true);
     try {
-      await resendVerification(user!.email);
+      await resendVerification(user!.email, i18n.resolvedLanguage as Language);
       setResent(true);
     } finally {
       setResending(false);

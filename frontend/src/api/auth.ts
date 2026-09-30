@@ -77,12 +77,12 @@ export function verifyEmail(token: string): Promise<void> {
   return apiPost<void>("/auth/verify-email", { token });
 }
 
-export function resendVerification(email: string): Promise<void> {
-  return apiPost<void>("/auth/resend-verification", { email });
+export function resendVerification(email: string, language?: Language): Promise<void> {
+  return apiPost<void>("/auth/resend-verification", { email, language });
 }
 
-export function requestPasswordReset(email: string): Promise<void> {
-  return apiPost<void>("/auth/password-reset/request", { email });
+export function requestPasswordReset(email: string, language?: Language): Promise<void> {
+  return apiPost<void>("/auth/password-reset/request", { email, language });
 }
 
 export function confirmPasswordReset(token: string, newPassword: string): Promise<void> {

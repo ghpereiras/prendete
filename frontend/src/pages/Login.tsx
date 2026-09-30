@@ -5,6 +5,7 @@ import { resendVerification } from "../api/auth";
 import { ApiError } from "../api/client";
 import AuthTopBar from "../components/AuthTopBar";
 import { useAuth } from "../context/AuthContext";
+import type { Language } from "../i18n";
 
 interface FieldErrors {
   email?: string;
@@ -12,7 +13,7 @@ interface FieldErrors {
 }
 
 export default function Login() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,7 +69,7 @@ export default function Login() {
   async function handleResend() {
     setResending(true);
     try {
-      await resendVerification(email);
+      await resendVerification(email, i18n.resolvedLanguage as Language);
       setResent(true);
     } finally {
       setResending(false);
