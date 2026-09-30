@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     vapid_private_key: str
     vapid_contact_email: str
 
+    cors_origins: str = "http://localhost:5173"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

@@ -39,8 +39,8 @@ Entre las alternativas gratis evaluadas:
 
 ### Variables de entorno a cargar en Render
 
-- Backend: `DATABASE_URL` (connection string de Neon), `SECRET_KEY` (nueva, generada para prod — nunca la de dev), `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL`.
-- Frontend (build-time): `VITE_API_URL` (URL del backend en prod), `VITE_GOOGLE_MAPS_API_KEY`.
+- Backend: `DATABASE_URL` (connection string de Neon — usar la *direct connection*, no la *pooled*, porque el backend ya mantiene su propio pool de conexiones con SQLAlchemy; ojo con anteponer `postgresql+psycopg://` en vez de `postgresql://`, es el driver que usa el proyecto), `SECRET_KEY` (nueva, generada para prod — nunca la de dev), `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL` (par VAPID nuevo también, no el de dev).
+- Frontend (build-time): `VITE_API_URL` (URL del backend en prod), `VITE_GOOGLE_MAPS_API_KEY`, **`VITE_VAPID_PUBLIC_KEY`** (tiene que ser exactamente la misma `VAPID_PUBLIC_KEY` del backend de prod — si no coincide, `pushManager.subscribe()` falla en el browser).
 - En Google Cloud Console, agregar el dominio real a las "Referentes HTTP" permitidos de la API key (hoy solo tiene `localhost:5173/*`).
 
 ## Rollbacks
