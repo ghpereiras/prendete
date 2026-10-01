@@ -11,7 +11,9 @@ import CreateEvent from "./pages/CreateEvent";
 import CreatePoll from "./pages/CreatePoll";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
+import GoogleCallback from "./pages/GoogleCallback";
 import ForgotPassword from "./pages/ForgotPassword";
+import LegalPage from "./pages/LegalPage";
 import InvitePreview from "./pages/InvitePreview";
 import Login from "./pages/Login";
 import PollDetail from "./pages/PollDetail";
@@ -47,9 +49,12 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/privacy" element={<LegalPage namespace="privacy" />} />
+        <Route path="/terms" element={<LegalPage namespace="terms" />} />
         <Route path="/invite/:token" element={<InvitePreview />} />
         <Route path="/polls/invite/:token" element={<PollInvitePreview />} />
         <Route

@@ -5,6 +5,8 @@ import { ApiError } from "../api/client";
 import { register } from "../api/auth";
 import AuthTopBar from "../components/AuthTopBar";
 import AvatarPicker from "../components/AvatarPicker";
+import GoogleSignInButton from "../components/GoogleSignInButton";
+import LegalAgreement from "../components/LegalAgreement";
 import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import type { Language } from "../i18n";
@@ -82,6 +84,7 @@ export default function Register() {
       <AuthTopBar />
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <h1>{t("register.title")}</h1>
+        <GoogleSignInButton returnTo={from} />
         {error && <p className="error">{t(error)}</p>}
         <AvatarPicker value={avatar} onChange={setAvatar} />
         <label>
@@ -113,6 +116,7 @@ export default function Register() {
             {t("register.loginLink")}
           </Link>
         </p>
+        <LegalAgreement />
       </form>
     </div>
   );

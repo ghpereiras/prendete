@@ -2,11 +2,12 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import {
   getCurrentUser,
   login as apiLogin,
+  loginWithGoogle as apiLoginWithGoogle,
   updateProfile as apiUpdateProfile,
   type ProfileUpdate,
   type User,
 } from "../api/auth";
-import i18n from "../i18n";
+import i18n, { type Language } from "../i18n";
 
 // The account's saved language is the source of truth once logged in (it's
 // what backend push notifications are rendered in too) — apply it so the UI
@@ -21,6 +22,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (credential: string, nonce: string) => Promise<void>;
   logout: () => void;
   updateProfile: (update: ProfileUpdate) => Promise<void>;
 }
@@ -67,6 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     applyUser(await getCurrentUser());
   }
 
+  async function loginWithGoogle(credential: string, nonce: string) {
+    const token = await apiLoginWithGoogle(credential, nonce, i18n.resolvedLanguage as Language);
+    localStorage.setItem("access_token", token);
+    applyUser(await getCurrentUser());
+  }
+
   function logout() {
     localStorage.removeItem("access_token");
     setUser(null);
@@ -77,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

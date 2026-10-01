@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { changePassword } from "../api/auth";
+import { useNavigate } from "react-router-dom";
+import { changePassword, deleteAccount } from "../api/auth";
 import { ApiError, avatarUrl } from "../api/client";
 import {
   getMyPushSubscription,
@@ -10,6 +11,7 @@ import {
 } from "../api/push";
 import Avatar from "../components/Avatar";
 import AvatarPicker from "../components/AvatarPicker";
+import ConfirmModal from "../components/ConfirmModal";
 import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -20,11 +22,16 @@ type AvatarChange = "none" | "removed" | { dataUrl: string };
 
 export default function Profile() {
   const { t } = useTranslation();
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
+
+  const navigate = useNavigate();
 
   usePageTitle(t("profile.title"));
 
   const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -70,6 +77,19 @@ export default function Profile() {
       );
     } finally {
       setPushSubmitting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      logout();
+      navigate("/login", { replace: true });
+    } catch {
+      setDeleteError("profile.deleteAccountError");
+      setDeleting(false);
     }
   }
 
@@ -218,9 +238,11 @@ export default function Profile() {
       <button type="button" className="button-link" onClick={startEditing}>
         {t("profile.edit")}
       </button>
-      <button type="button" className="button-link" onClick={startChangingPassword}>
-        {t("profile.changePassword")}
-      </button>
+      {user?.has_password && (
+        <button type="button" className="button-link" onClick={startChangingPassword}>
+          {t("profile.changePassword")}
+        </button>
+      )}
 
       {pushSupported && (
         <div className="push-toggle">
@@ -233,6 +255,22 @@ export default function Profile() {
           </button>
           {pushError && <p className="error">{t(pushError)}</p>}
         </div>
+      )}
+
+      <button type="button" className="button-link danger" onClick={() => setConfirmingDelete(true)}>
+        {t("profile.deleteAccount")}
+      </button>
+
+      {confirmingDelete && (
+        <ConfirmModal
+          message={t("profile.deleteAccountConfirm")}
+          confirmLabel={deleting ? t("profile.deleteAccountDeleting") : t("profile.deleteAccountYes")}
+          cancelLabel={t("profile.cancel")}
+          confirming={deleting}
+          error={deleteError ? t(deleteError) : null}
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setConfirmingDelete(false)}
+        />
       )}
     </div>
   );

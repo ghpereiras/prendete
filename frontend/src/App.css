@@ -1017,3 +1017,55 @@
   color: var(--text-h);
   cursor: pointer;
 }
+
+.auth-form .google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+}
+
+.google-button svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.legal-page {
+  align-items: stretch;
+  box-sizing: border-box;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.legal-page h2 {
+  margin: 12px 0 4px;
+  font-size: 18px;
+}
+
+.legal-page p {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}

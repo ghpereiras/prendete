@@ -15,7 +15,8 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     first_name: Mapped[str] = mapped_column(String(255), nullable=False)
     last_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Null for accounts created through Google sign-in that never set a password.
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     language: Mapped[str] = mapped_column(String(5), nullable=False, server_default="es", default="es")
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     avatar: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
@@ -40,4 +41,8 @@ class User(Base):
 
     @property
     def full_name(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def has_password(self) -> bool:
+        return self.hashed_password is not None

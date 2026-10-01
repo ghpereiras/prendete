@@ -63,6 +63,17 @@ def update_me(
     )
 
 
+@router.delete("/me", status_code=204)
+def delete_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Events, attendances and push subscriptions go through the ORM cascade; polls,
+    # votes and tokens are removed by the database's ON DELETE CASCADE.
+    db.delete(current_user)
+    db.commit()
+
+
 @router.patch("/me/password", status_code=204)
 def change_password(
     body: PasswordChangeRequest,

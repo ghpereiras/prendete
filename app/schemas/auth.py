@@ -8,6 +8,12 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
+class GoogleLoginRequest(BaseModel):
+    credential: str
+    nonce: str
+    language: Language | None = None
+
+
 class EmailVerifyConfirm(BaseModel):
     token: str
 

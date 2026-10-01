@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,6 +16,30 @@ def create_user(db: Session, user_in: UserCreate, avatar: bytes | None = None) -
         hashed_password=hash_password(user_in.password),
         avatar=avatar,
         **({"language": user_in.language} if user_in.language else {}),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def create_google_user(
+    db: Session,
+    *,
+    email: str,
+    first_name: str,
+    last_name: str,
+    language: str | None,
+    avatar: bytes | None = None,
+) -> User:
+    user = User(
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        hashed_password=None,
+        avatar=avatar,
+        email_verified_at=datetime.now(timezone.utc),
+        **({"language": language} if language else {}),
     )
     db.add(user)
     db.commit()

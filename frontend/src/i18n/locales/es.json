@@ -80,7 +80,12 @@
     "currentPassword": "Contraseña actual",
     "newPassword": "Contraseña nueva",
     "changePasswordError": "No se pudo cambiar la contraseña",
-    "changePasswordErrorWrongCurrent": "La contraseña actual no es correcta"
+    "changePasswordErrorWrongCurrent": "La contraseña actual no es correcta",
+    "deleteAccount": "Eliminar mi cuenta",
+    "deleteAccountConfirm": "¿Seguro que querés eliminar tu cuenta? Se borran tus datos, los eventos y encuestas que organizaste, y tus asistencias y votos. No se puede deshacer.",
+    "deleteAccountYes": "Sí, eliminar",
+    "deleteAccountDeleting": "Eliminando...",
+    "deleteAccountError": "No se pudo eliminar tu cuenta"
   },
   "createEvent": {
     "title": "Crear evento",
@@ -233,6 +238,12 @@
     "iosInstall": "Para recibir notificaciones en iPhone, agregá Prendete a tu pantalla de inicio: tocá el botón Compartir y elegí \"Agregar a inicio\".",
     "gotIt": "Entendido"
   },
+  "google": {
+    "continue": "Continuar con Google",
+    "or": "o",
+    "error": "No se pudo iniciar sesión con Google",
+    "signingIn": "Entrando con Google..."
+  },
   "header": {
     "home": "Ir al inicio"
   },
@@ -281,5 +292,128 @@
   "verifyEmailBanner": {
     "reminder": "Verificá tu email — te quedan {{count}} días antes de que se bloquee tu cuenta. Si no lo encontrás, revisá spam.",
     "resent": "Te reenviamos el email de verificación. Si no te llega, revisá spam."
+  },
+  "privacy": {
+    "title": "Política de privacidad",
+    "updated": "Última actualización: 1 de octubre de 2026",
+    "sections": [
+      {
+        "heading": "Quiénes somos",
+        "body": [
+          "Prendete es una aplicación gratuita para organizar eventos y encuestas de fechas entre amigos. Para cualquier consulta sobre tus datos podés escribirnos a support@prendete.ar."
+        ]
+      },
+      {
+        "heading": "Qué datos recopilamos",
+        "body": [
+          "Datos de tu cuenta: nombre, apellido, email y contraseña. La contraseña se guarda solo como un hash, nunca en texto plano.",
+          "Si entrás con Google, recibimos de Google tu nombre, tu email verificado y tu foto de perfil. No recibimos ni guardamos tu contraseña de Google, y usamos esa información únicamente para iniciar tu sesión y crear tu perfil.",
+          "Tu foto de perfil, si elegís subir una.",
+          "Lo que creás o hacés en la app: eventos, encuestas de fechas, votos, asistencias y comentarios.",
+          "Tu idioma preferido y, si activás las notificaciones, los datos técnicos de suscripción push de tu navegador."
+        ]
+      },
+      {
+        "heading": "Para qué los usamos",
+        "body": [
+          "Para hacer funcionar la aplicación, mostrar tu nombre y tu foto a las personas que participan en los mismos eventos o encuestas que vos, enviarte emails de verificación de cuenta y de recuperación de contraseña, y mandarte notificaciones sobre tus eventos si las activaste.",
+          "No vendemos tus datos ni los usamos para publicidad."
+        ]
+      },
+      {
+        "heading": "Con quién los compartimos",
+        "body": [
+          "Las personas que participan en un mismo evento o encuesta ven tu nombre y tu foto.",
+          "Usamos proveedores para operar el servicio: Render (alojamiento de la aplicación), Neon (base de datos), Cloudflare (DNS), Brevo (envío de emails) y Google (inicio de sesión y búsqueda de ubicaciones con Google Maps). Las notificaciones push se entregan a través del servicio de tu navegador (Google, Apple o Mozilla). Estos proveedores procesan datos solo para prestarnos su servicio."
+        ]
+      },
+      {
+        "heading": "Datos guardados en tu navegador",
+        "body": [
+          "Guardamos en tu navegador un token de sesión y tus preferencias (como el idioma). No usamos cookies de seguimiento ni herramientas de analítica."
+        ]
+      },
+      {
+        "heading": "Conservación y tus derechos",
+        "body": [
+          "Conservamos tus datos mientras tengas una cuenta. Podés pedirnos acceso, corrección o eliminación de tu cuenta y de tus datos escribiendo a support@prendete.ar. Conforme a la Ley 25.326 de Protección de Datos Personales de Argentina, tenés derecho de acceso, rectificación y supresión de tus datos; la Agencia de Acceso a la Información Pública es el órgano de control de esa ley."
+        ]
+      },
+      {
+        "heading": "Seguridad",
+        "body": [
+          "Usamos conexiones cifradas (HTTPS) y guardamos las contraseñas con hash. Ningún sistema es completamente infalible, pero trabajamos para proteger tu información."
+        ]
+      },
+      {
+        "heading": "Cambios en esta política",
+        "body": [
+          "Podemos actualizar esta política. La fecha de la última actualización figura al principio de esta página."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "title": "Términos del servicio",
+    "updated": "Última actualización: 1 de octubre de 2026",
+    "sections": [
+      {
+        "heading": "Aceptación",
+        "body": [
+          "Al crear una cuenta o usar Prendete aceptás estos términos. Si no estás de acuerdo, no uses la aplicación."
+        ]
+      },
+      {
+        "heading": "Qué es Prendete",
+        "body": [
+          "Prendete es una herramienta gratuita para organizar eventos y encuestas de fechas entre conocidos. Nosotros no organizamos los eventos ni intervenimos en ellos."
+        ]
+      },
+      {
+        "heading": "Tu cuenta",
+        "body": [
+          "Tenés que darnos datos verdaderos y cuidar el acceso a tu cuenta. Sos responsable de lo que se haga con ella."
+        ]
+      },
+      {
+        "heading": "Uso aceptable",
+        "body": [
+          "No podés usar Prendete para actividades ilegales, para acosar o engañar a otras personas, para enviar spam, ni para intentar vulnerar o sobrecargar el servicio."
+        ]
+      },
+      {
+        "heading": "Tu contenido",
+        "body": [
+          "Sos responsable de los eventos, encuestas, comentarios y fotos que publicás. Podemos eliminar contenido o suspender cuentas que incumplan estos términos."
+        ]
+      },
+      {
+        "heading": "Disponibilidad del servicio",
+        "body": [
+          "Ofrecemos Prendete tal cual está, de forma gratuita. Puede tener interrupciones o cambios, y no garantizamos que esté siempre disponible o libre de errores."
+        ]
+      },
+      {
+        "heading": "Responsabilidad",
+        "body": [
+          "En la medida que lo permita la ley, no somos responsables por lo que ocurra en los eventos organizados a través de la app, ni por pérdidas derivadas del uso o la imposibilidad de uso del servicio."
+        ]
+      },
+      {
+        "heading": "Cambios",
+        "body": [
+          "Podemos modificar estos términos. Si seguís usando la aplicación después de un cambio, se entiende que lo aceptás."
+        ]
+      },
+      {
+        "heading": "Contacto y ley aplicable",
+        "body": [
+          "Podés escribirnos a support@prendete.ar. Estos términos se rigen por las leyes de la República Argentina."
+        ]
+      }
+    ]
+  },
+  "legal": {
+    "agree": "Al continuar aceptás los <terms>Términos del servicio</terms> y la <privacy>Política de privacidad</privacy>."
   }
 }

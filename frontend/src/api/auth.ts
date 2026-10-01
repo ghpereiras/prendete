@@ -1,5 +1,5 @@
 import type { Language } from "../i18n";
-import { API_URL, ApiError, apiGet, apiPatch, apiPost } from "./client";
+import { API_URL, ApiError, apiDelete, apiGet, apiPatch, apiPost } from "./client";
 
 export interface User {
   id: number;
@@ -9,6 +9,7 @@ export interface User {
   full_name: string;
   language: Language;
   email_verified_at: string | null;
+  has_password: boolean;
   avatar_url: string | null;
   created_at: string;
 }
@@ -30,6 +31,15 @@ export async function login(email: string, password: string): Promise<string> {
     throw new ApiError(response.status, data.detail ?? "No se pudo iniciar sesión");
   }
   const data: TokenResponse = await response.json();
+  return data.access_token;
+}
+
+export async function loginWithGoogle(
+  credential: string,
+  nonce: string,
+  language: Language,
+): Promise<string> {
+  const data = await apiPost<TokenResponse>("/auth/google", { credential, nonce, language });
   return data.access_token;
 }
 
@@ -78,6 +88,10 @@ export function changePassword(currentPassword: string, newPassword: string): Pr
     current_password: currentPassword,
     new_password: newPassword,
   });
+}
+
+export function deleteAccount(): Promise<void> {
+  return apiDelete<void>("/users/me");
 }
 
 export function verifyEmail(token: string): Promise<void> {

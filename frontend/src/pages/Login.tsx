@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { resendVerification } from "../api/auth";
 import { ApiError } from "../api/client";
 import AuthTopBar from "../components/AuthTopBar";
+import GoogleSignInButton from "../components/GoogleSignInButton";
+import LegalAgreement from "../components/LegalAgreement";
 import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import type { Language } from "../i18n";
@@ -82,6 +84,7 @@ export default function Login() {
       <AuthTopBar />
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <h1>{t("login.title")}</h1>
+        <GoogleSignInButton returnTo={from} />
         {error && <p className="error">{t(error)}</p>}
         {notVerified && (
           <div className="error">
@@ -118,6 +121,7 @@ export default function Login() {
             {t("login.registerLink")}
           </Link>
         </p>
+        <LegalAgreement />
       </form>
     </div>
   );

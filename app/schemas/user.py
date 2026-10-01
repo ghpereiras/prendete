@@ -38,5 +38,6 @@ class UserRead(BaseModel):
     full_name: str
     language: str
     email_verified_at: datetime | None
+    has_password: bool
     avatar_url: str | None
     created_at: datetime

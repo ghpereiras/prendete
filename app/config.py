@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     email_from_name: str = "Prendete"
     frontend_url: str = "http://localhost:5173"
 
+    # OAuth Web client ID from Google Cloud Console; empty disables Google sign-in.
+    google_client_id: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
