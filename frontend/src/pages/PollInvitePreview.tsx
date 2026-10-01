@@ -6,6 +6,7 @@ import { previewPollInvite, votePollByInvite, type EventPollInvitePreview } from
 import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
 import LoadingPage from "../components/LoadingPage";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
@@ -131,6 +132,7 @@ export default function PollInvitePreview() {
           ) : (
             <div className="invite-auth-prompt">
               <p>{t("pollInvitePreview.needsAuth")}</p>
+              <GoogleSignInButton returnTo={`/polls/invite/${token}`} />
               <Link className="button-link" to="/login" state={{ from: `/polls/invite/${token}` }}>
                 {t("login.title")}
               </Link>

@@ -11,6 +11,7 @@ import {
 } from "../api/events";
 import EventLocation from "../components/EventLocation";
 import LoadingPage from "../components/LoadingPage";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { useCountdown } from "../hooks/useCountdown";
@@ -142,6 +143,7 @@ export default function InvitePreview() {
       ) : (
         <div className="invite-auth-prompt">
           <p>{t("invitePreview.needsAuth")}</p>
+          <GoogleSignInButton returnTo={`/invite/${token}`} />
           <Link
             className="button-link"
             to="/login"

@@ -1018,11 +1018,24 @@
   cursor: pointer;
 }
 
-.auth-form .google-button {
+.google-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 16px;
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+}
+
+.auth-form .google-button {
   background: #fff;
   color: #1f1f1f;
   border: 1px solid #dadce0;
@@ -1035,6 +1048,8 @@
 }
 
 .auth-divider {
+  width: 100%;
+  max-width: 360px;
   display: flex;
   align-items: center;
   gap: 12px;
