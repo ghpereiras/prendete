@@ -190,6 +190,7 @@
     "notFound": "Este link de invitación no es válido",
     "isOwner": "Sos el organizador de esta encuesta.",
     "pickDates": "Marcá las fechas en las que podés:",
+    "proposedDates": "Fechas propuestas:",
     "vote": "Guardar mi disponibilidad",
     "voting": "Guardando...",
     "voteError": "No se pudo guardar tu disponibilidad",

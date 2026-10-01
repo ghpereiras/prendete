@@ -73,33 +73,43 @@ export default function PollInvitePreview() {
 
       {isOwner ? (
         <p>{t("pollInvitePreview.isOwner")}</p>
-      ) : user ? (
-        <div className="poll-options-list">
-          <p>{t("pollInvitePreview.pickDates")}</p>
-          {poll.date_options.map((option) => (
-            <label key={option.id} className="poll-option-vote poll-option-card">
-              <input
-                type="checkbox"
-                checked={selectedOptionIds.includes(option.id)}
-                onChange={() => toggleOption(option.id)}
-              />
-              {formatDateTime(option.starts_at, lang)}
-            </label>
-          ))}
-          {voteError && <p className="error">{t(voteError)}</p>}
-          <button onClick={handleVote} disabled={voting}>
-            {voting ? t("pollInvitePreview.voting") : t("pollInvitePreview.vote")}
-          </button>
-        </div>
       ) : (
-        <div className="invite-auth-prompt">
-          <p>{t("pollInvitePreview.needsAuth")}</p>
-          <Link className="button-link" to="/login" state={{ from: `/polls/invite/${token}` }}>
-            {t("login.title")}
-          </Link>
-          <Link to="/register" state={{ from: `/polls/invite/${token}` }}>
-            {t("login.registerLink")}
-          </Link>
+        <div className="poll-options-list">
+          <p>{user ? t("pollInvitePreview.pickDates") : t("pollInvitePreview.proposedDates")}</p>
+          {poll.date_options.map((option) =>
+            user ? (
+              <label key={option.id} className="poll-option-vote poll-option-card">
+                <input
+                  type="checkbox"
+                  checked={selectedOptionIds.includes(option.id)}
+                  onChange={() => toggleOption(option.id)}
+                />
+                {formatDateTime(option.starts_at, lang)}
+              </label>
+            ) : (
+              <div key={option.id} className="poll-option-card">
+                <div className="poll-option-date">{formatDateTime(option.starts_at, lang)}</div>
+              </div>
+            ),
+          )}
+          {user ? (
+            <>
+              {voteError && <p className="error">{t(voteError)}</p>}
+              <button onClick={handleVote} disabled={voting}>
+                {voting ? t("pollInvitePreview.voting") : t("pollInvitePreview.vote")}
+              </button>
+            </>
+          ) : (
+            <div className="invite-auth-prompt">
+              <p>{t("pollInvitePreview.needsAuth")}</p>
+              <Link className="button-link" to="/login" state={{ from: `/polls/invite/${token}` }}>
+                {t("login.title")}
+              </Link>
+              <Link to="/register" state={{ from: `/polls/invite/${token}` }}>
+                {t("login.registerLink")}
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>
