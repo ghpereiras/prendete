@@ -59,7 +59,7 @@ def test_register_with_avatar_stores_and_serves_it(client):
     assert response.status_code == 201
     body = response.json()
     user_id = body["id"]
-    assert body["avatar_url"] == f"/users/{user_id}/avatar"
+    assert body["avatar_url"].startswith(f"/users/{user_id}/avatar?v=")
 
     token = login(client, "owner@example.com")
     avatar_response = client.get(f"/users/{user_id}/avatar", headers=auth_headers(token))
@@ -120,7 +120,7 @@ def test_update_me_sets_avatar(client):
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["avatar_url"] == f"/users/{body['id']}/avatar"
+    assert body["avatar_url"].startswith(f"/users/{body['id']}/avatar?v=")
 
     avatar_response = client.get(body["avatar_url"], headers=auth_headers(token))
     stored_image = Image.open(io.BytesIO(avatar_response.content))
@@ -149,6 +149,31 @@ def test_update_me_replaces_existing_avatar(client):
     avatar_response = client.get(response.json()["avatar_url"], headers=auth_headers(token))
     pixel = Image.open(io.BytesIO(avatar_response.content)).getpixel((128, 128))
     assert pixel[0] > 200  # replaced with the light image, not the dark original
+
+
+def test_avatar_url_changes_when_avatar_content_changes(client):
+    # The endpoint is cached for 24h client-side — if the URL stayed the same
+    # after replacing the avatar, browsers would keep serving the old image
+    # from cache instead of fetching the new one.
+    register_response = client.post(
+        "/users",
+        json={
+            "email": "owner@example.com",
+            "first_name": "Owner",
+            "last_name": "Test",
+            "password": "secret123",
+            "avatar_base64": _sample_image_base64(color=(10, 10, 10)),
+        },
+    )
+    original_url = register_response.json()["avatar_url"]
+    token = login(client, "owner@example.com")
+
+    response = client.patch(
+        "/users/me",
+        json={"avatar_base64": _sample_image_base64(color=(240, 240, 240))},
+        headers=auth_headers(token),
+    )
+    assert response.json()["avatar_url"] != original_url
 
 
 def test_update_me_removes_avatar(client):

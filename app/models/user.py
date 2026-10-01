@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 
 from sqlalchemy import DateTime, LargeBinary, String
@@ -28,7 +29,14 @@ class User(Base):
 
     @property
     def avatar_url(self) -> str | None:
-        return f"/users/{self.id}/avatar" if self.avatar is not None else None
+        if self.avatar is None:
+            return None
+        # The endpoint is cached 24h (see get_user_avatar) — a content hash in
+        # the query string busts that cache automatically whenever the image
+        # actually changes, instead of every viewer being stuck with whatever
+        # was cached under the same bare /users/{id}/avatar URL.
+        version = hashlib.md5(self.avatar).hexdigest()[:8]
+        return f"/users/{self.id}/avatar?v={version}"
 
     @property
     def full_name(self) -> str:
