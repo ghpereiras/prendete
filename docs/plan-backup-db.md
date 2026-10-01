@@ -1,6 +1,8 @@
 # Plan: backup de la base de producción (Neon)
 
-**Objetivo:** perder como máximo 24 hs de datos (RPO) y reconstruir la base en menos de 1 hora (RTO), incluso si se pierde la cuenta de Neon. Estado: plan, nada implementado.
+> Nota: este plan se escribió pensando en Cloudflare R2; se implementó con artefactos de GitHub Actions (ver "Decisiones tomadas"). Donde diga R2, la implementación usa artefactos y la retención la aplica GitHub.
+
+**Objetivo:** perder como máximo 24 hs de datos (RPO) y reconstruir la base en menos de 1 hora (RTO), incluso si se pierde la cuenta de Neon. Estado: **implementado en el repo** (falta la configuración externa: ver `DEPLOY.md` > "Backups de la base").
 
 ## 1. Dos capas
 
@@ -41,8 +43,8 @@ Guardar en el gestor de contraseñas, aparte del dump: `SECRET_KEY`, el par **VA
 ## 5. Interacción con "Eliminar mi cuenta" y la política de privacidad
 
 Los backups conservan datos de cuentas ya eliminadas hasta que vence su retención. Por eso:
-- Evitar retención larga: **30 días diarios** y, si se quiere histórico, mensuales con tope bajo (por ejemplo 3). Sin copias mensuales indefinidas.
-- **Actualizar la política de privacidad** con una línea tipo "las copias de seguridad se conservan hasta N días".
+- Retención corta: **14 días diarios**, sin copias mensuales.
+- La política de privacidad dice que las copias se conservan hasta 14 días.
 - Aviso para el día de una restauración: las cuentas eliminadas desde la fecha del backup reaparecen; habría que volver a borrarlas.
 
 ## 6. Qué vigilar
@@ -59,8 +61,9 @@ Los backups conservan datos de cuentas ya eliminadas hasta que vence su retenci�
 5. Escribir `restore_backup.sh`, hacer la primera restauración de prueba y documentar el runbook en `DEPLOY.md` (30 min).
 6. Actualizar la política de privacidad con la retención (5 min).
 
-## Decisiones pendientes
+## Decisiones tomadas
 
-- ¿R2 o B2 como destino?
-- ¿Frecuencia diaria o cada 12 hs (RPO 12 hs)?
-- ¿Se quieren copias mensuales? (si sí, con qué tope)
+- Destino: **artefactos de GitHub Actions** (sin tarjeta ni cuentas extra; R2 se descartó por pedir tarjeta). Frecuencia: diaria (RPO 24 hs).
+- Retención: **14 días**, sin copias mensuales. GitHub borra los artefactos al vencer `retention-days`.
+- La política de privacidad ya menciona la retención de 14 días de las copias.
+- Implementado: `.github/workflows/db-backup.yml`, `scripts/backup_db.sh`, `scripts/restore_backup.sh` y la guía en `DEPLOY.md`.
