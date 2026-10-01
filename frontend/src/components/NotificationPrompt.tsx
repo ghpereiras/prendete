@@ -21,13 +21,23 @@ export default function NotificationPrompt() {
     // accounts, and one user's dismissal (or subscription) shouldn't hide
     // the prompt for another user who never actually enabled push.
     if (localStorage.getItem(DISMISSED_KEY_PREFIX + user.id)) return;
+
+    // iOS Safari only exposes PushManager to an installed (standalone) home
+    // screen app — isPushSupported() is correctly false in a regular tab, but
+    // that's exactly the case where we need to show the install instructions,
+    // so this has to be checked before (not after) the support check below.
+    if (isIos() && !isStandalone()) {
+      setState("ios-install");
+      return;
+    }
+
     if (!isPushSupported()) return;
     if (Notification.permission === "denied") return;
 
     let cancelled = false;
     getMyPushSubscription().then((subscription) => {
       if (cancelled || subscription) return;
-      setState(isIos() && !isStandalone() ? "ios-install" : "ask");
+      setState("ask");
     });
     return () => {
       cancelled = true;
