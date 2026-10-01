@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, push
-from app.auth import get_current_user
+from app.auth import get_current_user, get_optional_user
 from app.database import get_db
 from app.models.event_poll import EventPoll
 from app.models.user import User
@@ -19,6 +19,17 @@ from app.schemas.event_poll import (
 )
 
 router = APIRouter(prefix="/event-polls", tags=["event-polls"])
+
+
+def _build_voters(option) -> list[EventPollVoterRead]:
+    return [
+        EventPollVoterRead(
+            user_id=vote.user.id,
+            full_name=vote.user.full_name,
+            avatar_url=vote.user.avatar_url,
+        )
+        for vote in option.votes
+    ]
 
 
 def _build_poll_read(poll: EventPoll, viewer_id: int) -> EventPollRead:
@@ -38,14 +49,7 @@ def _build_poll_read(poll: EventPoll, viewer_id: int) -> EventPollRead:
             EventPollDateOptionRead(
                 id=option.id,
                 starts_at=option.starts_at,
-                voters=[
-                    EventPollVoterRead(
-                        user_id=vote.user.id,
-                        full_name=vote.user.full_name,
-                        avatar_url=vote.user.avatar_url,
-                    )
-                    for vote in option.votes
-                ],
+                voters=_build_voters(option),
                 voted_by_me=any(vote.user_id == viewer_id for vote in option.votes),
             )
             for option in poll.date_options
@@ -73,7 +77,11 @@ def list_polls(
 
 
 @router.get("/invite/{invite_token}", response_model=EventPollInvitePreview)
-def preview_invite(invite_token: str, db: Session = Depends(get_db)):
+def preview_invite(
+    invite_token: str,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
+):
     poll = crud.event_poll.get_poll_by_token(db, invite_token)
     if not poll or poll.is_resolved:
         raise HTTPException(status_code=404, detail="Invalid invite link")
@@ -87,7 +95,12 @@ def preview_invite(invite_token: str, db: Session = Depends(get_db)):
         duration_minutes=poll.duration_minutes,
         owner_id=poll.owner_id,
         date_options=[
-            EventPollDateOptionPreview(id=option.id, starts_at=option.starts_at, vote_count=len(option.votes))
+            EventPollDateOptionPreview(
+                id=option.id,
+                starts_at=option.starts_at,
+                vote_count=len(option.votes),
+                voters=_build_voters(option) if current_user else [],
+            )
             for option in poll.date_options
         ],
     )

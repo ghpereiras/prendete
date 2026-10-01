@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { avatarUrl } from "../api/client";
 import { previewPollInvite, votePollByInvite, type EventPollInvitePreview } from "../api/eventPolls";
+import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -26,7 +28,8 @@ export default function PollInvitePreview() {
     previewPollInvite(token)
       .then(setPoll)
       .catch(() => setNotFound(true));
-  }, [token]);
+    // Voter names are only returned to a logged-in viewer, so refetch when that changes.
+  }, [token, user?.id]);
 
   function toggleOption(optionId: number) {
     setSelectedOptionIds((prev) =>
@@ -78,14 +81,26 @@ export default function PollInvitePreview() {
           <p>{user ? t("pollInvitePreview.pickDates") : t("pollInvitePreview.proposedDates")}</p>
           {poll.date_options.map((option) =>
             user ? (
-              <label key={option.id} className="poll-option-vote poll-option-card">
-                <input
-                  type="checkbox"
-                  checked={selectedOptionIds.includes(option.id)}
-                  onChange={() => toggleOption(option.id)}
-                />
-                {formatDateTime(option.starts_at, lang)}
-              </label>
+              <div key={option.id} className="poll-option-card">
+                <label className="poll-option-vote">
+                  <input
+                    type="checkbox"
+                    checked={selectedOptionIds.includes(option.id)}
+                    onChange={() => toggleOption(option.id)}
+                  />
+                  {formatDateTime(option.starts_at, lang)}
+                </label>
+                {option.voters.length > 0 && (
+                  <div className="poll-voters-list">
+                    {option.voters.map((voter) => (
+                      <span key={voter.user_id} className="poll-voter">
+                        <Avatar avatarUrl={avatarUrl(voter.avatar_url)} fullName={voter.full_name} />
+                        {voter.full_name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <div key={option.id} className="poll-option-card">
                 <div className="poll-option-date">{formatDateTime(option.starts_at, lang)}</div>

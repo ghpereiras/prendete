@@ -111,7 +111,7 @@ def test_regenerate_invite_link_invalidates_old_token(client):
     assert client.get(f"/event-polls/invite/{new_token}").status_code == 200
 
 
-def test_preview_invite_shows_vote_counts_without_names(client):
+def test_preview_invite_hides_voter_names_from_anonymous_viewers(client):
     owner_token = register_and_login(client, "owner@example.com")
     friend_token = register_and_login(client, "friend@example.com")
     poll = create_poll(client, owner_token).json()
@@ -129,7 +129,27 @@ def test_preview_invite_shows_vote_counts_without_names(client):
     body = response.json()
     voted_option = next(o for o in body["date_options"] if o["id"] == option_id)
     assert voted_option["vote_count"] == 1
-    assert "voters" not in voted_option
+    assert voted_option["voters"] == []
+
+
+def test_preview_invite_shows_voter_names_to_logged_in_users(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    viewer_token = register_and_login(client, "viewer@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    option_id = poll["date_options"][0]["id"]
+
+    client.post(
+        f"/event-polls/invite/{token}/vote",
+        json={"option_ids": [option_id]},
+        headers=auth_headers(friend_token),
+    )
+
+    response = client.get(f"/event-polls/invite/{token}", headers=auth_headers(viewer_token))
+    assert response.status_code == 200
+    voted_option = next(o for o in response.json()["date_options"] if o["id"] == option_id)
+    assert [v["full_name"] for v in voted_option["voters"]] == ["Test User"]
 
 
 def test_vote_by_invite_token(client):

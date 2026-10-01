@@ -62,6 +62,7 @@ export interface EventPollDateOptionPreview {
   id: number;
   starts_at: string;
   vote_count: number;
+  voters: EventPollVoter[];
 }
 
 export interface EventPollInvitePreview {

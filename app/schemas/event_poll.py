@@ -54,6 +54,8 @@ class EventPollDateOptionPreview(BaseModel):
     id: int
     starts_at: datetime
     vote_count: int
+    # Only filled in for a logged-in viewer — the invite link itself is public.
+    voters: list[EventPollVoterRead] = []
 
 
 class EventPollInvitePreview(BaseModel):
