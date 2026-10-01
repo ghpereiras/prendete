@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { createEventPoll } from "../api/eventPolls";
+import DateTimeField from "../components/DateTimeField";
 import EventLocation from "../components/EventLocation";
 import LocationSearch from "../components/LocationSearch";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -71,6 +72,12 @@ export default function CreatePoll() {
     return errors;
   }
 
+  function blockEnterSubmit(e: KeyboardEvent<HTMLFormElement>) {
+    if (e.key === "Enter" && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitError(null);
@@ -108,7 +115,7 @@ export default function CreatePoll() {
 
   return (
     <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form className="auth-form" onSubmit={handleSubmit} onKeyDown={blockEnterSubmit} noValidate>
         <label>
           {t("createPoll.name")}
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -157,10 +164,9 @@ export default function CreatePoll() {
           <p>{t("createPoll.dateOptionsLabel")}</p>
           {dateOptions.map((value, index) => (
             <div key={index} className="poll-date-option-row">
-              <input
-                type="datetime-local"
+              <DateTimeField
                 value={value}
-                onChange={(e) => setDateOption(index, e.target.value)}
+                onChange={(v) => setDateOption(index, v)}
                 min={toDatetimeLocalValue(new Date())}
               />
               {dateOptions.length > 2 && (

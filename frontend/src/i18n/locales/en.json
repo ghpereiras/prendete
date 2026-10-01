@@ -92,7 +92,7 @@
     "locationSearchError": "Couldn't complete the search",
     "locationDetails": "Additional details",
     "locationDetailsPlaceholder": "Floor, apartment number, notes...",
-    "startsAt": "Starts",
+    "startsAt": "Date and time",
     "durationHours": "Duration (hours)",
     "registrationDeadlineHours": "Registration deadline (optional)",
     "registrationDeadlinePlaceholder": "Hours before the event",

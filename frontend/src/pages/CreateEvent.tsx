@@ -1,10 +1,11 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { avatarUrl, ApiError } from "../api/client";
 import { createEvent, getEvent, isRegistrationOpen, updateEvent } from "../api/events";
 import { resolveEventPoll, type EventPollVoter } from "../api/eventPolls";
 import Avatar from "../components/Avatar";
+import DateTimeField from "../components/DateTimeField";
 import EventLocation from "../components/EventLocation";
 import LocationSearch from "../components/LocationSearch";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -127,6 +128,12 @@ export default function CreateEvent() {
     return errors;
   }
 
+  function blockEnterSubmit(e: KeyboardEvent<HTMLFormElement>) {
+    if (e.key === "Enter" && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+    }
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitError(null);
@@ -200,7 +207,7 @@ export default function CreateEvent() {
 
   return (
     <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form className="auth-form" onSubmit={handleSubmit} onKeyDown={blockEnterSubmit} noValidate>
         {fromPoll && fromPoll.voters.length > 0 && (
           <div className="poll-voters-box">
             <p>{t("createEvent.pollVotersLabel")}</p>
@@ -250,10 +257,9 @@ export default function CreateEvent() {
         <EventLocation location={location || null} locationDetails={locationDetails || null} mapsLink={mapsLink || null} />
         <label>
           {t("createEvent.startsAt")}
-          <input
-            type="datetime-local"
+          <DateTimeField
             value={startsAt}
-            onChange={(e) => setStartsAt(e.target.value)}
+            onChange={setStartsAt}
             min={toDatetimeLocalValue(new Date())}
           />
           {fieldErrors.startsAt && <span className="field-error">{t(fieldErrors.startsAt)}</span>}
