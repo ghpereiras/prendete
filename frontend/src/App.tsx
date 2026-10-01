@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import NotificationPrompt from "./components/NotificationPrompt";
 import { PageTitleProvider } from "./context/PageTitleContext";
 import ProtectedRoute from "./context/ProtectedRoute";
+import Admin from "./pages/Admin";
 import CreateEvent from "./pages/CreateEvent";
 import CreatePoll from "./pages/CreatePoll";
 import EventDetail from "./pages/EventDetail";
@@ -53,6 +54,14 @@ export default function App() {
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/privacy" element={<LegalPage namespace="privacy" />} />
         <Route path="/terms" element={<LegalPage namespace="terms" />} />
         <Route path="/invite/:token" element={<InvitePreview />} />

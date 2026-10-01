@@ -5,6 +5,7 @@ from sqlalchemy import DateTime, LargeBinary, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
+from app.config import settings
 from app.database import Base
 
 
@@ -42,6 +43,10 @@ class User(Base):
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def is_admin(self) -> bool:
+        return self.email_verified_at is not None and self.email.lower() in settings.admin_email_list
 
     @property
     def has_password(self) -> bool:

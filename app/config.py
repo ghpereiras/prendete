@@ -21,7 +21,15 @@ class Settings(BaseSettings):
     # OAuth Web client ID from Google Cloud Console; empty disables Google sign-in.
     google_client_id: str = ""
 
+    # Comma-separated emails allowed to open the admin dashboard.
+    admin_emails: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
+    @property
+    def admin_email_list(self) -> set[str]:
+        return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
 
 
 settings = Settings()

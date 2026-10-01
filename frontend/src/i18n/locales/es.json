@@ -57,7 +57,8 @@
   "account": {
     "label": "Cuenta",
     "profile": "Mi perfil",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "dashboard": "Panel"
   },
   "profile": {
     "title": "Mi perfil",
@@ -415,5 +416,45 @@
   },
   "legal": {
     "agree": "Al continuar aceptás los <terms>Términos del servicio</terms> y la <privacy>Política de privacidad</privacy>."
+  },
+  "admin": {
+    "title": "Panel",
+    "generatedAt": "Actualizado: {{date}}",
+    "summary": "Resumen",
+    "total": "Total",
+    "last24h": "24 h",
+    "last7d": "7 días",
+    "last30d": "30 días",
+    "registeredUsers": "Usuarios registrados",
+    "activeUsers": "Usuarios activos",
+    "events": "Eventos creados",
+    "polls": "Encuestas creadas",
+    "attendances": "Asistencias",
+    "activeHint": "Activo = creó un evento o encuesta, se sumó a un evento o votó en ese período. La columna Total cuenta a quienes lo hicieron alguna vez.",
+    "signupsChart": "Altas por día (últimos 30 días)",
+    "usersSection": "Usuarios",
+    "loginMethod": "Método de acceso",
+    "withPassword": "Con contraseña",
+    "googleOnly": "Solo Google",
+    "loginMethodHint": "Se asume que las cuentas sin contraseña se crearon con Google. Quien se registró con Google y después puso una contraseña cuenta como \"con contraseña\".",
+    "emailStatus": "Email",
+    "verified": "Verificado",
+    "unverified": "Sin verificar",
+    "language": "Idioma",
+    "lockedOut": "Cuentas bloqueadas por no verificar (más de 7 días)",
+    "neverEngaged": "Usuarios sin ninguna actividad",
+    "withAvatar": "Con foto de perfil",
+    "withPush": "Con notificaciones activadas",
+    "eventsSection": "Eventos",
+    "upcoming": "Próximos",
+    "past": "Pasados",
+    "avgAttendees": "Asistentes por evento (promedio)",
+    "limitedCapacity": "Eventos con cupo limitado",
+    "pollsSection": "Encuestas",
+    "pollsOpen": "Abiertas",
+    "pollsResolved": "Resueltas",
+    "avgParticipants": "Votantes por encuesta (promedio)",
+    "recentSignups": "Últimas altas",
+    "error": "No se pudieron cargar las métricas"
   }
 }

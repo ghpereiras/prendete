@@ -10,6 +10,7 @@ export interface User {
   language: Language;
   email_verified_at: string | null;
   has_password: boolean;
+  is_admin: boolean;
   avatar_url: string | null;
   created_at: string;
 }

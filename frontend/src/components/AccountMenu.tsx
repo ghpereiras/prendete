@@ -16,9 +16,13 @@ export default function AccountMenu() {
   const initial = user.full_name.trim().charAt(0).toUpperCase();
   const photoUrl = avatarUrl(user.avatar_url);
 
-  function goToProfile() {
+  function goTo(path: string) {
     close();
-    navigate("/profile");
+    navigate(path);
+  }
+
+  function goToProfile() {
+    goTo("/profile");
   }
 
   function handleLogout() {
@@ -48,6 +52,11 @@ export default function AccountMenu() {
           <button type="button" role="menuitem" onClick={goToProfile}>
             {t("account.profile")}
           </button>
+          {user.is_admin && (
+            <button type="button" role="menuitem" onClick={() => goTo("/admin")}>
+              {t("account.dashboard")}
+            </button>
+          )}
           <button type="button" role="menuitem" onClick={handleLogout}>
             {t("account.logout")}
           </button>

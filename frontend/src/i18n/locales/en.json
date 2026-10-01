@@ -57,7 +57,8 @@
   "account": {
     "label": "Account",
     "profile": "My profile",
-    "logout": "Log out"
+    "logout": "Log out",
+    "dashboard": "Dashboard"
   },
   "profile": {
     "title": "My profile",
@@ -415,5 +416,45 @@
   },
   "legal": {
     "agree": "By continuing you accept the <terms>Terms of service</terms> and the <privacy>Privacy policy</privacy>."
+  },
+  "admin": {
+    "title": "Dashboard",
+    "generatedAt": "Updated: {{date}}",
+    "summary": "Summary",
+    "total": "Total",
+    "last24h": "24 h",
+    "last7d": "7 days",
+    "last30d": "30 days",
+    "registeredUsers": "Registered users",
+    "activeUsers": "Active users",
+    "events": "Events created",
+    "polls": "Polls created",
+    "attendances": "Attendances",
+    "activeHint": "Active = created an event or poll, joined an event or voted in that period. The Total column counts everyone who ever did.",
+    "signupsChart": "Sign-ups per day (last 30 days)",
+    "usersSection": "Users",
+    "loginMethod": "Sign-in method",
+    "withPassword": "With password",
+    "googleOnly": "Google only",
+    "loginMethodHint": "Accounts without a password are assumed to have been created with Google. Someone who signed up with Google and later set a password counts as \"with password\".",
+    "emailStatus": "Email",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "language": "Language",
+    "lockedOut": "Accounts locked for not verifying (over 7 days)",
+    "neverEngaged": "Users with no activity",
+    "withAvatar": "With profile photo",
+    "withPush": "With notifications on",
+    "eventsSection": "Events",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "avgAttendees": "Attendees per event (average)",
+    "limitedCapacity": "Events with limited capacity",
+    "pollsSection": "Polls",
+    "pollsOpen": "Open",
+    "pollsResolved": "Resolved",
+    "avgParticipants": "Voters per poll (average)",
+    "recentSignups": "Latest sign-ups",
+    "error": "Couldn't load the metrics"
   }
 }
