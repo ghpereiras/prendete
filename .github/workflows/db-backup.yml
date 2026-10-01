@@ -41,6 +41,8 @@ jobs:
           BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
           AGE_PUBLIC_KEY: ${{ secrets.AGE_PUBLIC_KEY }}
           OUT_DIR: ${{ runner.temp }}
+          # The runner image ships PostgreSQL 16, and the plain `pg_dump` command resolves to it.
+          PG_BIN_DIR: /usr/lib/postgresql/${{ env.PG_MAJOR }}/bin
         run: |
           # Separate assignment: a failing `$(...)` inside `echo` would not fail the step.
           file="$(scripts/backup_db.sh)"
