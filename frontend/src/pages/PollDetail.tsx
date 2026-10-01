@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { avatarUrl } from "../api/client";
+import { avatarUrl, isServerUnavailable, loadWhileServerWakes } from "../api/client";
 import {
   getEventPoll,
   getPollInviteLink,
@@ -10,6 +10,7 @@ import {
 } from "../api/eventPolls";
 import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
+import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
@@ -22,6 +23,7 @@ export default function PollDetail() {
   const { user } = useAuth();
   const [poll, setPoll] = useState<EventPoll | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [slow, setSlow] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
@@ -32,14 +34,23 @@ export default function PollDetail() {
 
   useEffect(() => {
     if (!pollId) return;
-    getEventPoll(Number(pollId))
+    let cancelled = false;
+    loadWhileServerWakes(() => getEventPoll(Number(pollId)), {
+      onSlow: () => setSlow(true),
+      isCancelled: () => cancelled,
+    })
       .then((loaded) => {
         setPoll(loaded);
         setSelectedOptionIds(
           loaded.date_options.filter((option) => option.voted_by_me).map((option) => option.id),
         );
       })
-      .catch(() => setError("pollDetail.notFound"));
+      .catch((err) => {
+        if (!cancelled) setError(isServerUnavailable(err) ? "common.serverUnavailable" : "pollDetail.notFound");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [pollId]);
 
   const isOwner = user?.id === poll?.owner_id;
@@ -108,7 +119,7 @@ export default function PollDetail() {
   }
 
   if (!poll) {
-    return <p className="page">{t("common.loading")}</p>;
+    return <LoadingPage slow={slow} />;
   }
 
   return (

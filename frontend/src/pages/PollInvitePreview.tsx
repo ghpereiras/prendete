@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { avatarUrl } from "../api/client";
+import { avatarUrl, isServerUnavailable, loadWhileServerWakes } from "../api/client";
 import { previewPollInvite, votePollByInvite, type EventPollInvitePreview } from "../api/eventPolls";
 import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
+import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
@@ -17,17 +18,30 @@ export default function PollInvitePreview() {
   const navigate = useNavigate();
   const [poll, setPoll] = useState<EventPollInvitePreview | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
   const [voteError, setVoteError] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
 
-  usePageTitle(poll?.title ?? (notFound ? t("pollInvitePreview.notFound") : t("common.loading")));
+  usePageTitle(poll?.title ?? (notFound || unavailable ? t(unavailable ? "common.serverUnavailable" : "pollInvitePreview.notFound") : t("common.loading")));
 
   useEffect(() => {
     if (!token) return;
-    previewPollInvite(token)
+    let cancelled = false;
+    loadWhileServerWakes(() => previewPollInvite(token), {
+      onSlow: () => setSlow(true),
+      isCancelled: () => cancelled,
+    })
       .then(setPoll)
-      .catch(() => setNotFound(true));
+      .catch((err) => {
+        if (cancelled) return;
+        if (isServerUnavailable(err)) setUnavailable(true);
+        else setNotFound(true);
+      });
+    return () => {
+      cancelled = true;
+    };
     // Voter names are only returned to a logged-in viewer, so refetch when that changes.
   }, [token, user?.id]);
 
@@ -51,16 +65,16 @@ export default function PollInvitePreview() {
     }
   }
 
-  if (notFound) {
+  if (notFound || unavailable) {
     return (
       <div className="page">
-        <p className="error">{t("pollInvitePreview.notFound")}</p>
+        <p className="error">{t(unavailable ? "common.serverUnavailable" : "pollInvitePreview.notFound")}</p>
       </div>
     );
   }
 
   if (!poll) {
-    return <p className="page">{t("common.loading")}</p>;
+    return <LoadingPage slow={slow} />;
   }
 
   const isOwner = user?.id === poll.owner_id;

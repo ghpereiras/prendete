@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ApiError, avatarUrl } from "../api/client";
+import { ApiError, avatarUrl, isServerUnavailable, loadWhileServerWakes } from "../api/client";
 import {
   deleteEvent,
   endsAt,
@@ -18,6 +18,7 @@ import {
 import Avatar from "../components/Avatar";
 import ConfirmModal from "../components/ConfirmModal";
 import EventLocation from "../components/EventLocation";
+import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { formatDateTime } from "../utils/date";
@@ -33,6 +34,7 @@ export default function EventDetail() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slow, setSlow] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -48,9 +50,18 @@ export default function EventDetail() {
 
   useEffect(() => {
     if (!eventId) return;
-    getEvent(Number(eventId))
+    let cancelled = false;
+    loadWhileServerWakes(() => getEvent(Number(eventId)), {
+      onSlow: () => setSlow(true),
+      isCancelled: () => cancelled,
+    })
       .then(setEvent)
-      .catch(() => setError("eventDetail.notFound"));
+      .catch((err) => {
+        if (!cancelled) setError(isServerUnavailable(err) ? "common.serverUnavailable" : "eventDetail.notFound");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [eventId]);
 
   useEffect(() => {
@@ -135,7 +146,7 @@ export default function EventDetail() {
   }
 
   if (!event) {
-    return <p className="page">{t("common.loading")}</p>;
+    return <LoadingPage slow={slow} />;
   }
 
   const acceptedCount = attendees ? attendees.filter((a) => !a.is_owner).length : null;

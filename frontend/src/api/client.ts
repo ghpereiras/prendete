@@ -81,3 +81,27 @@ export function apiPut<T>(path: string, body: unknown): Promise<T> {
 export function apiDelete<T>(path: string): Promise<T> {
   return request<T>(path, { method: "DELETE" });
 }
+
+const WAKE_RETRY_DELAY_MS = 2500;
+const WAKE_MAX_ATTEMPTS = 36;
+
+// The free-tier backend sleeps when idle and answers with 502/503 or a dropped
+// connection while it boots, so a failed load is only conclusive for a 4xx.
+export function isServerUnavailable(err: unknown): boolean {
+  return !(err instanceof ApiError) || err.status >= 500;
+}
+
+export async function loadWhileServerWakes<T>(
+  load: () => Promise<T>,
+  { onSlow, isCancelled }: { onSlow: () => void; isCancelled: () => boolean },
+): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await load();
+    } catch (err) {
+      if (!isServerUnavailable(err) || attempt >= WAKE_MAX_ATTEMPTS || isCancelled()) throw err;
+      onSlow();
+      await new Promise((resolve) => setTimeout(resolve, WAKE_RETRY_DELAY_MS));
+    }
+  }
+}

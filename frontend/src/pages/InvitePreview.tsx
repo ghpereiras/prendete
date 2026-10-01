@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ApiError } from "../api/client";
+import { ApiError, isServerUnavailable, loadWhileServerWakes } from "../api/client";
 import {
   endsAt,
   joinEvent,
@@ -10,6 +10,7 @@ import {
   type EventInvitePreview,
 } from "../api/events";
 import EventLocation from "../components/EventLocation";
+import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
 import { useCountdown } from "../hooks/useCountdown";
@@ -24,6 +25,8 @@ export default function InvitePreview() {
   const navigate = useNavigate();
   const [event, setEvent] = useState<EventInvitePreview | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
   const [comment, setComment] = useState("");
@@ -32,9 +35,20 @@ export default function InvitePreview() {
 
   useEffect(() => {
     if (!token) return;
-    previewInvite(token)
+    let cancelled = false;
+    loadWhileServerWakes(() => previewInvite(token), {
+      onSlow: () => setSlow(true),
+      isCancelled: () => cancelled,
+    })
       .then(setEvent)
-      .catch(() => setNotFound(true));
+      .catch((err) => {
+        if (cancelled) return;
+        if (isServerUnavailable(err)) setUnavailable(true);
+        else setNotFound(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const deadline = event
@@ -61,16 +75,16 @@ export default function InvitePreview() {
     }
   }
 
-  if (notFound) {
+  if (notFound || unavailable) {
     return (
       <div className="page">
-        <p className="error">{t("invitePreview.notFound")}</p>
+        <p className="error">{t(unavailable ? "common.serverUnavailable" : "invitePreview.notFound")}</p>
       </div>
     );
   }
 
   if (!event) {
-    return <p className="page">{t("common.loading")}</p>;
+    return <LoadingPage slow={slow} />;
   }
 
   const isOwner = user?.id === event.owner_id;
