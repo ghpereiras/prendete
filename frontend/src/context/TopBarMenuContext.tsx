@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { supportsHover } from "../utils/platform";
 
 type MenuId = "language" | "account" | "create";
 
@@ -82,8 +83,15 @@ export function useTopBarMenu(id: MenuId) {
   return {
     open,
     containerRef,
-    handleMouseEnter: () => ctx.openMenu(id),
-    handleMouseLeave: () => ctx.scheduleClose(id),
+    // Gated to real-mouse devices: a touch tap synthesizes a hover event
+    // immediately before its click, so letting hover open the menu there
+    // would race with the click's own toggle (see toggle below).
+    handleMouseEnter: () => {
+      if (supportsHover()) ctx.openMenu(id);
+    },
+    handleMouseLeave: () => {
+      if (supportsHover()) ctx.scheduleClose(id);
+    },
     toggle: () => (ctx.activeMenu === id ? ctx.closeMenu(id) : ctx.openMenu(id)),
     close: () => ctx.closeMenu(id),
   };

@@ -10,3 +10,12 @@ export function isStandalone(): boolean {
   const nav = window.navigator as Navigator & { standalone?: boolean };
   return window.matchMedia("(display-mode: standalone)").matches || nav.standalone === true;
 }
+
+// Touch devices synthesize a hover/mouseenter event right before a tap's click
+// event, so a dropdown trigger that opens on hover can't tell "the pointer is
+// hovering" apart from "the user just tapped" — checking this lets us only
+// wire up hover-to-open on devices with a real mouse, where that ambiguity
+// doesn't exist.
+export function supportsHover(): boolean {
+  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
