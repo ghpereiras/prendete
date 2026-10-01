@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { confirmPasswordReset } from "../api/auth";
 import AuthTopBar from "../components/AuthTopBar";
+import PasswordInput from "../components/PasswordInput";
 import { usePageTitle } from "../context/PageTitleContext";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -61,7 +62,7 @@ export default function ResetPassword() {
         {error && <p className="error">{t(error)}</p>}
         <label>
           {t("resetPassword.newPassword")}
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" />
           {fieldErrors.password && <span className="field-error">{t(fieldErrors.password)}</span>}
         </label>
         <button type="submit" disabled={submitting}>

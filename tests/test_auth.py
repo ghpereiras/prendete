@@ -251,3 +251,45 @@ def test_password_reset_confirm_with_invalid_token_rejected(client):
         "/auth/password-reset/confirm", json={"token": "does-not-exist", "new_password": "newpassword123"}
     )
     assert response.status_code == 400
+
+
+def test_change_password_requires_auth(client):
+    response = client.patch(
+        "/users/me/password", json={"current_password": "secret123", "new_password": "newpassword123"}
+    )
+    assert response.status_code == 401
+
+
+def test_change_password_success(client):
+    token = register_and_login(client, "owner@example.com")
+    response = client.patch(
+        "/users/me/password",
+        json={"current_password": "secret123", "new_password": "newpassword123"},
+        headers=auth_headers(token),
+    )
+    assert response.status_code == 204
+
+    old_login = client.post(
+        "/auth/login", data={"username": "owner@example.com", "password": "secret123"}
+    )
+    assert old_login.status_code == 401
+
+    new_login = client.post(
+        "/auth/login", data={"username": "owner@example.com", "password": "newpassword123"}
+    )
+    assert new_login.status_code == 200
+
+
+def test_change_password_wrong_current_password_rejected(client):
+    token = register_and_login(client, "owner@example.com")
+    response = client.patch(
+        "/users/me/password",
+        json={"current_password": "wrongpass", "new_password": "newpassword123"},
+        headers=auth_headers(token),
+    )
+    assert response.status_code == 400
+
+    still_works = client.post(
+        "/auth/login", data={"username": "owner@example.com", "password": "secret123"}
+    )
+    assert still_works.status_code == 200

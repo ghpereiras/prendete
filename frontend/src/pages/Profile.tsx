@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { avatarUrl } from "../api/client";
+import { changePassword } from "../api/auth";
+import { ApiError, avatarUrl } from "../api/client";
 import {
   getMyPushSubscription,
   isPushSupported,
@@ -9,8 +10,11 @@ import {
 } from "../api/push";
 import Avatar from "../components/Avatar";
 import AvatarPicker from "../components/AvatarPicker";
+import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
+
+const MIN_PASSWORD_LENGTH = 8;
 
 type AvatarChange = "none" | "removed" | { dataUrl: string };
 
@@ -32,6 +36,13 @@ export default function Profile() {
   const [pushEnabled, setPushEnabled] = useState<boolean | null>(null);
   const [pushError, setPushError] = useState<string | null>(null);
   const [pushSubmitting, setPushSubmitting] = useState(false);
+
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordFieldError, setPasswordFieldError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
 
   const pushSupported = isPushSupported();
 
@@ -59,6 +70,39 @@ export default function Profile() {
       );
     } finally {
       setPushSubmitting(false);
+    }
+  }
+
+  function startChangingPassword() {
+    setCurrentPassword("");
+    setNewPassword("");
+    setPasswordFieldError(null);
+    setPasswordError(null);
+    setChangingPassword(true);
+  }
+
+  async function handleChangePassword(e: FormEvent) {
+    e.preventDefault();
+    setPasswordError(null);
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setPasswordFieldError("register.errorPasswordTooShort");
+      return;
+    }
+    setPasswordFieldError(null);
+
+    setPasswordSubmitting(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setChangingPassword(false);
+    } catch (err) {
+      setPasswordError(
+        err instanceof ApiError && err.status === 400
+          ? "profile.changePasswordErrorWrongCurrent"
+          : "profile.changePasswordError",
+      );
+    } finally {
+      setPasswordSubmitting(false);
     }
   }
 
@@ -131,6 +175,37 @@ export default function Profile() {
     );
   }
 
+  if (changingPassword) {
+    return (
+      <div className="page">
+        <form className="auth-form" onSubmit={handleChangePassword} noValidate>
+          {passwordError && <p className="error">{t(passwordError)}</p>}
+          <label>
+            {t("profile.currentPassword")}
+            <PasswordInput
+              value={currentPassword}
+              onChange={setCurrentPassword}
+              autoComplete="current-password"
+            />
+          </label>
+          <label>
+            {t("profile.newPassword")}
+            <PasswordInput value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
+            {passwordFieldError && <span className="field-error">{t(passwordFieldError)}</span>}
+          </label>
+          <div className="form-actions">
+            <button type="button" onClick={() => setChangingPassword(false)} disabled={passwordSubmitting}>
+              {t("profile.cancel")}
+            </button>
+            <button type="submit" disabled={passwordSubmitting}>
+              {passwordSubmitting ? t("profile.saving") : t("profile.save")}
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
       <Avatar avatarUrl={avatarUrl(user?.avatar_url ?? null)} fullName={user?.full_name ?? ""} large />
@@ -142,6 +217,9 @@ export default function Profile() {
       </p>
       <button type="button" className="button-link" onClick={startEditing}>
         {t("profile.edit")}
+      </button>
+      <button type="button" className="button-link" onClick={startChangingPassword}>
+        {t("profile.changePassword")}
       </button>
 
       {pushSupported && (

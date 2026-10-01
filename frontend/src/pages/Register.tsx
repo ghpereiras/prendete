@@ -5,6 +5,7 @@ import { ApiError } from "../api/client";
 import { register } from "../api/auth";
 import AuthTopBar from "../components/AuthTopBar";
 import AvatarPicker from "../components/AvatarPicker";
+import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import type { Language } from "../i18n";
 
@@ -100,11 +101,7 @@ export default function Register() {
         </label>
         <label>
           {t("register.password")}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" />
           {fieldErrors.password && <span className="field-error">{t(fieldErrors.password)}</span>}
         </label>
         <button type="submit" disabled={submitting}>

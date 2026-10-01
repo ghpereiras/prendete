@@ -75,7 +75,12 @@
     "pushDisable": "Desactivar notificaciones",
     "pushSaving": "Guardando...",
     "pushErrorDenied": "Bloqueaste las notificaciones para este sitio — para activarlas, habilitalas desde la configuración del navegador",
-    "pushErrorGeneric": "No se pudieron activar las notificaciones"
+    "pushErrorGeneric": "No se pudieron activar las notificaciones",
+    "changePassword": "Cambiar contraseña",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Contraseña nueva",
+    "changePasswordError": "No se pudo cambiar la contraseña",
+    "changePasswordErrorWrongCurrent": "La contraseña actual no es correcta"
   },
   "createEvent": {
     "title": "Crear evento",
@@ -240,7 +245,9 @@
     "empty": "No tenés encuestas pendientes."
   },
   "common": {
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña"
   },
   "language": {
     "label": "Idioma"

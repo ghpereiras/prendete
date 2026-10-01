@@ -6,7 +6,8 @@ from app.auth import get_current_user
 from app.database import get_db
 from app.models.user import User
 from app.schemas.push_subscription import PushSubscriptionCreate
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import PasswordChangeRequest, UserCreate, UserRead, UserUpdate
+from app.security import hash_password, verify_password
 from app.utils.avatar import InvalidAvatarError, process_avatar
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -60,6 +61,18 @@ def update_me(
         avatar=avatar,
         avatar_changed=avatar_changed,
     )
+
+
+@router.patch("/me/password", status_code=204)
+def change_password(
+    body: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(body.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    current_user.hashed_password = hash_password(body.new_password)
+    db.commit()
 
 
 @router.get("/me/push-subscriptions", response_model=list[str])

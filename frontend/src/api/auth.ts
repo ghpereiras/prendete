@@ -73,6 +73,13 @@ export function updateProfile(update: ProfileUpdate): Promise<User> {
   });
 }
 
+export function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  return apiPatch<void>("/users/me/password", {
+    current_password: currentPassword,
+    new_password: newPassword,
+  });
+}
+
 export function verifyEmail(token: string): Promise<void> {
   return apiPost<void>("/auth/verify-email", { token });
 }

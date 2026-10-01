@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { resendVerification } from "../api/auth";
 import { ApiError } from "../api/client";
 import AuthTopBar from "../components/AuthTopBar";
+import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import type { Language } from "../i18n";
 
@@ -101,11 +102,7 @@ export default function Login() {
         </label>
         <label>
           {t("login.password")}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <PasswordInput value={password} onChange={setPassword} autoComplete="current-password" />
           {fieldErrors.password && <span className="field-error">{t(fieldErrors.password)}</span>}
         </label>
         <button type="submit" disabled={submitting}>
