@@ -22,6 +22,8 @@ app.include_router(attendees.router)
 app.include_router(event_polls.router)
 
 
-@app.get("/health")
+# HEAD too: uptime/keep-alive pingers and Render's wake-up page probe with HEAD, and a 405 there
+# reads as a failed check.
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}

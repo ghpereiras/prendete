@@ -21,10 +21,10 @@ Render duerme el backend tras ~15 min sin requests. Para que esté despierto en 
 - **`/health` no toca la base** (`app/main.py`), y tiene que seguir así: si consultara Neon, las pings mantendrían despierto el cómputo de la base y consumirían sus horas gratis (Neon se suspende solo tras ~5 min sin consultas).
 - **Por qué no GitHub Actions**: un ping cada 10 min son ~100 corridas por día, de ≥1 min facturado cada una (~3000 min/mes contra 2000 gratis en repos privados), y los cron de GitHub se atrasan o saltean ejecuciones, lo que justo importa acá.
 - **Servicio elegido**: [cron-job.org](https://cron-job.org) (gratis, con zona horaria configurable). Un solo job:
-  - Título `prendete-keepalive`, método GET, URL `https://api.prendete.ar/health`.
+  - Título `prendete-keepalive`, método **HEAD**, URL `https://api.prendete.ar/health`. HEAD (que `/health` acepta) evita que cron-job.org reciba la página HTML grande de "Application loading" que Render devuelve mientras el servicio está dormido: con GET esa respuesta supera el tamaño máximo y figura como "Failed (output too large)".
   - Zona horaria `America/Argentina/Buenos_Aires`, todos los días.
   - Horas: 0 y 8 a 23. Minutos: 0, 10, 20, 30, 40, 50.
-  - Timeout de 30 s. El primer ping de la mañana puede fallar por timeout porque el backend arranca en frío (30–60 s), pero igual lo despierta: configurar los avisos por mail para que salten recién tras 3 fallos seguidos.
+  - Timeout de 30 s. Un arranque en frío puede tardar varios minutos (se midieron ~5 min el 2/10/2026, de la primera request a "Application startup complete"), así que el primer ping del día puede fallar o quedar sin respuesta aunque cumpla su función: configurar los avisos por mail para que salten recién tras 3 fallos seguidos. Si el servicio tiene que estar usable a las 08:00, adelantar el primer ping (por ejemplo horas `0` y `7` a `23`).
 
 ### SPA fallback (rutas del frontend)
 
