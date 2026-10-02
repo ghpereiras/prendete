@@ -5,13 +5,26 @@ Todavía no productivizado — esto es el plan acordado, no algo ya implementado
 ## Stack elegido
 
 - **Frontend**: Render Static Site (gratis, sin sleep — solo sirve archivos estáticos, no corre un proceso).
-- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-60s al despertar; el workspace tiene 750 hs/mes gratis compartidas entre servicios free, lo justo para un solo servicio corriendo todo el mes con poco margen — no alcanza para mantenerlo siempre despierto con un ping externo sin arriesgarse a agotarlas).
+- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-60s al despertar; el workspace tiene 750 hs/mes gratis compartidas entre servicios free, lo justo para un solo servicio corriendo las 24 hs todo el mes con poco margen, por eso solo se lo mantiene despierto en el horario de uso — ver "Mantener el backend despierto").
 - **DB**: [Neon](https://neon.tech) (Postgres serverless, free tier permanente).
 - **Dominio**: `prendete.ar`, comprado en nic.ar.
 
 ### Cold-start del backend
 
-En vez de pagar un upgrade o mantenerlo siempre despierto con un cron externo (ver nota de las 750 hs arriba), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
+Además de mantenerlo despierto en horario de uso (sección siguiente), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
+
+### Mantener el backend despierto (08:00 a 01:00)
+
+Render duerme el backend tras ~15 min sin requests. Para que esté despierto en el horario de uso, un cron externo le pega a `GET https://api.prendete.ar/health` cada 10 minutos, de 08:00 a 00:50 (hora de Argentina). El último ping de la noche lo deja despierto hasta ~01:05 y fuera de ese horario duerme solo.
+
+- **Horas de Render**: unas 17 hs/día × 31 días ≈ 530 hs/mes, contra las 750 gratis del workspace. Hay margen, pero no sumar otros servicios free al mismo workspace sin recalcular.
+- **`/health` no toca la base** (`app/main.py`), y tiene que seguir así: si consultara Neon, las pings mantendrían despierto el cómputo de la base y consumirían sus horas gratis (Neon se suspende solo tras ~5 min sin consultas).
+- **Por qué no GitHub Actions**: un ping cada 10 min son ~100 corridas por día, de ≥1 min facturado cada una (~3000 min/mes contra 2000 gratis en repos privados), y los cron de GitHub se atrasan o saltean ejecuciones, lo que justo importa acá.
+- **Servicio elegido**: [cron-job.org](https://cron-job.org) (gratis, con zona horaria configurable). Un solo job:
+  - Título `prendete-keepalive`, método GET, URL `https://api.prendete.ar/health`.
+  - Zona horaria `America/Argentina/Buenos_Aires`, todos los días.
+  - Horas: 0 y 8 a 23. Minutos: 0, 10, 20, 30, 40, 50.
+  - Timeout de 30 s. El primer ping de la mañana puede fallar por timeout porque el backend arranca en frío (30–60 s), pero igual lo despierta: configurar los avisos por mail para que salten recién tras 3 fallos seguidos.
 
 ### SPA fallback (rutas del frontend)
 
@@ -96,7 +109,7 @@ AGE_IDENTITY_FILE=prendete-backup.key scripts/restore_backup.sh \
   prendete-YYYY-MM-DD/prendete-YYYY-MM-DD.dump.age "postgresql://usuario:pass@host/basenueva"
 ```
 
-- **Prueba local**: el Postgres del `docker-compose.yml` es la versión 16, más vieja que la de Neon (18), así que para probar levantar uno de la misma versión (`docker run --rm -d --name pgtest -e POSTGRES_PASSWORD=test -p 5433:5432 postgres:18`) y restaurar en `postgresql://postgres:test@localhost:5433/postgres`. El `pg_restore` de tu máquina tiene que ser 18 o más nuevo (en Ubuntu: agregar el repo PGDG con `sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh` e instalar `postgresql-client-18`).
+- **Prueba local**: el Postgres del `docker-compose.yml` es la versión 16, más vieja que la de Neon (18), así que para probar levantar uno de la misma versión (`docker run --rm -d --name pgtest -e POSTGRES_PASSWORD=test -p 5433:5432 postgres:18`) y restaurar en `postgresql://postgres:test@localhost:5433/postgres`. El `pg_restore` de tu máquina tiene que ser 18 o más nuevo (en Ubuntu: agregar el repo PGDG con `sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh` e instalar `postgresql-client-18`). Alternativa sin instalar nada: usar el `pg_restore` del propio contenedor, pasándole el dump descifrado por stdin: `age -d -i prendete-backup.key prendete-YYYY-MM-DD.dump.age | docker exec -i pgtest pg_restore --no-owner -U postgres -d postgres`.
 - **Si hay que recuperar producción**: crear un proyecto o branch nuevo en Neon, restaurar ahí, comprobar `alembic current` contra la head del código, cambiar `DATABASE_URL` en Render y redeployar, y probar login y un evento. No pisar la base original hasta verificar.
 - Las cuentas que se eliminaron después de la fecha del backup reaparecen al restaurarlo; habría que volver a borrarlas.
 - Además del dump hay secretos que no están en la base y conviene tener en el gestor de contraseñas: `SECRET_KEY`, el par VAPID (si se pierde la clave privada, todas las suscripciones push dejan de funcionar), `GOOGLE_CLIENT_ID`, `BREVO_API_KEY` y las credenciales de Render, Neon, Cloudflare y Google Cloud.
