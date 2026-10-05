@@ -5,26 +5,28 @@ Todavía no productivizado — esto es el plan acordado, no algo ya implementado
 ## Stack elegido
 
 - **Frontend**: Render Static Site (gratis, sin sleep — solo sirve archivos estáticos, no corre un proceso).
-- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-60s al despertar; el workspace tiene 750 hs/mes gratis compartidas entre servicios free, lo justo para un solo servicio corriendo las 24 hs todo el mes con poco margen, por eso solo se lo mantiene despierto en el horario de uso — ver "Mantener el backend despierto").
+- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-60s al despertar; el workspace tiene 750 hs/mes gratis compartidas entre servicios free: alcanza para un solo servicio corriendo las 24 hs (744 hs en un mes de 31 días), por eso se lo mantiene despierto todo el día — ver "Mantener el backend despierto").
 - **DB**: [Neon](https://neon.tech) (Postgres serverless, free tier permanente).
 - **Dominio**: `prendete.ar`, comprado en nic.ar.
 
 ### Cold-start del backend
 
-Además de mantenerlo despierto en horario de uso (sección siguiente), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
+Además de mantenerlo despierto todo el día (sección siguiente), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
 
-### Mantener el backend despierto (08:00 a 01:00)
+### Mantener el backend despierto (24 hs)
 
-Render duerme el backend tras ~15 min sin requests. Para que esté despierto en el horario de uso, un cron externo le pega a `GET https://api.prendete.ar/health` cada 10 minutos, de 08:00 a 00:50 (hora de Argentina). El último ping de la noche lo deja despierto hasta ~01:05 y fuera de ese horario duerme solo.
+Render duerme el backend tras ~15 min sin requests externos (los health checks internos de Render, IP `10.233.x`, no cuentan: se verificó en los logs que la app se apaga exactamente 15 min después del último request externo). Un cron externo le pega a `HEAD https://api.prendete.ar/health` cada 10 minutos, las 24 hs, y con eso nunca se duerme.
 
-- **Horas de Render**: unas 17 hs/día × 31 días ≈ 530 hs/mes, contra las 750 gratis del workspace. Hay margen, pero no sumar otros servicios free al mismo workspace sin recalcular.
+**Por qué las 24 hs y no solo el horario de uso**: el cron mantiene despierta una app que ya está despierta, pero **no la despierta si está dormida**. El 4/10/2026 los pings de las 08:00 a las 12:50 recibieron 502 de Render (`x-render-routing: no-deploy`) sin arrancar nada (no hay ni una línea de log en esas horas) y la app recién arrancó cuando alguien la abrió a las 12:57. No se pudo determinar por qué Render no despierta con los pings de cron-job.org si un `curl -I` manual sí lo hizo. Como el despertar no es confiable, el diseño es que nunca se duerma. Si por algún motivo se cae o se duerme igual (un deploy fallido, por ejemplo), los fallos del cron avisan y el primer usuario que abra la app la despierta.
+
+- **Horas de Render**: 24 hs × 31 días = 744 hs/mes contra 750 gratis del workspace, margen de 6 hs en meses de 31 días. El workspace tiene hoy solo 2 servicios (este web service y el static site, que no consume horas). **No sumar otro web service free al mismo workspace.** El consumo del mes se ve en Workspace Settings → Billing → "Monthly Included Usage" → "Free Instance Hours"; Render cobra el uso que exceda lo incluido.
 - **`/health` no toca la base** (`app/main.py`), y tiene que seguir así: si consultara Neon, las pings mantendrían despierto el cómputo de la base y consumirían sus horas gratis (Neon se suspende solo tras ~5 min sin consultas).
 - **Por qué no GitHub Actions**: un ping cada 10 min son ~100 corridas por día, de ≥1 min facturado cada una (~3000 min/mes contra 2000 gratis en repos privados), y los cron de GitHub se atrasan o saltean ejecuciones, lo que justo importa acá.
 - **Servicio elegido**: [cron-job.org](https://cron-job.org) (gratis, con zona horaria configurable). Un solo job:
   - Título `prendete-keepalive`, método **HEAD**, URL `https://api.prendete.ar/health`. HEAD (que `/health` acepta) evita que cron-job.org reciba la página HTML grande de "Application loading" que Render devuelve mientras el servicio está dormido: con GET esa respuesta supera el tamaño máximo y figura como "Failed (output too large)".
-  - Zona horaria `America/Argentina/Buenos_Aires`, todos los días.
-  - Horas: 0 y 8 a 23. Minutos: 0, 10, 20, 30, 40, 50.
-  - Timeout de 30 s. Un arranque en frío puede tardar varios minutos (se midieron ~5 min el 2/10/2026, de la primera request a "Application startup complete"), así que el primer ping del día puede fallar o quedar sin respuesta aunque cumpla su función: configurar los avisos por mail para que salten recién tras 3 fallos seguidos. Si el servicio tiene que estar usable a las 08:00, adelantar el primer ping (por ejemplo horas `0` y `7` a `23`).
+  - Cron `*/10 * * * *` (todos los días, a todas las horas). La zona horaria ya no importa.
+  - Timeout de 30 s (máximo de cron-job.org). Con la app despierta responde en milisegundos; si el servicio está dormido el ping falla (502) y no lo despierta.
+  - Avisos por mail tras 3 fallos seguidos: con el esquema de 24 hs un fallo sostenido significa que la app se cayó.
 
 ### SPA fallback (rutas del frontend)
 
