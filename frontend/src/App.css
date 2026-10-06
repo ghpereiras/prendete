@@ -840,8 +840,14 @@
   overflow-wrap: anywhere;
 }
 
-/* Free-text fields typed in a textarea: keep the author's line breaks. */
+/* Free-text fields typed in a textarea: keep the author's line breaks and read left to right. */
 .multiline-text {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 680px;
+  margin: 0;
+  line-height: 1.5;
+  text-align: left;
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
