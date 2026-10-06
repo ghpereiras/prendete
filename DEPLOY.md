@@ -72,48 +72,13 @@ Entre las alternativas gratis evaluadas:
 
 ## Backups de la base
 
-Un workflow de GitHub Actions (`.github/workflows/db-backup.yml`) hace todos los días a las 04:00 (Argentina) un dump de la base de Neon, lo cifra con [age](https://github.com/FiloSottile/age) y lo guarda como **artefacto del workflow**, que GitHub borra solo a los **14 días**. Es una precaución: la app es simple y no se espera restaurar, pero con esto una pérdida de datos o de la cuenta de Neon no es definitiva. El dump se hace con una conexión de solo lectura y los archivos están cifrados, así que que vivan en GitHub no expone los datos.
+Los backups **no están en este repo**: viven en un repo privado aparte, `ghpereiras/prendete-backups`, con su propio workflow de GitHub Actions. Hace todos los días a las 04:00 (Argentina) un dump de la base de Neon, lo cifra con [age](https://github.com/FiloSottile/age) y lo guarda como artefacto que GitHub borra a los 14 días. La guía de configuración, el runbook de restauración y las limitaciones están en el README de ese repo.
 
-Limitaciones a tener presentes: los backups están en el mismo proveedor que el código (si se perdiera la cuenta de GitHub, se perderían con ella), y los artefactos cuentan contra la cuota de almacenamiento de la cuenta (en el plan gratis de repos privados son unos 500 MB en total; mirar Settings > Billing si la base crece). Si algún día hace falta separar los backups de GitHub, el siguiente paso es subirlos a un bucket externo (Cloudflare R2 o Backblaze B2).
+Por qué separado: este repo es público, y los artefactos de un repo público los puede descargar cualquier usuario de GitHub, además de que GitHub desactiva los cron de los repos públicos tras 60 días sin actividad.
 
-### Configuración (una sola vez)
+Lo que hay que saber desde este repo:
 
-1. **Neon**: anotar la versión de Postgres del proyecto y ponerla en `PG_MAJOR` del workflow (el cliente tiene que ser igual o más nuevo). Crear un rol de solo lectura desde el SQL Editor, conectado como el dueño de la base:
-
-   ```sql
-   CREATE ROLE backup_ro LOGIN PASSWORD '<una-contraseña-larga>';
-   GRANT CONNECT ON DATABASE neondb TO backup_ro;  -- cambiar neondb por el nombre real
-   GRANT USAGE ON SCHEMA public TO backup_ro;
-   GRANT SELECT ON ALL TABLES IN SCHEMA public TO backup_ro;
-   GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO backup_ro;
-   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO backup_ro;
-   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO backup_ro;
-   ```
-
-   La URL para el secret es la *direct connection* (host sin `-pooler`) con ese rol, en formato `postgresql://backup_ro:<pass>@<host>/<db>?sslmode=require` (sin `+psycopg`).
-2. **Clave de cifrado**: `age-keygen -o prendete-backup.key` (en Ubuntu: `sudo apt install age`). Imprime la clave pública (`age1...`) que va al secret `AGE_PUBLIC_KEY`. El archivo `prendete-backup.key` es la clave **privada**: guardarlo en el gestor de contraseñas (con una segunda copia en otro lugar) y borrarlo del disco. Sin esa clave los backups no se pueden abrir, y nunca va al repo ni a GitHub.
-3. **healthchecks.io** (recomendado): crear un check con período de 1 día y gracia de 2 horas; su URL de ping va al secret `HEALTHCHECK_URL`. Avisa por mail si el backup deja de correr, incluso si GitHub desactiva el cron por inactividad del repo.
-4. **GitHub** → Settings → Secrets and variables → Actions → crear: `BACKUP_DATABASE_URL`, `AGE_PUBLIC_KEY` y `HEALTHCHECK_URL`.
-5. Correrlo a mano: Actions → "Database backup" → *Run workflow*. Confirmar que la corrida termina bien y que aparece el artefacto `prendete-YYYY-MM-DD` al final de la página de la corrida.
-6. **Probar una restauración** (ver abajo) apenas el primer backup esté listo, y repetirlo de vez en cuando. Un backup que nunca se restauró no está probado.
-
-### Restaurar
-
-Hace falta `pg_restore` (paquete `postgresql-client`, mismo major o más nuevo que el del workflow), `age` y la clave privada.
-
-```bash
-# 1. Bajar el backup que se quiere: desde la página de la corrida en GitHub
-#    (Actions > Database backup > la corrida > Artifacts), o con la CLI `gh`:
-gh run download <run-id> -n prendete-YYYY-MM-DD   # deja el archivo en ./prendete-YYYY-MM-DD/
-
-# 2. Restaurar en una base NUEVA y vacía
-AGE_IDENTITY_FILE=prendete-backup.key scripts/restore_backup.sh \
-  prendete-YYYY-MM-DD/prendete-YYYY-MM-DD.dump.age "postgresql://usuario:pass@host/basenueva"
-```
-
-- **Prueba local**: el Postgres del `docker-compose.yml` es la versión 16, más vieja que la de Neon (18), así que para probar levantar uno de la misma versión (`docker run --rm -d --name pgtest -e POSTGRES_PASSWORD=test -p 5433:5432 postgres:18`) y restaurar en `postgresql://postgres:test@localhost:5433/postgres`. El `pg_restore` de tu máquina tiene que ser 18 o más nuevo (en Ubuntu: agregar el repo PGDG con `sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh` e instalar `postgresql-client-18`). Alternativa sin instalar nada: usar el `pg_restore` del propio contenedor, pasándole el dump descifrado por stdin: `age -d -i prendete-backup.key prendete-YYYY-MM-DD.dump.age | docker exec -i pgtest pg_restore --no-owner -U postgres -d postgres`.
-- **Si hay que recuperar producción**: crear un proyecto o branch nuevo en Neon, restaurar ahí, comprobar `alembic current` contra la head del código, cambiar `DATABASE_URL` en Render y redeployar, y probar login y un evento. No pisar la base original hasta verificar.
-- Las cuentas que se eliminaron después de la fecha del backup reaparecen al restaurarlo; habría que volver a borrarlas.
+- La app no tiene nada que ver con el backup: no hay variables de entorno ni código involucrados. Solo hace falta que `alembic current` de la base restaurada coincida con la head de las migraciones de este repo antes de apuntar `DATABASE_URL` a ella.
 - Además del dump hay secretos que no están en la base y conviene tener en el gestor de contraseñas: `SECRET_KEY`, el par VAPID (si se pierde la clave privada, todas las suscripciones push dejan de funcionar), `GOOGLE_CLIENT_ID`, `BREVO_API_KEY` y las credenciales de Render, Neon, Cloudflare y Google Cloud.
 
 ## Rollbacks
