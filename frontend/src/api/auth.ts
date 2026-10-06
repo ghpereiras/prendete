@@ -29,7 +29,7 @@ export async function login(email: string, password: string): Promise<string> {
   });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new ApiError(response.status, data.detail ?? "No se pudo iniciar sesión");
+    throw new ApiError(response.status, data.detail ?? "Could not log in");
   }
   const data: TokenResponse = await response.json();
   return data.access_token;

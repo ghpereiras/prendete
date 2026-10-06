@@ -1,136 +1,138 @@
-# Plan de deploy
+# Deployment notes
 
-Todavía no productivizado — esto es el plan acordado, no algo ya implementado. Referencia para cuando se ejecute.
+How Prendete runs in production at [prendete.ar](https://prendete.ar), and how to set it up from scratch.
 
-## Stack elegido
+## Stack
 
-- **Frontend**: Render Static Site (gratis, sin sleep — solo sirve archivos estáticos, no corre un proceso).
-- **Backend**: Render Web Service, free tier (duerme tras ~15 min sin requests, cold start de ~30-60s al despertar; el workspace tiene 750 hs/mes gratis compartidas entre servicios free: alcanza para un solo servicio corriendo las 24 hs (744 hs en un mes de 31 días), por eso se lo mantiene despierto todo el día — ver "Mantener el backend despierto").
-- **DB**: [Neon](https://neon.tech) (Postgres serverless, free tier permanente).
-- **Dominio**: `prendete.ar`, comprado en nic.ar.
+- **Frontend**: Render Static Site (free, never sleeps — it only serves static files, there is no process running).
+- **Backend**: Render Web Service, free tier (it sleeps after ~15 min without requests, and waking up takes anywhere from about 30 seconds to a few minutes; the workspace has 750 free hours/month shared across free services: that is enough for a single service running 24 hours a day (744 hours in a 31-day month), which is why it is kept awake all day — see "Keeping the backend awake").
+- **DB**: [Neon](https://neon.tech) (serverless Postgres, permanent free tier).
+- **Domain**: `prendete.ar`, bought at nic.ar, with DNS on Cloudflare.
 
-### Cold-start del backend
+### Backend cold start
 
-Además de mantenerlo despierto todo el día (sección siguiente), se mitiga con UX: el frontend pinguea `/health` apenas carga la app (`frontend/src/App.tsx`, fire-and-forget) para que el backend empiece a despertar antes de que el usuario termine de loguearse, y si el login igual tarda más de ~4s se muestra un aviso ("el servidor puede tardar unos segundos...") en vez de dejar el botón colgado sin explicación (`frontend/src/pages/Login.tsx`). Ya implementado.
+Besides keeping it awake all day (next section), the UX softens the problem: the frontend pings `/health` as soon as the app loads (`frontend/src/App.tsx`, fire-and-forget) so the backend starts waking up before the user finishes logging in, and if login still takes more than ~4s a notice is shown ("the server may take a few seconds...") instead of leaving the button hanging with no explanation (`frontend/src/pages/Login.tsx`). Pages that load data retry while the server wakes up instead of showing a false "not found" (`loadWhileServerWakes` in `frontend/src/api/client.ts`). Already implemented.
 
-### Mantener el backend despierto (24 hs)
+Neon suspends its compute after ~5 minutes without queries and drops every open connection. The SQLAlchemy engine uses `pool_pre_ping` and a short `pool_recycle` (`app/database.py`) so the first request after a quiet period reconnects instead of failing.
 
-Render duerme el backend tras ~15 min sin requests externos (los health checks internos de Render, IP `10.233.x`, no cuentan: se verificó en los logs que la app se apaga exactamente 15 min después del último request externo). Un cron externo le pega a `HEAD https://api.prendete.ar/health` cada 10 minutos, las 24 hs, y con eso nunca se duerme.
+### Keeping the backend awake (24 hours)
 
-**Por qué las 24 hs y no solo el horario de uso**: el cron mantiene despierta una app que ya está despierta, pero **no la despierta si está dormida**. El 4/10/2026 los pings de las 08:00 a las 12:50 recibieron 502 de Render (`x-render-routing: no-deploy`) sin arrancar nada (no hay ni una línea de log en esas horas) y la app recién arrancó cuando alguien la abrió a las 12:57. No se pudo determinar por qué Render no despierta con los pings de cron-job.org si un `curl -I` manual sí lo hizo. Como el despertar no es confiable, el diseño es que nunca se duerma. Si por algún motivo se cae o se duerme igual (un deploy fallido, por ejemplo), los fallos del cron avisan y el primer usuario que abra la app la despierta.
+Render puts the backend to sleep after ~15 min without external requests (Render's own internal health checks, IP `10.233.x`, don't count: the logs showed the app shutting down exactly 15 min after the last external request). An external cron sends `HEAD https://api.prendete.ar/health` every 10 minutes, around the clock, and with that it never goes to sleep.
 
-- **Horas de Render**: 24 hs × 31 días = 744 hs/mes contra 750 gratis del workspace, margen de 6 hs en meses de 31 días. El workspace tiene hoy solo 2 servicios (este web service y el static site, que no consume horas). **No sumar otro web service free al mismo workspace.** El consumo del mes se ve en Workspace Settings → Billing → "Monthly Included Usage" → "Free Instance Hours"; Render cobra el uso que exceda lo incluido.
-- **`/health` no toca la base** (`app/main.py`), y tiene que seguir así: si consultara Neon, las pings mantendrían despierto el cómputo de la base y consumirían sus horas gratis (Neon se suspende solo tras ~5 min sin consultas).
-- **Por qué no GitHub Actions**: un ping cada 10 min son ~100 corridas por día, de ≥1 min facturado cada una (~3000 min/mes contra 2000 gratis en repos privados), y los cron de GitHub se atrasan o saltean ejecuciones, lo que justo importa acá.
-- **Servicio elegido**: [cron-job.org](https://cron-job.org) (gratis, con zona horaria configurable). Un solo job:
-  - Título `prendete-keepalive`, método **HEAD**, URL `https://api.prendete.ar/health`. HEAD (que `/health` acepta) evita que cron-job.org reciba la página HTML grande de "Application loading" que Render devuelve mientras el servicio está dormido: con GET esa respuesta supera el tamaño máximo y figura como "Failed (output too large)".
-  - Cron `*/10 * * * *` (todos los días, a todas las horas). La zona horaria ya no importa.
-  - Timeout de 30 s (máximo de cron-job.org). Con la app despierta responde en milisegundos; si el servicio está dormido el ping falla (502) y no lo despierta.
-  - Avisos por mail tras 3 fallos seguidos: con el esquema de 24 hs un fallo sostenido significa que la app se cayó.
+**Why 24 hours and not just usage hours**: the cron keeps an already-awake app awake, but it **does not wake it up if it is asleep**. On 2026-10-04 the pings from 08:00 to 12:50 received a 502 from Render (`x-render-routing: no-deploy`) without starting anything (there isn't a single log line in those hours), and the app only started when somebody opened it at 12:57. It could not be determined why Render doesn't wake up for cron-job.org's pings when a manual `curl -I` did. Since waking up isn't reliable, the design is for it to never sleep. If for some reason it goes down or sleeps anyway (a failed deploy, for example), the cron failures raise an alert and the first user to open the app wakes it up.
 
-### SPA fallback (rutas del frontend)
+- **Render hours**: 24 hours × 31 days = 744 hours/month against the workspace's 750 free ones, a margin of 6 hours in 31-day months. The workspace currently has only 2 services (this web service and the static site, which doesn't use hours). **Don't add another free web service to the same workspace.** The month's usage is visible in Workspace Settings → Billing → "Monthly Included Usage" → "Free Instance Hours"; Render charges for usage above what is included.
+- **`/health` doesn't touch the database** (`app/main.py`), and it has to stay that way: if it queried Neon, the pings would keep the database compute awake and use up its free hours (Neon suspends by itself after ~5 min without queries). It also answers `HEAD`, because uptime pingers and Render's wake-up page probe with it.
+- **Why not GitHub Actions**: a ping every 10 min is ~100 runs a day, each billed for at least 1 min (~3000 min/month against 2000 free in private repos), and GitHub's cron runs late or skips executions, which is exactly what matters here.
+- **Chosen service**: [cron-job.org](https://cron-job.org) (free). A single job:
+  - Title `prendete-keepalive`, method **HEAD**, URL `https://api.prendete.ar/health`. HEAD avoids cron-job.org receiving the large HTML "Application loading" page that Render returns while the service is asleep: with GET that response exceeds the maximum size and shows up as "Failed (output too large)".
+  - Cron `*/10 * * * *` (every day, at every hour). The time zone no longer matters.
+  - 30 s timeout (cron-job.org's maximum). With the app awake it answers in milliseconds; if the service is asleep the ping fails (502) and doesn't wake it.
+  - Email alerts after 3 consecutive failures: with the 24-hour scheme, a sustained failure means the app went down.
 
-El static site de Render sirve archivos por path exacto — abrir directamente una ruta de React Router (ej. un link de invitación `/invite/:token` en otro navegador, no navegado por click dentro de la app) devuelve 404 porque no existe un archivo físico en ese path. Se soluciona con `frontend/public/_redirects` (Vite lo copia a `dist/` en el build):
+### SPA fallback (frontend routes)
+
+Render's static site serves files by exact path — opening a React Router route directly (e.g. an invite link `/invite/:token` in another browser, not reached by clicking inside the app) returns 404 because there is no physical file at that path. It is fixed with `frontend/public/_redirects` (Vite copies it to `dist/` on build):
 
 ```
 /*    /index.html   200
 ```
 
-Así cualquier path devuelve `index.html` y React Router se hace cargo del ruteo del lado del cliente. Ya implementado — si se recrea el static site desde cero no hace falta configurar nada aparte en el dashboard de Render, viaja con el build.
+That way any path returns `index.html` and React Router takes over routing on the client side. Already implemented — if the static site is recreated from scratch nothing else needs configuring in Render's dashboard, it travels with the build.
 
-### Por qué Neon y no la Postgres de Render
+### Why Neon and not Render's Postgres
 
-El free tier de Postgres de Render **expira a los 30 días** (borra la base si no se upgradea a pago) — a diferencia de sus web services, que duermen pero no expiran. Por eso la DB va aparte.
+Render's free Postgres tier **expires after 30 days** (it deletes the database unless you upgrade to a paid plan) — unlike its web services, which sleep but don't expire. That is why the DB is hosted elsewhere.
 
-Entre las alternativas gratis evaluadas:
-- **Neon**: se suspende el cómputo por inactividad pero **se despierta solo con la próxima conexión**, sin acción manual. Elegido por esto.
-- **Supabase**: también tiene free tier, pero si el proyecto no tiene actividad en 7 días se pausa y **hay que reactivarlo a mano** desde el dashboard — no sirve para una app de bajo tráfico que se mantenga sola.
+Among the free alternatives that were evaluated:
+- **Neon**: the compute suspends when idle but **wakes up by itself on the next connection**, with no manual action. Chosen for this reason.
+- **Supabase**: also has a free tier, but if the project has no activity for 7 days it is paused and **has to be reactivated by hand** from the dashboard — not suitable for a low-traffic app that should run on its own.
 
-## Notificaciones (contexto para el cron)
+## Notifications (context for the cron)
 
-- Notificaciones disparadas por una acción del usuario (alguien se suma a un evento, deja un comentario) no necesitan infraestructura extra: el servidor ya está despierto atendiendo esa request.
-- Notificaciones programadas por horario (recordatorios tipo "tu evento empieza en 1 hora") si necesitan algo: como Render duerme el free tier, hace falta un **cron externo gratuito** (cron-job.org, GitHub Actions con horario programado, etc.) que le pegue a un endpoint propio (ej. `/check-and-send-notifications`) cada 5-15 min. Eso despierta el servicio si estaba dormido y dispara el envío de lo que esté vencido. Sin esto, un scheduler interno (`setInterval`/cron en el mismo proceso) no se dispararía mientras el servicio está dormido.
+- Notifications triggered by a user action (someone joins an event, leaves a comment) need no extra infrastructure: the server is already awake handling that request.
+- Notifications scheduled by time (reminders like "your event starts in 1 hour") are not implemented. If they are added, note that Render sleeps the free tier, so an internal scheduler (`setInterval`/cron inside the same process) wouldn't fire while the service is asleep; the existing keep-alive cron or a dedicated one would have to call an endpoint of its own (e.g. `/check-and-send-notifications`) every 5-15 min.
 
-## Configuración de deploy
+## Deploy configuration
 
-1. Conectar el repo de GitHub a ambos servicios de Render (web service + static site), auto-deploy en push a `main`.
+1. Connect the GitHub repo to both Render services (web service + static site), auto-deploy on push to `main`.
 2. Backend — *start command*:
    ```
    alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
    ```
-   Así las migraciones corren solas en cada deploy, no hace falta acordarse de aplicarlas a mano.
+   That way migrations run by themselves on every deploy, no need to remember to apply them by hand.
 3. Frontend — *build command*: `npm run build`, *publish directory*: `dist`.
-4. Configurar el *health check path* del backend en `/health` (ya existe en `app/main.py`) — Render lo usa para no promocionar un deploy roto. Confirmar en la doc de Render si el comportamiento de zero-downtime difiere entre el plan free y uno pago.
+4. Set the backend's *health check path* to `/health` (it already exists in `app/main.py`) — Render uses it to avoid promoting a broken deploy. Check Render's docs on whether zero-downtime behavior differs between the free plan and a paid one.
 
-### Variables de entorno a cargar en Render
+### Environment variables to set in Render
 
-- Backend: `DATABASE_URL` (connection string de Neon — usar la *direct connection*, no la *pooled*, porque el backend ya mantiene su propio pool de conexiones con SQLAlchemy; ojo con anteponer `postgresql+psycopg://` en vez de `postgresql://`, es el driver que usa el proyecto), `SECRET_KEY` (nueva, generada para prod — nunca la de dev), `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL` (par VAPID nuevo también, no el de dev).
-- Frontend (build-time): `VITE_API_URL` (URL del backend en prod), `VITE_GOOGLE_MAPS_API_KEY`, **`VITE_VAPID_PUBLIC_KEY`** (tiene que ser exactamente la misma `VAPID_PUBLIC_KEY` del backend de prod — si no coincide, `pushManager.subscribe()` falla en el browser).
-- En Google Cloud Console, agregar el dominio real a las "Referentes HTTP" permitidos de la API key (hoy solo tiene `localhost:5173/*`).
-- **Panel de métricas** (`/admin`): cargar `ADMIN_EMAILS` en el backend con el/los emails que pueden abrirlo (separados por coma). La cuenta tiene que tener el email verificado; las cuentas de Google ya lo están.
-- **Google Sign-In** ("Continuar con Google"): crear un OAuth Client ID tipo "Web" en Google Cloud Console (APIs y servicios → Credenciales; pantalla de consentimiento externa con scopes básicos email/profile, no requiere verificación de Google). Orígenes JS autorizados: `https://prendete.ar` y `http://localhost:5173`. URIs de redirección autorizadas: `https://prendete.ar/auth/google/callback` y `http://localhost:5173/auth/google/callback`. Cargar el mismo Client ID como `GOOGLE_CLIENT_ID` en el backend y `VITE_GOOGLE_CLIENT_ID` en el frontend (build-time); con la variable vacía el botón no se muestra. La migración `fbfa7bab5f4e` (hace nullable `users.hashed_password`) tiene que correrse antes de deployar el backend.
+- Backend:
+  - `DATABASE_URL`: Neon's connection string — use the *direct connection*, not the *pooled* one, because the backend already keeps its own connection pool with SQLAlchemy. Mind the `postgresql+psycopg://` prefix instead of `postgresql://`; it is the driver this project uses.
+  - `SECRET_KEY`: a new one generated for prod — never the dev one.
+  - `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL`: a new VAPID pair too, not the dev one.
+  - `CORS_ORIGINS`: the production frontend's URL (`https://prendete.ar`), with no trailing slash.
+  - `FRONTEND_URL`: `https://prendete.ar`, used to build the links inside emails.
+  - `BREVO_API_KEY`, `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`: transactional email (see "Email").
+- Frontend (build-time): `VITE_API_URL` (the backend's URL in prod), `VITE_GOOGLE_MAPS_API_KEY`, **`VITE_VAPID_PUBLIC_KEY`** (it has to be exactly the prod backend's `VAPID_PUBLIC_KEY` — if it doesn't match, `pushManager.subscribe()` fails in the browser).
+- In Google Cloud Console, add the real domain to the API key's allowed "HTTP referrers" (it may only have `localhost:5173/*`).
+- **Metrics dashboard** (`/admin`): set `ADMIN_EMAILS` in the backend with the email(s) allowed to open it (comma-separated). The account must have a verified email; Google accounts already do.
+- **Google Sign-In** ("Continue with Google"): create an OAuth Client ID of type "Web" in Google Cloud Console (APIs & Services → Credentials; external consent screen with basic email/profile scopes, which doesn't require Google verification). Authorized JavaScript origins: `https://prendete.ar` and `http://localhost:5173`. Authorized redirect URIs: `https://prendete.ar/auth/google/callback` and `http://localhost:5173/auth/google/callback`. Set the same Client ID as `GOOGLE_CLIENT_ID` in the backend and `VITE_GOOGLE_CLIENT_ID` in the frontend (build-time); with the variable empty the button isn't shown. Migration `fbfa7bab5f4e` (makes `users.hashed_password` nullable) has to run before deploying the backend. The consent screen also needs the privacy policy and terms pages (`https://prendete.ar/privacy` and `/terms`).
 
-## Backups de la base
+## Database backups
 
-Los backups **no están en este repo**: viven en un repo privado aparte, `ghpereiras/prendete-backups`, con su propio workflow de GitHub Actions. Hace todos los días a las 04:00 (Argentina) un dump de la base de Neon, lo cifra con [age](https://github.com/FiloSottile/age) y lo guarda como artefacto que GitHub borra a los 14 días. La guía de configuración, el runbook de restauración y las limitaciones están en el README de ese repo.
+Backups are **not in this repo**: they live in a separate private repo, `ghpereiras/prendete-backups`, with its own GitHub Actions workflow. Every day at 04:00 (Argentina) it takes a dump of the Neon database, encrypts it with [age](https://github.com/FiloSottile/age) and stores it as an artifact that GitHub deletes after 14 days. The setup guide, the restore runbook and the limitations are in that repo's README.
 
-Por qué separado: este repo es público, y los artefactos de un repo público los puede descargar cualquier usuario de GitHub, además de que GitHub desactiva los cron de los repos públicos tras 60 días sin actividad.
+Why it is separate: this repo is public, and the artifacts of a public repo can be downloaded by any GitHub user; GitHub also disables the cron jobs of public repos after 60 days without activity.
 
-Lo que hay que saber desde este repo:
+What to know from this repo:
 
-- La app no tiene nada que ver con el backup: no hay variables de entorno ni código involucrados. Solo hace falta que `alembic current` de la base restaurada coincida con la head de las migraciones de este repo antes de apuntar `DATABASE_URL` a ella.
-- Además del dump hay secretos que no están en la base y conviene tener en el gestor de contraseñas: `SECRET_KEY`, el par VAPID (si se pierde la clave privada, todas las suscripciones push dejan de funcionar), `GOOGLE_CLIENT_ID`, `BREVO_API_KEY` y las credenciales de Render, Neon, Cloudflare y Google Cloud.
+- The app has nothing to do with the backup: no environment variables or code are involved. The only requirement is that `alembic current` on the restored database matches the head of this repo's migrations before pointing `DATABASE_URL` at it.
+- Besides the dump there are secrets that are not in the database and are worth keeping in the password manager: `SECRET_KEY`, the VAPID pair (if the private key is lost, every push subscription stops working), `GOOGLE_CLIENT_ID`, `BREVO_API_KEY` and the credentials for Render, Neon, Cloudflare and Google Cloud.
 
 ## Rollbacks
 
-Render guarda el historial de deploys con un botón "Rollback to this deploy" — un click, sin tocar git. Aplica tanto al backend como al static site.
+Render keeps the deploy history with a "Rollback to this deploy" button — one click, without touching git. It applies to both the backend and the static site.
 
-**Cuidado**: un rollback revierte el código, no el esquema de la DB. Si el deploy que se revierte incluía una migración, el código viejo tiene que seguir funcionando contra el esquema nuevo, o hay que migrar para atrás a mano con `alembic downgrade` contra Neon. Para minimizar este riesgo, seguir escribiendo migraciones aditivas cuando se pueda (agregar columnas nullable en vez de renombrar/borrar en el mismo deploy).
+**Careful**: a rollback reverts the code, not the DB schema. If the deploy being reverted included a migration, the old code has to keep working against the new schema, or you have to migrate backwards by hand with `alembic downgrade` against Neon. To minimize this risk, keep writing additive migrations when possible (add nullable columns instead of renaming/dropping in the same deploy).
 
 ## Upgrades
 
-Tanto en Render como en Neon, pasar de free a un plan pago es cambiar el plan desde el dashboard — no requiere tocar código ni configuración.
+On both Render and Neon, moving from free to a paid plan is a matter of changing the plan in the dashboard — no code or configuration changes needed.
 
-## Dominio (nic.ar)
+## Domain (nic.ar)
 
-**nic.ar no tiene editor de zona DNS propio** — no se pueden cargar registros A/CNAME/TXT/MX directamente ahí. Solo permite "delegar" el dominio a los nameservers de un proveedor DNS externo, que es donde se cargan todos los registros de verdad. Camino elegido:
+**nic.ar has no DNS zone editor of its own** — you can't load A/CNAME/TXT/MX records directly there. It only lets you "delegate" the domain to the nameservers of an external DNS provider, which is where all the real records are loaded. The path taken:
 
-1. Cuenta gratis en [Cloudflare](https://www.cloudflare.com/) (DNS gratis, soporta todos los tipos de registro que hacen falta: TXT/MX/SPF/DKIM de Zoho, CNAME de Render).
-2. Agregar `prendete.ar` como sitio en Cloudflare — da 2 nameservers propios.
-3. En nic.ar: botón **"Delegar"** (no "Transferir", que es cambio de registrador/titular) → "Agregar una nueva delegación" → cargar esos 2 nameservers → Guardar. Propagación: horas hasta 24-48hs.
-4. De ahí en adelante, **todos** los registros (el TXT de verificación de Zoho, MX, SPF, DKIM, DMARC, y los CNAME/A de Render para el static site y `api.prendete.ar`) se cargan en el panel de Cloudflare, no en nic.ar.
+1. Free account on [Cloudflare](https://www.cloudflare.com/) (free DNS, supports every record type needed: Zoho's TXT/MX/SPF/DKIM, Render's CNAMEs).
+2. Add `prendete.ar` as a site in Cloudflare — it gives you 2 nameservers of its own.
+3. In nic.ar: the **"Delegar"** button (not "Transferir", which is a change of registrar/holder) → "Agregar una nueva delegación" → enter those 2 nameservers → Save. Propagation: hours up to 24-48h.
+4. From then on, **all** records (Zoho's verification TXT, MX, SPF, DKIM, DMARC, and Render's CNAME/A records for the static site and `api.prendete.ar`) are loaded in Cloudflare's panel, not in nic.ar.
 
-Para el dominio raíz sin subdominio, evaluar redirigir a `www` para evitar problemas de DNS con el apex (Cloudflare soporta CNAME flattening en el apex, así que probablemente no haga falta el redirect).
+For the bare root domain, consider redirecting to `www` to avoid DNS problems at the apex (Cloudflare supports CNAME flattening at the apex, so the redirect is probably not needed).
 
 ## Email
 
-No se envía ningún email desde la app todavía (solo push notifications) — esto es exclusivamente para casillas humanas y para dejar reservado el remitente que se usará el día que se implemente envío transaccional (reset de contraseña, etc.), que **no está en el alcance actual**.
+Two separate things share the domain:
 
-- **`redes@prendete.ar` / `info@prendete.ar`**: [Zoho Mail](https://www.zoho.com/mail/) plan gratuito — hasta 5 casillas reales con dominio propio (webmail + IMAP/SMTP), no es solo un forward.
-- **`no-reply@prendete.ar`**: se crea también como casilla de Zoho por ahora (entra en el límite de 5 gratis), solo para que exista y no rebote si alguien le escribe. No se usa como remitente hasta implementar el envío transaccional — en ese momento se evalúa si conviene migrarla a un proveedor tipo Resend (DKIM propio, no choca con el de Zoho porque usan selectores distintos).
-- **`admin@prendete.ar`**: cuarta casilla de Zoho, dedicada a las altas de las cuentas de infraestructura (Render, Neon) — ver orden de altas más abajo. Mantiene esas notificaciones (billing, seguridad, outages) separadas de `redes@`, que es la que va a recibir mensajes públicos de gente escribiendo por redes sociales.
+- **Human mailboxes** — [Zoho Mail](https://www.zoho.com/mail/) free plan: up to 5 real mailboxes on your own domain (webmail + IMAP/SMTP), not just a forward. Used for the addresses people write to (`redes@prendete.ar`, `info@prendete.ar`) and for `admin@prendete.ar`, the address used to sign up for infrastructure accounts (Render, Neon, Brevo), which keeps their notifications (billing, security, outages) separate from the public-facing ones.
+- **Transactional email** (account verification, password reset) — [Brevo](https://www.brevo.com/) (300 emails/day free, permanently), sent from `no-reply@prendete.ar` through its HTTP API (`app/email.py`), with the key in `BREVO_API_KEY`. Failures are logged and never break the request that triggered them.
 
-### DNS de email (misma zona que el resto)
+### Email DNS (same zone as everything else)
 
-- MX + TXT de verificación de dominio → los que pida Zoho Mail al agregar `prendete.ar`.
-- **SPF**: un único TXT (no puede haber dos registros SPF en la misma zona) con el `include:` de Zoho — dejar la sintaxis lista para agregar otro `include:` el día que se sume un proveedor transaccional.
-- DKIM → TXT con el selector que dé Zoho.
-- DMARC (recomendado, opcional en esta etapa) → TXT en `_dmarc` con política `p=none` para solo monitorear al principio.
+- MX + domain verification TXT → the ones Zoho Mail asks for when adding `prendete.ar`.
+- **SPF**: a single TXT (there can't be two SPF records in the same zone) containing both providers' `include:` — Zoho's and Brevo's.
+- DKIM → one TXT per provider, each with its own selector, so they don't collide.
+- DMARC (recommended) → TXT at `_dmarc` with policy `p=none` to only monitor at first.
 
-### Orden de altas de cuentas
+### Suggested order for a from-scratch setup
 
-1. Zoho Mail: alta con el email personal actual (todavía no existe ninguna dirección `@prendete.ar`).
-2. Verificar el dominio en Zoho (TXT en nic.ar) y crear las 4 casillas: `redes@`, `info@`, `no-reply@`, `admin@`.
-3. Usar `admin@prendete.ar` para las altas en Render y Neon, no el email personal ni `redes@`.
-4. `nic.ar` (registro del dominio) queda con el email que ya tiene de antes — cambiar el contacto/WHOIS es una operación aparte y más sensible, fuera de alcance salvo que se pida explícitamente.
-
-### Orden sugerido de ejecución completo
-
-1. Zoho Mail: alta + verificación de dominio + crear las 4 casillas.
-2. Neon: crear la DB con `admin@prendete.ar` — **no correr `scripts/seed_data.py` contra producción** (crea usuarios demo con contraseña conocida, `password123`).
-3. Backend en Render: alta con `admin@prendete.ar`, deploy, confirmar que responde en su URL `*.onrender.com` antes de tocar DNS.
-4. Frontend en Render: deploy, mismo chequeo en su URL temporal.
-5. Cargar todos los registros DNS juntos en nic.ar (dominio, `api`, y los de Zoho) para minimizar idas y vueltas de propagación.
-6. Verificar los dominios custom en Render (frontend y backend).
-7. Verificar Zoho Mail: mandar y recibir un email de prueba en cada casilla.
-8. Confirmar los referrers de la Maps API key en Google Cloud Console.
+1. Zoho Mail: sign up with a personal email, verify the domain (TXT in Cloudflare) and create the mailboxes.
+2. Use `admin@prendete.ar` for the Render, Neon and Brevo sign-ups, not a personal email.
+3. Neon: create the DB — **don't run `scripts/seed_data.py` against production** (it creates demo users with a known password, `password123`).
+4. Backend on Render: deploy, and confirm it answers at its `*.onrender.com` URL before touching DNS.
+5. Frontend on Render: deploy, same check at its temporary URL.
+6. Load all the DNS records together in Cloudflare (domain, `api`, and Zoho's and Brevo's) to minimize propagation round trips.
+7. Verify the custom domains in Render (frontend and backend).
+8. Verify Zoho Mail: send and receive a test email on each mailbox, and trigger a verification email from the app.
+9. Confirm the referrers of the Maps API key in Google Cloud Console.
+10. Create the cron job that keeps the backend awake (see above).

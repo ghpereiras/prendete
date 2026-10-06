@@ -33,7 +33,7 @@ Plan things with friends without the back-and-forth: create an event, share a li
 
 ## Technical decisions worth a look
 
-- **Built to run on free tiers.** The Render backend goes to sleep after 15 minutes without traffic, and the Neon database closes its connections when it suspends. To hide that, an external cron keeps the backend awake, the frontend asks it to wake up as soon as it loads and retries instead of showing false errors while it boots, and SQLAlchemy uses `pool_pre_ping` to reopen dead connections. The details, including what did **not** work, are in [DEPLOY.md](DEPLOY.md) (written in Spanish).
+- **Built to run on free tiers.** The Render backend goes to sleep after 15 minutes without traffic, and the Neon database closes its connections when it suspends. To hide that, an external cron keeps the backend awake, the frontend asks it to wake up as soon as it loads and retries instead of showing false errors while it boots, and SQLAlchemy uses `pool_pre_ping` to reopen dead connections. The details, including what did **not** work, are in [DEPLOY.md](DEPLOY.md).
 - **Google login verified on the server.** The frontend receives an `id_token` (OIDC flow with `state` and `nonce`) and the backend validates it, requires a verified email, and wipes the existing password if the account existed unverified, to prevent a *pre-hijacking* attack.
 - **Tests against a real database.** Tables are truncated between tests and the database is never mocked. Only external services (push and email) are mocked; real calls are never made.
 - **Encrypted, tested backups.** A daily dump taken with a read-only role, checked with `pg_restore --list` and encrypted with [age](https://github.com/FiloSottile/age) before it leaves the machine. They live in a separate private repository, and a full restore has been tested.
@@ -50,7 +50,7 @@ frontend/    React + Vite + TypeScript
 docs/        Design notes and screenshots
 ```
 
-Built with Claude Code as a programming assistant; [CLAUDE.md](CLAUDE.md) (in Spanish) holds the project conventions.
+Built with Claude Code as a programming assistant; [CLAUDE.md](CLAUDE.md) holds the project conventions.
 
 ## Local development
 
@@ -122,7 +122,7 @@ Interactive docs at `http://localhost:8000/docs`.
 python scripts/seed_data.py
 ```
 
-All users share the password `password123`; `demo@example.com` is a good account to explore (it has a mix of its own events and other people's events it attends). The sample event titles and locations are in Spanish.
+All users share the password `password123`; `demo@example.com` is a good account to explore (it has a mix of its own events and other people's events it attends). The sample locations are real places in Buenos Aires.
 
 ## Authentication
 

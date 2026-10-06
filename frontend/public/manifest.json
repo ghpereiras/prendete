@@ -1,7 +1,7 @@
 {
   "name": "Prendete",
   "short_name": "Prendete",
-  "description": "Gestión de eventos: usuarios, eventos y asistentes.",
+  "description": "Plan events with friends: invite links, attendance and date polls.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

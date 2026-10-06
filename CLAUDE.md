@@ -1,38 +1,38 @@
 # CLAUDE.md
 
-Guía para trabajar en este repo. Para features/setup del usuario final ver [README.md](README.md); para el plan de deploy, [DEPLOY.md](DEPLOY.md). Esto es sobre cómo trabajar en el código, no qué hace la app.
+Guide for working in this repo. For end-user features and setup see [README.md](README.md); for the deployment notes, [DEPLOY.md](DEPLOY.md). This file is about how to work on the code, not what the app does.
 
 ## Stack
 
-- Backend: FastAPI + SQLAlchemy 2.0 + Alembic + PostgreSQL, en la raíz del repo (`app/`). Venv en `.venv/` (`source .venv/bin/activate`).
-- Frontend: React 19 + Vite + TypeScript en `frontend/`, react-router-dom v6, react-i18next (es/en, default es).
+- Backend: FastAPI + SQLAlchemy 2.0 + Alembic + PostgreSQL, at the repo root (`app/`). Venv in `.venv/` (`source .venv/bin/activate`).
+- Frontend: React 19 + Vite + TypeScript in `frontend/`, react-router-dom v6, react-i18next (es/en, default es).
 - Auth: JWT (PyJWT) + bcrypt.
 
-## Comandos
+## Commands
 
 ```bash
-source .venv/bin/activate && python -m pytest -q       # backend tests (rápido, correr siempre después de tocar app/)
-cd frontend && npx tsc -b --noEmit                       # typecheck frontend (correr siempre después de tocar frontend/src)
+source .venv/bin/activate && python -m pytest -q       # backend tests (fast, always run after touching app/)
+cd frontend && npx tsc -b --noEmit                       # frontend typecheck (always run after touching frontend/src)
 cd frontend && npm run dev                               # dev server
-alembic upgrade head                                     # aplicar migraciones pendientes
-alembic revision --autogenerate -m "mensaje"              # nueva migración
+alembic upgrade head                                     # apply pending migrations
+alembic revision --autogenerate -m "message"             # new migration
 ```
 
-## Convenciones del proyecto
+## Project conventions
 
-- **Idioma**: el usuario escribe en español, las respuestas de la UI (i18n) son en es/en, pero comentarios de código, nombres de variables y mensajes de commit van en inglés.
-- **Endpoints self-service**: para acciones sobre el propio recurso del usuario autenticado, preferir `PATCH`/`DELETE /events/{event_id}/attendance` (actúa sobre la fila del usuario actual, sin ID) en vez de `/attendance/{id}` genérico. Mismo patrón para `/users/me/*`.
-- **Sin filas "soft-delete"**: el modelo `Attendee` no tiene `status` — salir de un evento borra la fila directamente. No reintroducir estados tipo pending/declined salvo que el usuario lo pida explícitamente (ya se simplificó una vez a pedido suyo).
-- **Modales de confirmación**: reusar las clases CSS `.confirm-modal-backdrop` / `.confirm-modal` / `.confirm-modal-actions` (definidas en `App.css`) para cualquier popup nuevo. El componente `ConfirmModal.tsx` en sí solo sirve para confirmaciones destructivas (fuerza el botón a `.danger` rojo) — para un popup neutral (como `NotificationPrompt.tsx`), copiar el patrón de clases pero no importar el componente.
-- **Validación de formularios**: nada de validación nativa HTML5 (`required`, `minLength`, `type="email"` sin `noValidate`) — los tooltips del navegador salen en inglés siempre y no se pueden estilar. Todos los forms usan `noValidate` + estado `fieldErrors` + `<span className="field-error">`, ver `Login.tsx`/`Register.tsx`/`Profile.tsx`/`CreateEvent.tsx` como referencia. Si el backend no valida algo (ej. longitud de password), agregar el check en el frontend también — no asumir que el backend cubre el caso.
-- **Migraciones**: hay una sola migración consolidada (`d1256c8aa906_initial_schema.py`, consolidada por última vez el 2026-09-30). No hay base de datos de producción todavía, así que si hace falta consolidar de nuevo es seguro (verificar con autogenerate contra una DB de scratch antes de aplicar). Ojo con el `create_foreign_key`/`drop_constraint` manual al final de `upgrade`/inicio de `downgrade` para la FK circular de `event_polls.resolved_date_option_id` (`use_alter=True`) — `op.create_table()` la renderiza inline pero la descarta en silencio porque no hay un `metadata.create_all()` de por medio que la agregue después; hay que volver a agregarla a mano si se regenera la migración con autogenerate.
-- **Notificaciones push**: nunca asumir que "el navegador tiene una `PushSubscription`" significa "el usuario actual la activó" — un browser solo mantiene una suscripción por origen, compartida entre todos los usuarios que se loguean en ese dispositivo. Usar siempre `getMyPushSubscription()` (verifica contra `GET /users/me/push-subscriptions`), nunca `getPushSubscription()` a secas, para decidir qué mostrar en la UI.
+- **Language**: the user writes in Spanish, and the UI strings (i18n) are in es/en, but code comments, variable names, commit messages and the repo's documentation are in English.
+- **Self-service endpoints**: for actions on the authenticated user's own resource, prefer `PATCH`/`DELETE /events/{event_id}/attendance` (it acts on the current user's row, with no ID) over a generic `/attendance/{id}`. Same pattern for `/users/me/*`.
+- **No "soft-delete" rows**: the `Attendee` model has no `status` — leaving an event deletes the row outright. Don't reintroduce pending/declined-style states unless the user explicitly asks for it (it was already simplified once at their request).
+- **Confirmation modals**: reuse the CSS classes `.confirm-modal-backdrop` / `.confirm-modal` / `.confirm-modal-actions` (defined in `App.css`) for any new popup. The `ConfirmModal.tsx` component itself is only for destructive confirmations (it forces the button to the red `.danger` style) — for a neutral popup (like `NotificationPrompt.tsx`), copy the class pattern but don't import the component.
+- **Form validation**: no native HTML5 validation (`required`, `minLength`, `type="email"` without `noValidate`) — the browser's tooltips are always in English and can't be styled. Every form uses `noValidate` + a `fieldErrors` state + `<span className="field-error">`; see `Login.tsx`/`Register.tsx`/`Profile.tsx`/`CreateEvent.tsx` as a reference. If the backend doesn't validate something (e.g. password length), add the check on the frontend too — don't assume the backend covers it.
+- **Migrations**: there IS a production database (Neon), and its start command runs `alembic upgrade head` on every deploy. Never edit or consolidate a migration that has already been applied; add a new one instead, additive when possible (see "Rollbacks" in DEPLOY.md). Watch the manual `create_foreign_key`/`drop_constraint` at the end of `upgrade`/start of `downgrade` for the circular FK `event_polls.resolved_date_option_id` (`use_alter=True`) in the initial migration — `op.create_table()` renders it inline but silently drops it because there is no `metadata.create_all()` in between to add it afterwards; it has to be added back by hand if a migration is ever regenerated with autogenerate.
+- **Push notifications**: never assume "the browser has a `PushSubscription`" means "the current user enabled it" — a browser keeps only one subscription per origin, shared by every user who logs in on that device. Always use `getMyPushSubscription()` (it checks against `GET /users/me/push-subscriptions`), never a bare `getPushSubscription()`, to decide what to show in the UI.
 
 ## Testing
 
-- pytest con mocks (`unittest.mock.patch`) para todo lo que pegue a servicios externos — nunca llamadas reales a `webpush`/push services en tests. Ver `tests/test_push.py`.
-- `tests/conftest.py` trunca las tablas entre tests contra una DB real de test (`prendete_test`), no usa sqlite ni mocks de DB.
+- pytest with mocks (`unittest.mock.patch`) for anything that hits external services — never real calls to `webpush`/push services or to the email provider in tests. See `tests/test_push.py`.
+- `tests/conftest.py` truncates the tables between tests against a real test DB (`prendete_test`); it uses neither sqlite nor DB mocks.
 
-## Limitación de entorno conocida
+## Known environment limitation
 
-El browser pane integrado de Claude Code (Claude Desktop) **bloquea el registro de Service Workers** a nivel de motor (falla con "unknown error" genérico aunque `/sw.js` sirva bien) y `Notification.permission` siempre da `"denied"` por default. No es un bug de la app. Para verificar cambios de push/PWA en este entorno: probar los endpoints del backend directo con `requests`/curl, y para UI, hardcodear temporalmente el estado del componente (con backup del archivo original) para verificar visualmente, después revertir. Pedirle al usuario que confirme en un browser real cuando el cambio dependa de Service Worker/Notification APIs reales.
+Claude Code's built-in browser pane (Claude Desktop) **blocks Service Worker registration** at the engine level (it fails with a generic "unknown error" even though `/sw.js` is served fine) and `Notification.permission` is always `"denied"` by default. It isn't an app bug. To verify push/PWA changes in this environment: test the backend endpoints directly with `requests`/curl, and for the UI, temporarily hardcode the component's state (with a backup of the original file) to check it visually, then revert. Ask the user to confirm in a real browser when the change depends on real Service Worker/Notification APIs.
