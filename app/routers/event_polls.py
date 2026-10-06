@@ -14,6 +14,7 @@ from app.schemas.event_poll import (
     EventPollInvitePreview,
     EventPollRead,
     EventPollResolve,
+    EventPollUpdate,
     EventPollVoterRead,
     PollDateVotesInput,
 )
@@ -30,6 +31,15 @@ def _build_voters(option) -> list[EventPollVoterRead]:
         )
         for vote in option.votes
     ]
+
+
+def _voter_ids(poll: EventPoll) -> set[int]:
+    return {
+        vote.user_id
+        for option in poll.date_options
+        for vote in option.votes
+        if vote.user_id != poll.owner_id
+    }
 
 
 def _build_poll_read(poll: EventPoll, viewer_id: int) -> EventPollRead:
@@ -65,6 +75,55 @@ def create_poll(
 ):
     poll = crud.event_poll.create_poll(db, poll_in, owner_id=current_user.id)
     return _build_poll_read(poll, current_user.id)
+
+
+@router.patch("/{poll_id}", response_model=EventPollRead)
+def update_poll(
+    poll_id: int,
+    poll_in: EventPollUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    poll = crud.event_poll.get_poll(db, poll_id)
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    if poll.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the poll owner can edit this poll")
+    if poll.is_resolved:
+        raise HTTPException(status_code=409, detail="This poll was already resolved")
+
+    voter_ids = _voter_ids(poll)
+    poll = crud.event_poll.update_poll(db, poll, poll_in)
+    if poll_in.notify_voters:
+        # The invite link, not /polls/{id}: a voter whose only chosen date was just removed no
+        # longer has access to the poll detail page but can still vote through the link.
+        push.send_localized_push_to_users(
+            db,
+            voter_ids,
+            "poll_updated",
+            f"/polls/invite/{poll.invite_token}",
+            title=poll.title,
+        )
+    return _build_poll_read(poll, current_user.id)
+
+
+@router.delete("/{poll_id}", status_code=204)
+def delete_poll(
+    poll_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    poll = crud.event_poll.get_poll(db, poll_id)
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    if poll.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the poll owner can delete this poll")
+
+    # A resolved poll's voters were already told about the event, so there is nothing to cancel.
+    voter_ids = [] if poll.is_resolved else _voter_ids(poll)
+    title = poll.title
+    crud.event_poll.delete_poll(db, poll)
+    push.send_localized_push_to_users(db, voter_ids, "poll_cancelled", "/events", title=title)
 
 
 @router.get("", response_model=list[EventPollRead])

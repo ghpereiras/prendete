@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.event_poll import EventPoll, EventPollDateOption, EventPollVote, generate_invite_token
-from app.schemas.event_poll import EventPollCreate
+from app.schemas.event_poll import EventPollCreate, EventPollUpdate
 
 _LOAD_OPTIONS = (
     joinedload(EventPoll.owner),
@@ -24,6 +24,34 @@ def create_poll(db: Session, poll_in: EventPollCreate, owner_id: int) -> EventPo
     db.add(poll)
     db.commit()
     return get_poll(db, poll.id)  # type: ignore[return-value]
+
+
+def update_poll(db: Session, poll: EventPoll, poll_in: EventPollUpdate) -> EventPoll:
+    poll.title = poll_in.title
+    poll.description = poll_in.description
+    poll.location = poll_in.location
+    poll.location_details = poll_in.location_details
+    poll.maps_link = poll_in.maps_link
+    poll.duration_minutes = poll_in.duration_minutes
+
+    # A date that is kept (same instant) keeps its votes; one that is dropped takes its votes with
+    # it (delete-orphan cascade); a new one starts empty. Changing a date is therefore a drop + add.
+    wanted = set(poll_in.date_options)
+    for option in list(poll.date_options):
+        if option.starts_at in wanted:
+            wanted.discard(option.starts_at)
+        else:
+            poll.date_options.remove(option)
+    for starts_at in wanted:
+        poll.date_options.append(EventPollDateOption(starts_at=starts_at))
+
+    db.commit()
+    return get_poll(db, poll.id)  # type: ignore[return-value]
+
+
+def delete_poll(db: Session, poll: EventPoll) -> None:
+    db.delete(poll)
+    db.commit()
 
 
 def get_poll(db: Session, poll_id: int) -> EventPoll | None:

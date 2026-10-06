@@ -13,6 +13,14 @@ _MESSAGES: dict[str, dict[str, dict[str, str]]] = {
             "title": "Evento cancelado",
             "body": '"{title}" fue cancelado por el organizador.',
         },
+        "poll_updated": {
+            "title": "Encuesta actualizada",
+            "body": '"{title}" fue modificada por el organizador. Revisá tu disponibilidad.',
+        },
+        "poll_cancelled": {
+            "title": "Encuesta cancelada",
+            "body": '"{title}" fue cancelada por el organizador.',
+        },
         "poll_resolved": {
             "title": "Se confirmó la fecha",
             "body": '"{title}" quedó confirmado para el {date}.',
@@ -25,6 +33,14 @@ _MESSAGES: dict[str, dict[str, dict[str, str]]] = {
         },
         "event_cancelled": {
             "title": "Event cancelled",
+            "body": '"{title}" was cancelled by the organizer.',
+        },
+        "poll_updated": {
+            "title": "Poll updated",
+            "body": '"{title}" was changed by the organizer. Check your availability.',
+        },
+        "poll_cancelled": {
+            "title": "Poll cancelled",
             "body": '"{title}" was cancelled by the organizer.',
         },
         "poll_resolved": {

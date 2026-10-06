@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut } from "./client";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./client";
 
 export interface EventPollVoter {
   user_id: number;
@@ -48,6 +48,18 @@ export function getEventPoll(id: number): Promise<EventPoll> {
 
 export function createEventPoll(data: EventPollCreateInput): Promise<EventPoll> {
   return apiPost<EventPoll>("/event-polls", data);
+}
+
+export function updateEventPoll(
+  id: number,
+  data: EventPollCreateInput,
+  notifyVoters: boolean,
+): Promise<EventPoll> {
+  return apiPatch<EventPoll>(`/event-polls/${id}`, { ...data, notify_voters: notifyVoters });
+}
+
+export function deleteEventPoll(id: number): Promise<void> {
+  return apiDelete<void>(`/event-polls/${id}`);
 }
 
 export function getPollInviteLink(pollId: number): Promise<{ invite_token: string }> {

@@ -82,7 +82,7 @@ export default function PollInvitePreview() {
 
   return (
     <div className="page">
-      {poll.description && <p>{poll.description}</p>}
+      {poll.description && <p className="multiline-text">{poll.description}</p>}
       <EventLocation
         location={poll.location}
         locationDetails={poll.location_details}

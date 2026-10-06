@@ -143,7 +143,18 @@
     "errorAtLeastTwoDates": "Propose at least two dates",
     "errorDatesInPast": "Proposed dates must be in the future",
     "errorDuplicateDates": "Don't repeat the same date",
-    "hasErrors": "There are errors to fix before creating the poll"
+    "hasErrors": "There are errors to fix before creating the poll",
+    "editTitle": "Edit poll",
+    "editSubmit": "Save changes",
+    "editSubmitting": "Saving...",
+    "editError": "Couldn't save the poll",
+    "editLoadError": "Couldn't load the poll to edit",
+    "editNotAllowed": "This poll can't be edited",
+    "editDatesHint": "If you remove or change a date, its votes are deleted.",
+    "hasErrorsEdit": "There are errors to fix before saving the poll",
+    "notifyVotersPrompt": "Do you want to let the people who already voted know the poll changed?",
+    "notifyVotersConfirm": "Yes, notify",
+    "notifyVotersDecline": "Don't notify"
   },
   "eventDetail": {
     "spotsLeft": "Spots available: {{count}}",
@@ -190,7 +201,14 @@
     "savingAvailability": "Saving...",
     "voteError": "Couldn't save your availability",
     "alreadyResolved": "This poll was already resolved, the event is set.",
-    "viewEvent": "View event"
+    "viewEvent": "View event",
+    "edit": "Edit poll",
+    "delete": "Delete poll",
+    "confirmDelete": "Yes, delete",
+    "confirmDeleteMessage": "Are you sure you want to delete this poll? Votes are lost and the invite link stops working. This can't be undone.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "deleteError": "Couldn't delete the poll"
   },
   "pollInvitePreview": {
     "notFound": "This invite link isn't valid",

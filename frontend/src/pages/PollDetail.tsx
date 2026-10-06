@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { avatarUrl, isServerUnavailable, loadWhileServerWakes } from "../api/client";
 import {
+  deleteEventPoll,
   getEventPoll,
   getPollInviteLink,
   voteEventPoll,
   type EventPoll,
 } from "../api/eventPolls";
 import Avatar from "../components/Avatar";
+import ConfirmModal from "../components/ConfirmModal";
 import EventLocation from "../components/EventLocation";
 import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
@@ -29,6 +31,9 @@ export default function PollDetail() {
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
   const [savingVotes, setSavingVotes] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   usePageTitle(poll?.title ?? (error ? t(error) : t("common.loading")));
 
@@ -67,6 +72,19 @@ export default function PollDetail() {
     await navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleDelete() {
+    if (!poll) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteEventPoll(poll.id);
+      navigate("/");
+    } catch {
+      setDeleteError("pollDetail.deleteError");
+      setDeleting(false);
+    }
   }
 
   function toggleOption(optionId: number) {
@@ -130,7 +148,7 @@ export default function PollDetail() {
           <Link to={`/events/${poll.resulting_event_id}`}>{t("pollDetail.viewEvent")}</Link>
         </p>
       )}
-      {poll.description && <p>{poll.description}</p>}
+      {poll.description && <p className="multiline-text">{poll.description}</p>}
       <EventLocation
         location={poll.location}
         locationDetails={poll.location_details}
@@ -186,6 +204,35 @@ export default function PollDetail() {
           )}
           {voteError && <p className="error">{t(voteError)}</p>}
         </div>
+      )}
+
+      {isOwner && (
+        <div className="event-actions">
+          {!poll.resulting_event_id && (
+            <Link to={`/polls/${poll.id}/edit`} className="button-link">
+              {t("pollDetail.edit")}
+            </Link>
+          )}
+          <button
+            type="button"
+            className="button-link danger"
+            onClick={() => setConfirmingDelete(true)}
+          >
+            {t("pollDetail.delete")}
+          </button>
+        </div>
+      )}
+
+      {confirmingDelete && (
+        <ConfirmModal
+          message={t("pollDetail.confirmDeleteMessage")}
+          confirmLabel={deleting ? t("pollDetail.deleting") : t("pollDetail.confirmDelete")}
+          cancelLabel={t("pollDetail.cancel")}
+          confirming={deleting}
+          error={deleteError ? t(deleteError) : null}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmingDelete(false)}
+        />
       )}
     </div>
   );

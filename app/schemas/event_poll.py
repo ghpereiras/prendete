@@ -22,6 +22,10 @@ class EventPollCreate(BaseModel):
         return self
 
 
+class EventPollUpdate(EventPollCreate):
+    notify_voters: bool = True
+
+
 class EventPollVoterRead(BaseModel):
     user_id: int
     full_name: str

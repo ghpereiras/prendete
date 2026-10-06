@@ -458,3 +458,238 @@ def test_vote_after_resolve_rejected(client):
         headers=auth_headers(voter_token),
     )
     assert response.status_code == 409
+
+
+def vote(client, token, voter_token, option_ids):
+    return client.post(
+        f"/event-polls/invite/{token}/vote",
+        json={"option_ids": option_ids},
+        headers=auth_headers(voter_token),
+    )
+
+
+def update_poll(client, poll_id, token, **overrides):
+    payload = {**POLL_PAYLOAD, **overrides}
+    return client.patch(f"/event-polls/{poll_id}", json=payload, headers=auth_headers(token))
+
+
+def test_update_poll_requires_owner(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    other_token = register_and_login(client, "other@example.com")
+    poll = create_poll(client, owner_token).json()
+    response = update_poll(client, poll["id"], other_token, title="Hackeado")
+    assert response.status_code == 403
+    assert client.get(f"/event-polls/{poll['id']}", headers=auth_headers(owner_token)).json()["title"] == (
+        POLL_PAYLOAD["title"]
+    )
+
+
+def test_update_poll_not_found(client):
+    token = register_and_login(client, "owner@example.com")
+    assert update_poll(client, 9999, token).status_code == 404
+
+
+def test_update_poll_changes_fields(client):
+    token = register_and_login(client, "owner@example.com")
+    poll = create_poll(client, token).json()
+    response = update_poll(
+        client,
+        poll["id"],
+        token,
+        title="Cumple",
+        description=None,
+        location="Casa",
+        duration_minutes=60,
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["title"] == "Cumple"
+    assert body["description"] is None
+    assert body["location"] == "Casa"
+    assert body["duration_minutes"] == 60
+
+
+def test_update_poll_keeps_votes_on_kept_dates_and_drops_votes_on_removed_ones(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    kept, removed = poll["date_options"][0], poll["date_options"][1]
+    vote(client, token, voter_token, [kept["id"], removed["id"]])
+
+    response = update_poll(
+        client,
+        poll["id"],
+        owner_token,
+        date_options=[kept["starts_at"], "2026-12-01T20:00:00Z"],
+    )
+    assert response.status_code == 200
+    options = response.json()["date_options"]
+    assert len(options) == 2
+
+    by_start = {o["starts_at"]: o for o in options}
+    assert by_start[kept["starts_at"]]["id"] == kept["id"]
+    assert len(by_start[kept["starts_at"]]["voters"]) == 1
+    new_option = next(o for o in options if o["id"] != kept["id"])
+    assert new_option["voters"] == []
+
+    # The voter still sees only the vote on the kept date.
+    voter_view = client.get(f"/event-polls/{poll['id']}", headers=auth_headers(voter_token)).json()
+    assert [o["id"] for o in voter_view["date_options"] if o["voted_by_me"]] == [kept["id"]]
+
+
+def test_update_poll_keeps_invite_link(client):
+    token = register_and_login(client, "owner@example.com")
+    poll = create_poll(client, token).json()
+    invite_before = get_invite_token(client, poll["id"], token)
+    update_poll(client, poll["id"], token, title="Nuevo nombre")
+    assert get_invite_token(client, poll["id"], token) == invite_before
+
+
+def test_update_poll_validates_dates(client):
+    token = register_and_login(client, "owner@example.com")
+    poll = create_poll(client, token).json()
+    past = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+
+    assert update_poll(client, poll["id"], token, date_options=["2026-12-01T20:00:00Z"]).status_code == 422
+    assert update_poll(
+        client, poll["id"], token, date_options=["2026-12-01T20:00:00Z", past]
+    ).status_code == 422
+    assert update_poll(
+        client, poll["id"], token, date_options=["2026-12-01T20:00:00Z", "2026-12-01T20:00:00Z"]
+    ).status_code == 422
+    assert len(client.get(f"/event-polls/{poll['id']}", headers=auth_headers(token)).json()["date_options"]) == 3
+
+
+def test_update_resolved_poll_rejected(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    poll = create_poll(client, owner_token).json()
+    event_id = create_event(client, owner_token).json()["id"]
+    client.post(
+        f"/event-polls/{poll['id']}/resolve",
+        json={"resulting_event_id": event_id, "date_option_id": poll["date_options"][0]["id"]},
+        headers=auth_headers(owner_token),
+    )
+    assert update_poll(client, poll["id"], owner_token, title="Tarde").status_code == 409
+
+
+def test_update_poll_notifies_voters_not_owner_via_invite_link(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    register_and_login(client, "silent@example.com")  # never votes, so must not be notified
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    vote(client, token, voter_token, [poll["date_options"][0]["id"]])
+    voter_id = client.get("/users/me", headers=auth_headers(voter_token)).json()["id"]
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        response = update_poll(client, poll["id"], owner_token, title="Cumple")
+    assert response.status_code == 200
+    assert [call.args[1] for call in mock_send.call_args_list] == [voter_id]
+    payload = mock_send.call_args_list[0].args[2]
+    assert "Cumple" in payload["body"]
+    assert payload["url"] == f"/polls/invite/{token}"
+
+
+def test_update_poll_notifies_voter_whose_only_date_was_removed(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    dropped = poll["date_options"][1]
+    vote(client, token, voter_token, [dropped["id"]])
+    voter_id = client.get("/users/me", headers=auth_headers(voter_token)).json()["id"]
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        update_poll(
+            client,
+            poll["id"],
+            owner_token,
+            date_options=[poll["date_options"][0]["starts_at"], poll["date_options"][2]["starts_at"]],
+        )
+    assert [call.args[1] for call in mock_send.call_args_list] == [voter_id]
+    # With no votes left the voter can't open the poll page anymore, but the invite link still works.
+    assert client.get(f"/event-polls/{poll['id']}", headers=auth_headers(voter_token)).status_code == 404
+    assert client.get(f"/event-polls/invite/{token}", headers=auth_headers(voter_token)).status_code == 200
+
+
+def test_update_poll_notify_voters_false_skips_push(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    vote(client, token, voter_token, [poll["date_options"][0]["id"]])
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        response = update_poll(client, poll["id"], owner_token, title="Cumple", notify_voters=False)
+    assert response.status_code == 200
+    mock_send.assert_not_called()
+
+
+def test_delete_poll_requires_owner(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    other_token = register_and_login(client, "other@example.com")
+    poll = create_poll(client, owner_token).json()
+    response = client.delete(f"/event-polls/{poll['id']}", headers=auth_headers(other_token))
+    assert response.status_code == 403
+    assert client.get(f"/event-polls/{poll['id']}", headers=auth_headers(owner_token)).status_code == 200
+
+
+def test_delete_poll_not_found(client):
+    token = register_and_login(client, "owner@example.com")
+    assert client.delete("/event-polls/9999", headers=auth_headers(token)).status_code == 404
+
+
+def test_delete_poll_removes_it_votes_and_invite_link(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    vote(client, token, voter_token, [poll["date_options"][0]["id"]])
+
+    response = client.delete(f"/event-polls/{poll['id']}", headers=auth_headers(owner_token))
+    assert response.status_code == 204
+
+    assert client.get(f"/event-polls/{poll['id']}", headers=auth_headers(owner_token)).status_code == 404
+    assert client.get(f"/event-polls/invite/{token}").status_code == 404
+    assert client.get("/event-polls", headers=auth_headers(owner_token)).json() == []
+    assert client.get("/event-polls", headers=auth_headers(voter_token)).json() == []
+
+
+def test_delete_poll_notifies_voters_not_owner(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    vote(client, token, voter_token, [poll["date_options"][0]["id"], poll["date_options"][1]["id"]])
+    voter_id = client.get("/users/me", headers=auth_headers(voter_token)).json()["id"]
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        response = client.delete(f"/event-polls/{poll['id']}", headers=auth_headers(owner_token))
+    assert response.status_code == 204
+    # One voter on two dates is notified once.
+    assert [call.args[1] for call in mock_send.call_args_list] == [voter_id]
+    payload = mock_send.call_args_list[0].args[2]
+    assert POLL_PAYLOAD["title"] in payload["body"]
+    assert payload["url"] == "/events"
+
+
+def test_delete_resolved_poll_keeps_event_and_skips_push(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    voter_token = register_and_login(client, "voter@example.com")
+    poll = create_poll(client, owner_token).json()
+    token = get_invite_token(client, poll["id"], owner_token)
+    option_id = poll["date_options"][0]["id"]
+    vote(client, token, voter_token, [option_id])
+    event_id = create_event(client, owner_token).json()["id"]
+    client.post(
+        f"/event-polls/{poll['id']}/resolve",
+        json={"resulting_event_id": event_id, "date_option_id": option_id},
+        headers=auth_headers(owner_token),
+    )
+
+    with patch("app.routers.event_polls.push.send_push_to_user") as mock_send:
+        response = client.delete(f"/event-polls/{poll['id']}", headers=auth_headers(owner_token))
+    assert response.status_code == 204
+    mock_send.assert_not_called()
+    assert client.get(f"/events/{event_id}", headers=auth_headers(owner_token)).status_code == 200

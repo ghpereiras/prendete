@@ -93,7 +93,7 @@ export default function InvitePreview() {
 
   return (
     <div className="page">
-      {event.description && <p>{event.description}</p>}
+      {event.description && <p className="multiline-text">{event.description}</p>}
       <EventLocation
         location={event.location}
         locationDetails={event.location_details}

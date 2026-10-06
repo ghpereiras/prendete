@@ -115,6 +115,14 @@ export default function App() {
           }
         />
         <Route
+          path="/polls/:pollId/edit"
+          element={
+            <ProtectedRoute>
+              <CreatePoll />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/polls/:pollId"
           element={
             <ProtectedRoute>

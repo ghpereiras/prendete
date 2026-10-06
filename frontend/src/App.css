@@ -835,6 +835,14 @@
   font-size: 13px;
   font-style: italic;
   color: var(--text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Free-text fields typed in a textarea: keep the author's line breaks. */
+.multiline-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .join-form {
