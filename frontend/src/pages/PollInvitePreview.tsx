@@ -34,7 +34,15 @@ export default function PollInvitePreview() {
       onSlow: () => setSlow(true),
       isCancelled: () => cancelled,
     })
-      .then(setPoll)
+      .then((loaded) => {
+        setPoll(loaded);
+        // The public link doesn't say which dates the viewer picked, but their name is among the voters.
+        setSelectedOptionIds(
+          loaded.date_options
+            .filter((option) => option.voters.some((voter) => voter.user_id === user?.id))
+            .map((option) => option.id),
+        );
+      })
       .catch((err) => {
         if (cancelled) return;
         if (isServerUnavailable(err)) setUnavailable(true);
@@ -125,9 +133,11 @@ export default function PollInvitePreview() {
           {user ? (
             <>
               {voteError && <p className="error">{t(voteError)}</p>}
-              <button onClick={handleVote} disabled={voting}>
-                {voting ? t("pollInvitePreview.voting") : t("pollInvitePreview.vote")}
-              </button>
+              <div className="form-actions">
+                <button type="button" className="primary" onClick={handleVote} disabled={voting}>
+                  {voting ? t("pollDetail.savingAvailability") : t("pollDetail.saveAvailability")}
+                </button>
+              </div>
             </>
           ) : (
             <div className="invite-auth-prompt">

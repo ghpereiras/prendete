@@ -197,7 +197,7 @@ export default function PollDetail() {
           ))}
           {!isOwner && (
             <div className="form-actions">
-              <button type="button" onClick={handleSaveVotes} disabled={savingVotes}>
+              <button type="button" className="primary" onClick={handleSaveVotes} disabled={savingVotes}>
                 {savingVotes ? t("pollDetail.savingAvailability") : t("pollDetail.saveAvailability")}
               </button>
             </div>

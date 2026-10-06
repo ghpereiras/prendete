@@ -303,7 +303,8 @@
   cursor: pointer;
 }
 
-.form-actions button[type="submit"] {
+.form-actions button[type="submit"],
+.form-actions button.primary {
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;

@@ -215,8 +215,6 @@
     "isOwner": "You're the organizer of this poll.",
     "pickDates": "Mark the dates you can make it:",
     "proposedDates": "Proposed dates:",
-    "vote": "Save my availability",
-    "voting": "Saving...",
     "voteError": "Couldn't save your availability",
     "needsAuth": "Sign in or create an account to vote"
   },

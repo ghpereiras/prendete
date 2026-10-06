@@ -197,7 +197,7 @@
     "dateOptionsLabel": "Fechas propuestas",
     "chooseThisSlot": "Crear evento en esta fecha",
     "canAttend": "Puedo",
-    "saveAvailability": "Guardar mis disponibilidades",
+    "saveAvailability": "Guardar mi disponibilidad",
     "savingAvailability": "Guardando...",
     "voteError": "No se pudo guardar tu disponibilidad",
     "alreadyResolved": "Esta encuesta ya se resolvió, el evento quedó armado.",
@@ -215,8 +215,6 @@
     "isOwner": "Sos el organizador de esta encuesta.",
     "pickDates": "Marcá las fechas en las que podés:",
     "proposedDates": "Fechas propuestas:",
-    "vote": "Guardar mi disponibilidad",
-    "voting": "Guardando...",
     "voteError": "No se pudo guardar tu disponibilidad",
     "needsAuth": "Iniciá sesión o creá una cuenta para votar"
   },
