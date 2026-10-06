@@ -114,7 +114,7 @@ For the bare root domain, consider redirecting to `www` to avoid DNS problems at
 
 Two separate things share the domain:
 
-- **Human mailboxes** — [Zoho Mail](https://www.zoho.com/mail/) free plan: up to 5 real mailboxes on your own domain (webmail + IMAP/SMTP), not just a forward. Used for the addresses people write to (`redes@prendete.ar`, `info@prendete.ar`) and for `admin@prendete.ar`, the address used to sign up for infrastructure accounts (Render, Neon, Brevo), which keeps their notifications (billing, security, outages) separate from the public-facing ones.
+- **Human mailboxes** — [Zoho Mail](https://www.zoho.com/mail/) free plan: up to 5 real mailboxes on your own domain (webmail + IMAP/SMTP), not just a forward. Used for the addresses people write to, plus a dedicated mailbox for the infrastructure accounts (Render, Neon, Brevo), which keeps their notifications (billing, security, outages) separate from the public-facing ones.
 - **Transactional email** (account verification, password reset) — [Brevo](https://www.brevo.com/) (300 emails/day free, permanently), sent from `no-reply@prendete.ar` through its HTTP API (`app/email.py`), with the key in `BREVO_API_KEY`. Failures are logged and never break the request that triggered them.
 
 ### Email DNS (same zone as everything else)
@@ -127,7 +127,7 @@ Two separate things share the domain:
 ### Suggested order for a from-scratch setup
 
 1. Zoho Mail: sign up with a personal email, verify the domain (TXT in Cloudflare) and create the mailboxes.
-2. Use `admin@prendete.ar` for the Render, Neon and Brevo sign-ups, not a personal email.
+2. Use that dedicated mailbox for the Render, Neon and Brevo sign-ups, not a personal email.
 3. Neon: create the DB — **don't run `scripts/seed_data.py` against production** (it creates demo users with a known password, `password123`).
 4. Backend on Render: deploy, and confirm it answers at its `*.onrender.com` URL before touching DNS.
 5. Frontend on Render: deploy, same check at its temporary URL.
