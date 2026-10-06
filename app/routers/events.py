@@ -141,11 +141,17 @@ def delete_event(
         raise HTTPException(status_code=404, detail="Event not found")
     if event.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the event owner can delete this event")
-    if event.starts_at <= datetime.now(timezone.utc):
-        raise HTTPException(status_code=403, detail="Cannot delete an event that already happened")
 
-    attendee_user_ids = [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
+    # Hosts can clean up events that already happened. Nothing is "cancelled" in that case, so
+    # nobody is notified, and the poll that produced the event goes with it: deleting only the
+    # event would reopen that poll as pending, with nothing but past dates.
+    has_happened = event.starts_at <= datetime.now(timezone.utc)
+    attendee_user_ids = (
+        [] if has_happened else [a.user_id for a in crud.attendee.list_attendees_for_event(db, event.id)]
+    )
     event_title = event.title
+    if has_happened:
+        crud.event_poll.delete_polls_resolved_into(db, event.id)
     crud.event.delete_event(db, event)
     push.send_localized_push_to_users(
         db, attendee_user_ids, "event_cancelled", "/events", title=event_title

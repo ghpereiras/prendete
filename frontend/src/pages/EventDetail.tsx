@@ -72,6 +72,8 @@ export default function EventDetail() {
 
   useEffect(() => {
     if (!eventId || !event) return;
+    // Nobody can join an event that already started, so there is no link to share.
+    if (new Date(event.starts_at).getTime() <= Date.now()) return;
     getInviteLink(Number(eventId))
       .then(({ invite_token }) => setInviteUrl(`${window.location.origin}/invite/${invite_token}`))
       .catch((err) => {
@@ -156,7 +158,8 @@ export default function EventDetail() {
       ? null
       : Math.max(event.max_attendees - acceptedCount, 0);
   const isOwner = user?.id === event.owner_id;
-  const canManage = isOwner && new Date(event.starts_at).getTime() > Date.now();
+  const hasStarted = new Date(event.starts_at).getTime() <= Date.now();
+  const canEdit = isOwner && !hasStarted;
   const canLeave = !isOwner;
 
   return (
@@ -189,7 +192,7 @@ export default function EventDetail() {
           : t("eventDetail.registrationClosed")}
       </p>
 
-      {inviteUrl && (
+      {inviteUrl && !hasStarted && (
         <div className="invite-link">
           <p>{t("eventDetail.shareLink")}</p>
           <code>{inviteUrl}</code>
@@ -255,11 +258,13 @@ export default function EventDetail() {
         </div>
       )}
 
-      {canManage && (
+      {isOwner && (
         <div className="event-actions">
-          <Link to={`/events/${event.id}/edit`} className="button-link">
-            {t("eventDetail.edit")}
-          </Link>
+          {canEdit && (
+            <Link to={`/events/${event.id}/edit`} className="button-link">
+              {t("eventDetail.edit")}
+            </Link>
+          )}
           <button
             type="button"
             className="button-link danger"

@@ -49,6 +49,12 @@ def update_poll(db: Session, poll: EventPoll, poll_in: EventPollUpdate) -> Event
     return get_poll(db, poll.id)  # type: ignore[return-value]
 
 
+def delete_polls_resolved_into(db: Session, event_id: int) -> None:
+    """Queues the deletion of the polls whose chosen date became this event; the caller commits."""
+    for poll in db.scalars(select(EventPoll).where(EventPoll.resulting_event_id == event_id)):
+        db.delete(poll)
+
+
 def delete_poll(db: Session, poll: EventPoll) -> None:
     db.delete(poll)
     db.commit()

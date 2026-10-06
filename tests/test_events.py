@@ -263,15 +263,69 @@ def test_update_event_already_started_rejected(client, db_session):
     assert response.status_code == 403
 
 
-def test_delete_event_already_started_rejected(client, db_session):
-    token = register_and_login(client, "owner@example.com")
-    create_event(client, token)
-    event = db_session.get(Event, 1)
+def make_past(db_session, event_id=1):
+    event = db_session.get(Event, event_id)
     event.starts_at = datetime.now(timezone.utc) - timedelta(minutes=5)
     db_session.commit()
 
-    response = client.delete("/events/1", headers=auth_headers(token))
+
+def test_delete_past_event_allowed_and_notifies_nobody(client, db_session):
+    owner_token = register_and_login(client, "owner@example.com")
+    friend_token = register_and_login(client, "friend@example.com")
+    create_event(client, owner_token)
+    invite_token = client.get(
+        "/events/1/invite-link", headers=auth_headers(owner_token)
+    ).json()["invite_token"]
+    client.post(f"/events/invite/{invite_token}/join", headers=auth_headers(friend_token))
+    make_past(db_session)
+
+    with patch("app.routers.events.push.send_push_to_user") as mock_send:
+        response = client.delete("/events/1", headers=auth_headers(owner_token))
+    assert response.status_code == 204
+    mock_send.assert_not_called()
+    assert client.get("/events/1", headers=auth_headers(owner_token)).status_code == 404
+
+
+def test_delete_past_event_requires_owner(client, db_session):
+    owner_token = register_and_login(client, "owner@example.com")
+    stranger_token = register_and_login(client, "stranger@example.com")
+    create_event(client, owner_token)
+    make_past(db_session)
+
+    response = client.delete("/events/1", headers=auth_headers(stranger_token))
     assert response.status_code == 403
+
+
+def _resolve_poll_into_event(client, owner_token):
+    from tests.test_event_polls import create_poll
+
+    poll = create_poll(client, owner_token).json()
+    event_id = create_event(client, owner_token).json()["id"]
+    client.post(
+        f"/event-polls/{poll['id']}/resolve",
+        json={"resulting_event_id": event_id, "date_option_id": poll["date_options"][0]["id"]},
+        headers=auth_headers(owner_token),
+    )
+    return poll["id"], event_id
+
+
+def test_delete_past_event_also_deletes_the_poll_it_came_from(client, db_session):
+    owner_token = register_and_login(client, "owner@example.com")
+    poll_id, event_id = _resolve_poll_into_event(client, owner_token)
+    make_past(db_session, event_id)
+
+    assert client.delete(f"/events/{event_id}", headers=auth_headers(owner_token)).status_code == 204
+    assert client.get(f"/event-polls/{poll_id}", headers=auth_headers(owner_token)).status_code == 404
+    assert client.get("/event-polls", headers=auth_headers(owner_token)).json() == []
+
+
+def test_delete_upcoming_event_reopens_the_poll_it_came_from(client):
+    owner_token = register_and_login(client, "owner@example.com")
+    poll_id, event_id = _resolve_poll_into_event(client, owner_token)
+
+    assert client.delete(f"/events/{event_id}", headers=auth_headers(owner_token)).status_code == 204
+    polls = client.get("/event-polls", headers=auth_headers(owner_token)).json()
+    assert [(p["id"], p["resulting_event_id"]) for p in polls] == [(poll_id, None)]
 
 
 def test_update_event_sends_push_to_attendees_not_owner(client):
