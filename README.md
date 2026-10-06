@@ -105,7 +105,7 @@ En `/docs`, botón "Authorize" con el mismo email/password.
 - `GET /events` — eventos propios + eventos donde participás (no lista todos los eventos del sistema), ordenados por `starts_at` ascendente (el que empieza más pronto primero); cada evento incluye `owner_name`
 - `GET /events/{id}` — solo el dueño o un participante aceptado (404 para el resto)
 - `PATCH /events/{id}` — edita el evento (mismos campos y validaciones que `POST /events`); solo el dueño, y solo si el evento todavía no empezó (`403` si ya arrancó). `422` si el `max_attendees` nuevo queda por debajo de la cantidad de invitados ya aceptados
-- `DELETE /events/{id}` — solo el dueño, y solo si el evento todavía no empezó (`403` si ya arrancó)
+- `DELETE /events/{id}` — solo el dueño (`403` si no lo es). Se puede borrar también un evento que ya pasó, para limpiar el historial: en ese caso no se avisa a nadie y se borra con él la encuesta que lo originó (si la hubo), porque si no esa encuesta volvería a aparecer como pendiente con fechas vencidas. Si el evento todavía no empezó, se avisa por push a los asistentes y la encuesta de origen vuelve a quedar abierta
 
 ### Invitaciones por link y asistentes
 
@@ -197,7 +197,7 @@ En `/profile`, el botón "Editar perfil" cambia a un formulario (mismo `AvatarPi
 
 ### Editar y eliminar eventos
 
-En `/events/:id`, el dueño ve los botones "Editar evento" y "Eliminar evento" — solo mientras el evento no haya empezado (`event.starts_at` a futuro); una vez que arrancó, dejan de mostrarse tanto para el dueño como para cualquier participante. "Editar evento" lleva a `/events/:id/edit`, que reusa el mismo formulario y componente de `CreateEvent.tsx` (incluida la búsqueda de ubicación) precargado con los datos actuales y pega a `PATCH /events/{id}` en vez de `POST /events`. "Eliminar evento" abre un popup de confirmación (`components/ConfirmModal.tsx`: Cancelar / Sí, eliminar) antes de pegar a `DELETE /events/{id}` y volver al home. El backend valida ambas operaciones server-side además de ocultarlas en el frontend (dueño y evento no empezado), y `PATCH` además rechaza bajar el `max_attendees` por debajo de la cantidad de invitados ya aceptados.
+En `/events/:id`, el dueño ve el botón "Eliminar evento" siempre, y "Editar evento" solo mientras el evento no haya empezado (`event.starts_at` a futuro); una vez que arrancó, dejan de mostrarse la edición y el link de invitación (nadie puede sumarse ya), pero el dueño sigue pudiendo borrar el evento. "Editar evento" lleva a `/events/:id/edit`, que reusa el mismo formulario y componente de `CreateEvent.tsx` (incluida la búsqueda de ubicación) precargado con los datos actuales y pega a `PATCH /events/{id}` en vez de `POST /events`. "Eliminar evento" abre un popup de confirmación (`components/ConfirmModal.tsx`: Cancelar / Sí, eliminar) antes de pegar a `DELETE /events/{id}` y volver al home. El backend valida la edición server-side además de ocultarla en el frontend (dueño y evento no empezado; `PATCH` responde `403` si ya empezó), y `PATCH` además rechaza bajar el `max_attendees` por debajo de la cantidad de invitados ya aceptados.
 
 ### Abandonar un evento
 
