@@ -18,6 +18,7 @@ import {
 import Avatar from "../components/Avatar";
 import ConfirmModal from "../components/ConfirmModal";
 import EventLocation from "../components/EventLocation";
+import ExpandableText from "../components/ExpandableText";
 import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -160,7 +161,7 @@ export default function EventDetail() {
 
   return (
     <div className="page">
-      {event.description && <p className="multiline-text">{event.description}</p>}
+      {event.description && <ExpandableText text={event.description} />}
       <EventLocation
         location={event.location}
         locationDetails={event.location_details}

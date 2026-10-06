@@ -840,6 +840,34 @@
   overflow-wrap: anywhere;
 }
 
+.expandable-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  max-width: 680px;
+}
+
+/* 6 lines: line-height is 1.5 (see .multiline-text), so 6 * 1.5em. */
+.expandable-text.collapsed {
+  max-height: 9em;
+  overflow: hidden;
+}
+
+.expandable-text.fade {
+  mask-image: linear-gradient(to bottom, #000 65%, transparent);
+}
+
+.expand-toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+}
+
 /* Free-text fields typed in a textarea: keep the author's line breaks and read left to right. */
 .multiline-text {
   box-sizing: border-box;

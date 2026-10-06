@@ -12,6 +12,7 @@ import {
 import Avatar from "../components/Avatar";
 import ConfirmModal from "../components/ConfirmModal";
 import EventLocation from "../components/EventLocation";
+import ExpandableText from "../components/ExpandableText";
 import LoadingPage from "../components/LoadingPage";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../context/PageTitleContext";
@@ -148,7 +149,7 @@ export default function PollDetail() {
           <Link to={`/events/${poll.resulting_event_id}`}>{t("pollDetail.viewEvent")}</Link>
         </p>
       )}
-      {poll.description && <p className="multiline-text">{poll.description}</p>}
+      {poll.description && <ExpandableText text={poll.description} />}
       <EventLocation
         location={poll.location}
         locationDetails={poll.location_details}

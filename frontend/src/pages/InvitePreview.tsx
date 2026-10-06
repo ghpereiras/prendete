@@ -10,6 +10,7 @@ import {
   type EventInvitePreview,
 } from "../api/events";
 import EventLocation from "../components/EventLocation";
+import ExpandableText from "../components/ExpandableText";
 import LoadingPage from "../components/LoadingPage";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { useAuth } from "../context/AuthContext";
@@ -93,7 +94,7 @@ export default function InvitePreview() {
 
   return (
     <div className="page">
-      {event.description && <p className="multiline-text">{event.description}</p>}
+      {event.description && <ExpandableText text={event.description} />}
       <EventLocation
         location={event.location}
         locationDetails={event.location_details}

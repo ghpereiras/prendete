@@ -278,7 +278,9 @@
     "slowServer": "The server can take a few seconds to respond if it was idle.",
     "serverUnavailable": "Couldn't reach the server. Try again in a moment.",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "showMore": "Show more",
+    "showLess": "Show less"
   },
   "language": {
     "label": "Language"

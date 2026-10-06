@@ -5,6 +5,7 @@ import { avatarUrl, isServerUnavailable, loadWhileServerWakes } from "../api/cli
 import { previewPollInvite, votePollByInvite, type EventPollInvitePreview } from "../api/eventPolls";
 import Avatar from "../components/Avatar";
 import EventLocation from "../components/EventLocation";
+import ExpandableText from "../components/ExpandableText";
 import LoadingPage from "../components/LoadingPage";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { useAuth } from "../context/AuthContext";
@@ -90,7 +91,7 @@ export default function PollInvitePreview() {
 
   return (
     <div className="page">
-      {poll.description && <p className="multiline-text">{poll.description}</p>}
+      {poll.description && <ExpandableText text={poll.description} />}
       <EventLocation
         location={poll.location}
         locationDetails={poll.location_details}

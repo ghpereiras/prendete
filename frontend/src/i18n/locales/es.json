@@ -278,7 +278,9 @@
     "slowServer": "El servidor puede tardar unos segundos en responder si estaba inactivo.",
     "serverUnavailable": "No se pudo conectar con el servidor. Probá de nuevo en un momento.",
     "showPassword": "Mostrar contraseña",
-    "hidePassword": "Ocultar contraseña"
+    "hidePassword": "Ocultar contraseña",
+    "showMore": "Ver más",
+    "showLess": "Ver menos"
   },
   "language": {
     "label": "Idioma"
