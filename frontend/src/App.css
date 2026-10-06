@@ -674,6 +674,9 @@
   border: 1px solid var(--border);
   background: var(--bg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  /* Page content that makes its own stacking context (e.g. the masked .expandable-text.fade)
+     is painted after the header, so without this it would draw on top of the open menu. */
+  z-index: 10;
 }
 
 .icon-menu-dropdown button {
