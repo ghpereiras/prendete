@@ -31,7 +31,7 @@ Plan things with friends without the back-and-forth: create an event, share a li
 | AI | AWS Bedrock (Claude, Converse API with tool calling), boto3 |
 | Integrations | Web Push (VAPID), Brevo (transactional email), Google Maps |
 | Infrastructure | Render (API and static site), Neon (Postgres), Cloudflare (DNS) |
-| Quality | pytest (300+ tests against a real Postgres database), an eval set for the AI feature, TypeScript type checking |
+| Quality | pytest (400+ tests against a real Postgres database), an eval set for the AI feature, TypeScript type checking |
 
 ## Technical decisions worth a look
 
@@ -336,7 +336,7 @@ The "+" menu has a third option, "Create with AI", with its own screen where you
 How it is built:
 
 - **Structured output through tool calling.** `app/llm.py` calls the Bedrock Converse API forcing a single tool (`draft_plan`), so the answer is a JSON object and not text to parse. It is the only module that touches the network.
-- **The model does the reading, code does the rules.** `app/plan_draft.py` gives the model today's date and a ready-made 21-day calendar (models are bad at weekday arithmetic) and then validates and normalises what comes back: event or poll by number of dates, a default time with a warning, past and duplicate dates dropped, a cap on options, units and time zones.
+- **The model reads, the code decides.** `app/plan_draft.py` gives the model today's date and a ready-made 21-day calendar (models are bad at weekday arithmetic) and then applies every rule that has a right answer, so it is the same each time and has tests: event or poll by number of dates, a bare hour like "a las 9" becomes the evening, "el sábado que viene" is the nearest Saturday, "los próximos 5 martes" is expanded into dates, a time estimated from the kind of plan (the pool is in the afternoon), a default time with a warning, past and duplicate dates dropped, a cap on options, and time zones. Where the model kept getting a rule wrong, its job became reporting a fact and the code applies the rule. The full reasoning, with the cases that shaped it, is in [docs/create-with-ai.md](docs/create-with-ai.md).
 - **The user stays in charge.** The result only prefills the form, anything the model was unsure about is flagged, and the text the user typed is wrapped as data and never treated as instructions.
 - **A spending ceiling in the app.** Every call is logged in `ai_requests` (tokens and latency, never the text) and that table is what the limits count: `AI_DAILY_LIMIT_PER_USER` and `AI_DAILY_LIMIT_GLOBAL` over any 24 hours. Failed calls count too, so a retry loop cannot run up the bill. An AWS budget alert only sends an email, so it is not a substitute.
 - **Switched off by default.** With `BEDROCK_MODEL_ID` empty the endpoint answers 503 and the rest of the app is unaffected.
@@ -350,7 +350,9 @@ python -m evals.run_eval --min-pass 0.9   # exit code 1 below 90%, for a pre-mer
 
 `evals/cases.jsonl` holds Argentine-Spanish phrases with the expected result: weekday arithmetic ("el sábado que viene"), evening hours ("a las 10" is 22:00), alternatives ("viernes o sábado"), recurring days ("los próximos 5 martes"), "somos 10" which is not a capacity, a past date, a prompt-injection attempt and one sentence in English. The run prints accuracy per field, tokens, latency and an estimated cost, and saves a report in `evals/results/`. It needs real AWS credentials and spends a few cents; the tests in `tests/test_eval_cases.py` check the eval set itself without any network.
 
-Setup is in [DEPLOY.md](DEPLOY.md#ai-feature-aws-bedrock), and `infra/bedrock/` has the Terraform for a least-privilege IAM user.
+Latest full run (Claude Haiku 4.5 on Bedrock): all 48 cases pass, at about 1.4 s and an estimated US$0.0035 per request. The prompt was tuned against this same set, so read it as a regression check and not as a promise about phrases nobody has tried; the history and the caveats are in [docs/create-with-ai.md](docs/create-with-ai.md#results).
+
+Setup is in [DEPLOY.md](DEPLOY.md#ai-feature-aws-bedrock), the design notes are in [docs/create-with-ai.md](docs/create-with-ai.md), and `infra/bedrock/` has the Terraform for a least-privilege IAM user.
 
 ## Not done yet
 
