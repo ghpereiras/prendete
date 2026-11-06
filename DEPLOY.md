@@ -73,10 +73,22 @@ Among the free alternatives that were evaluated:
   - `CORS_ORIGINS`: the production frontend's URL (`https://prendete.ar`), with no trailing slash.
   - `FRONTEND_URL`: `https://prendete.ar`, used to build the links inside emails.
   - `BREVO_API_KEY`, `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`: transactional email (see "Email").
+  - `BEDROCK_MODEL_ID`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AI_DAILY_LIMIT_PER_USER`, `AI_DAILY_LIMIT_GLOBAL`: the "Create with AI" feature (see "AI feature"). Optional: with `BEDROCK_MODEL_ID` empty the feature answers 503 and nothing else changes.
 - Frontend (build-time): `VITE_API_URL` (the backend's URL in prod), `VITE_GOOGLE_MAPS_API_KEY`, **`VITE_VAPID_PUBLIC_KEY`** (it has to be exactly the prod backend's `VAPID_PUBLIC_KEY` — if it doesn't match, `pushManager.subscribe()` fails in the browser).
 - In Google Cloud Console, add the real domain to the API key's allowed "HTTP referrers" (it may only have `localhost:5173/*`).
 - **Metrics dashboard** (`/admin`): set `ADMIN_EMAILS` in the backend with the email(s) allowed to open it (comma-separated). The account must have a verified email; Google accounts already do.
 - **Google Sign-In** ("Continue with Google"): create an OAuth Client ID of type "Web" in Google Cloud Console (APIs & Services → Credentials; external consent screen with basic email/profile scopes, which doesn't require Google verification). Authorized JavaScript origins: `https://prendete.ar` and `http://localhost:5173`. Authorized redirect URIs: `https://prendete.ar/auth/google/callback` and `http://localhost:5173/auth/google/callback`. Set the same Client ID as `GOOGLE_CLIENT_ID` in the backend and `VITE_GOOGLE_CLIENT_ID` in the frontend (build-time); with the variable empty the button isn't shown. Migration `fbfa7bab5f4e` (makes `users.hashed_password` nullable) has to run before deploying the backend. The consent screen also needs the privacy policy and terms pages (`https://prendete.ar/privacy` and `/terms`).
+
+## AI feature (AWS Bedrock)
+
+"Create with AI" calls a Claude model through AWS Bedrock. It costs cents: a real eval run measured about 2,050 input and 80 output tokens per request, which is roughly US$0.0025 with a small model at US$1 / US$5 per million tokens (check the model's current price on the Bedrock pricing page and compare with Billing), so US$5 covers around 2,000 requests. At the default `AI_DAILY_LIMIT_GLOBAL` of 300 a day the worst case is well above US$5 a month, so set the limit to match your budget (about 60 a day keeps a month under US$5 with that model). Switch it off at any time by emptying `BEDROCK_MODEL_ID`.
+
+1. **AWS account**: it asks for a card. Create a monthly budget of US$5 with an email alert at 80% (`infra/bedrock/` does it with Terraform). The alert only emails you; the real ceiling is `AI_DAILY_LIMIT_PER_USER` and `AI_DAILY_LIMIT_GLOBAL`, which the app enforces before calling the model.
+2. **Model access**: in the Bedrock console, request access to the Claude model you want, in the region you will use. Newer models are called through a *cross-region inference profile* (its id starts with `us.` or `global.`); use that id as `BEDROCK_MODEL_ID`, and confirm it in the console, because ids change between model releases.
+3. **IAM user**: only `bedrock:InvokeModel` on that model. `infra/bedrock/` creates it. Then create its access key *in the console* (Terraform would write the secret into its state file) and paste it into Render as `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`. Never commit it: this repository is public.
+4. **Migration** `0594fb97682d` (table `ai_requests`) runs by itself on deploy; it is additive.
+5. **Privacy policy**: the text of the plan is sent to AWS to draft it. It is not stored (only token counts and latency are), and the policy in the app already names AWS Bedrock as a provider.
+6. **Watching it**: each call logs `AI plan draft user=... in=... out=... latency_ms=...`, and the `ai_requests` table has the totals.
 
 ## Database backups
 

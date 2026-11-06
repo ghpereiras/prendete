@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from tests.conftest import auth_headers, register_and_login
+from tests.conftest import auth_headers, in_days, register_and_login
 from tests.test_events import EVENT_PAYLOAD, create_event
 
 POLL_PAYLOAD = {
@@ -9,7 +9,7 @@ POLL_PAYLOAD = {
     "description": "Buscando fecha",
     "location": "Bosques de Palermo, Buenos Aires",
     "duration_minutes": 180,
-    "date_options": ["2026-11-01T20:00:00Z", "2026-11-08T20:00:00Z", "2026-11-15T20:00:00Z"],
+    "date_options": [in_days(10), in_days(17), in_days(24)],
 }
 
 
@@ -44,7 +44,7 @@ def test_date_options_are_sorted_chronologically(client):
     response = create_poll(
         client,
         token,
-        date_options=["2026-11-15T20:00:00Z", "2026-11-01T20:00:00Z", "2026-11-08T20:00:00Z"],
+        date_options=[in_days(24), in_days(10), in_days(17)],
     )
     assert response.status_code == 201
     starts = [option["starts_at"] for option in response.json()["date_options"]]
@@ -56,7 +56,7 @@ def test_invite_preview_date_options_are_sorted_chronologically(client):
     poll = create_poll(
         client,
         token,
-        date_options=["2026-11-15T20:00:00Z", "2026-11-01T20:00:00Z", "2026-11-08T20:00:00Z"],
+        date_options=[in_days(24), in_days(10), in_days(17)],
     ).json()
     invite_token = get_invite_token(client, poll["id"], token)
 
@@ -68,21 +68,21 @@ def test_invite_preview_date_options_are_sorted_chronologically(client):
 
 def test_create_poll_requires_at_least_two_dates(client):
     token = register_and_login(client, "owner@example.com")
-    response = create_poll(client, token, date_options=["2026-11-01T20:00:00Z"])
+    response = create_poll(client, token, date_options=[in_days(10)])
     assert response.status_code == 422
 
 
 def test_create_poll_rejects_past_dates(client):
     token = register_and_login(client, "owner@example.com")
     past = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
-    response = create_poll(client, token, date_options=[past, "2026-11-08T20:00:00Z"])
+    response = create_poll(client, token, date_options=[past, in_days(17)])
     assert response.status_code == 422
 
 
 def test_create_poll_rejects_duplicate_dates(client):
     token = register_and_login(client, "owner@example.com")
     response = create_poll(
-        client, token, date_options=["2026-11-01T20:00:00Z", "2026-11-01T20:00:00Z"]
+        client, token, date_options=[in_days(10), in_days(10)]
     )
     assert response.status_code == 422
 
@@ -521,7 +521,7 @@ def test_update_poll_keeps_votes_on_kept_dates_and_drops_votes_on_removed_ones(c
         client,
         poll["id"],
         owner_token,
-        date_options=[kept["starts_at"], "2026-12-01T20:00:00Z"],
+        date_options=[kept["starts_at"], in_days(40)],
     )
     assert response.status_code == 200
     options = response.json()["date_options"]
@@ -551,12 +551,12 @@ def test_update_poll_validates_dates(client):
     poll = create_poll(client, token).json()
     past = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
 
-    assert update_poll(client, poll["id"], token, date_options=["2026-12-01T20:00:00Z"]).status_code == 422
+    assert update_poll(client, poll["id"], token, date_options=[in_days(40)]).status_code == 422
     assert update_poll(
-        client, poll["id"], token, date_options=["2026-12-01T20:00:00Z", past]
+        client, poll["id"], token, date_options=[in_days(40), past]
     ).status_code == 422
     assert update_poll(
-        client, poll["id"], token, date_options=["2026-12-01T20:00:00Z", "2026-12-01T20:00:00Z"]
+        client, poll["id"], token, date_options=[in_days(40), in_days(40)]
     ).status_code == 422
     assert len(client.get(f"/event-polls/{poll['id']}", headers=auth_headers(token)).json()["date_options"]) == 3
 

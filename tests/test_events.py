@@ -2,13 +2,13 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from app.models.event import Event
-from tests.conftest import auth_headers, register_and_login
+from tests.conftest import auth_headers, in_days, register_and_login
 
 EVENT_PAYLOAD = {
     "title": "Asado",
     "description": "Juntada",
     "location": "Casa",
-    "starts_at": "2026-11-01T20:00:00Z",
+    "starts_at": in_days(10),
     "duration_minutes": 360,
     "max_attendees": 2,
 }
@@ -174,9 +174,9 @@ def test_list_events_includes_owner_name(client):
 
 def test_list_events_sorted_by_soonest_start(client):
     token = register_and_login(client, "owner@example.com")
-    create_event(client, token, title="Later", starts_at="2026-12-01T20:00:00Z")
-    create_event(client, token, title="Sooner", starts_at="2026-11-01T20:00:00Z")
-    create_event(client, token, title="Middle", starts_at="2026-11-15T20:00:00Z")
+    create_event(client, token, title="Later", starts_at=in_days(40))
+    create_event(client, token, title="Sooner", starts_at=in_days(10))
+    create_event(client, token, title="Middle", starts_at=in_days(24))
 
     events = client.get("/events", headers=auth_headers(token)).json()
     assert [e["title"] for e in events] == ["Sooner", "Middle", "Later"]

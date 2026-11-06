@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
@@ -98,3 +99,13 @@ def register_and_login(
 
 def auth_headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+def in_days(days: int) -> str:
+    """A UTC timestamp (20:00) that many days from now.
+
+    Tests must never hard-code calendar dates: creation validates "in the future", so a fixed date
+    silently turns every test red once the calendar passes it.
+    """
+    moment = datetime.now(timezone.utc).replace(hour=20, minute=0, second=0, microsecond=0) + timedelta(days=days)
+    return moment.isoformat().replace("+00:00", "Z")

@@ -314,7 +314,7 @@
   },
   "privacy": {
     "title": "Política de privacidad",
-    "updated": "Última actualización: 1 de octubre de 2026",
+    "updated": "Última actualización: 6 de noviembre de 2026",
     "sections": [
       {
         "heading": "Quiénes somos",
@@ -329,21 +329,23 @@
           "Si entrás con Google, recibimos de Google tu nombre, tu email verificado y tu foto de perfil. No recibimos ni guardamos tu contraseña de Google, y usamos esa información únicamente para iniciar tu sesión y crear tu perfil.",
           "Tu foto de perfil, si elegís subir una.",
           "Lo que creás o hacés en la app: eventos, encuestas de fechas, votos, asistencias y comentarios.",
-          "Tu idioma preferido y, si activás las notificaciones, los datos técnicos de suscripción push de tu navegador."
+          "Tu idioma preferido y, si activás las notificaciones, los datos técnicos de suscripción push de tu navegador.",
+          "Si usás «Crear con IA», el texto que escribís para describir el plan. No lo guardamos: solo se envía para armar el borrador, y registramos únicamente cuántas consultas hiciste y cuánto tardaron, para aplicar los límites diarios."
         ]
       },
       {
         "heading": "Para qué los usamos",
         "body": [
           "Para hacer funcionar la aplicación, mostrar tu nombre y tu foto a las personas que participan en los mismos eventos o encuestas que vos, enviarte emails de verificación de cuenta y de recuperación de contraseña, y mandarte notificaciones sobre tus eventos si las activaste.",
-          "No vendemos tus datos ni los usamos para publicidad."
+          "No vendemos tus datos ni los usamos para publicidad.",
+          "Para la función «Crear con IA»: un modelo de inteligencia artificial interpreta el texto que escribís y arma un borrador del evento o de la encuesta. Es solo una sugerencia que completa el formulario: revisala antes de guardarla, porque puede equivocarse."
         ]
       },
       {
         "heading": "Con quién los compartimos",
         "body": [
           "Las personas que participan en un mismo evento o encuesta ven tu nombre y tu foto.",
-          "Usamos proveedores para operar el servicio: Render (alojamiento de la aplicación), Neon (base de datos), Cloudflare (DNS), Brevo (envío de emails) y Google (inicio de sesión y búsqueda de ubicaciones con Google Maps). Las notificaciones push se entregan a través del servicio de tu navegador (Google, Apple o Mozilla). Estos proveedores procesan datos solo para prestarnos su servicio."
+          "Usamos proveedores para operar el servicio: Render (alojamiento de la aplicación), Neon (base de datos), Cloudflare (DNS), Brevo (envío de emails), Google (inicio de sesión y búsqueda de ubicaciones con Google Maps) y Amazon Web Services (Bedrock), que procesa el texto de «Crear con IA» solo cuando usás esa función. Las notificaciones push se entregan a través del servicio de tu navegador (Google, Apple o Mozilla). Estos proveedores procesan datos solo para prestarnos su servicio."
         ]
       },
       {
@@ -474,5 +476,33 @@
     "avgParticipants": "Votantes por encuesta (promedio)",
     "recentSignups": "Últimas altas",
     "error": "No se pudieron cargar las métricas"
+  },
+  "aiPlan": {
+    "title": "Crear con IA",
+    "intro": "Contá el plan con tus palabras y armo el borrador. Si proponés varias fechas, armo una encuesta de fecha; si es una sola, un evento.",
+    "placeholder": "Ej: asado en lo de Juli, viernes a las 21 o sábado a las 20",
+    "examplesLabel": "Probá con:",
+    "examples": [
+      "Cumple de Caro el sábado a las 21, cupo de 15",
+      "Cena el viernes a las 21 o el sábado a las 20",
+      "Fernet en mi casa el finde"
+    ],
+    "submit": "Armar borrador",
+    "submitting": "Armando...",
+    "footnote": "Es solo un borrador: lo revisás y lo editás antes de guardar. El texto que escribís no se guarda.",
+    "reviewNotice": "Borrador armado con IA. Revisalo antes de guardar.",
+    "becamePoll": "Como propusiste varias fechas, armé una encuesta de fecha.",
+    "becameEvent": "Como hay una sola fecha, armé un evento.",
+    "errorUnavailable": "La función de IA no está disponible por ahora. Podés crear el evento o la encuesta a mano.",
+    "errorLimit": "Llegaste al límite de consultas de hoy. Probá de nuevo mañana o creá el evento o la encuesta a mano.",
+    "errorBusy": "Hay mucha demanda en este momento. Probá más tarde o creá el evento o la encuesta a mano.",
+    "errorGeneric": "No pude armar el borrador. Probá de nuevo o creá el evento o la encuesta a mano.",
+    "warnings": {
+      "default_time": "Algunas fechas no tenían horario: puse las 20:00. Revisalas.",
+      "estimated_time": "Estimé el horario según el tipo de plan. Revisalo.",
+      "past_dates_dropped": "Ignoré fechas que ya pasaron.",
+      "no_dates": "No encontré ninguna fecha: elegila vos.",
+      "too_many_dates": "Dejé solo las primeras 10 fechas."
+    }
   }
 }

@@ -10,6 +10,7 @@ import ProtectedRoute from "./context/ProtectedRoute";
 import Admin from "./pages/Admin";
 import CreateEvent from "./pages/CreateEvent";
 import CreatePoll from "./pages/CreatePoll";
+import CreateWithAi from "./pages/CreateWithAi";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
 import GoogleCallback from "./pages/GoogleCallback";
@@ -103,6 +104,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EventDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai/new"
+          element={
+            <ProtectedRoute>
+              <CreateWithAi />
             </ProtectedRoute>
           }
         />

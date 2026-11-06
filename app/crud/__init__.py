@@ -6,6 +6,7 @@ from app.crud import (
     event_poll,
     email_verification_token,
     password_reset_token,
+    ai_request,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "event_poll",
     "email_verification_token",
     "password_reset_token",
+    "ai_request",
 ]

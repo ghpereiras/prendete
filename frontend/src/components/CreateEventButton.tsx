@@ -44,6 +44,9 @@ export default function CreateEventButton() {
           <button type="button" role="menuitem" onClick={() => goTo("/polls/new")}>
             {t("createPoll.title")}
           </button>
+          <button type="button" role="menuitem" onClick={() => goTo("/ai/new")}>
+            {t("aiPlan.title")}
+          </button>
         </div>
       )}
     </div>

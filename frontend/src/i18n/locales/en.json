@@ -314,7 +314,7 @@
   },
   "privacy": {
     "title": "Privacy policy",
-    "updated": "Last updated: October 1, 2026",
+    "updated": "Last updated: November 6, 2026",
     "sections": [
       {
         "heading": "Who we are",
@@ -329,21 +329,23 @@
           "If you sign in with Google, we receive your name, verified email and profile photo from Google. We don't receive or store your Google password, and we use that information only to sign you in and create your profile.",
           "Your profile photo, if you choose to upload one.",
           "What you create or do in the app: events, date polls, votes, attendance and comments.",
-          "Your preferred language and, if you enable notifications, the technical push subscription data of your browser."
+          "Your preferred language and, if you enable notifications, the technical push subscription data of your browser.",
+          "If you use \"Create with AI\", the text you type to describe the plan. We don't store it: it is only sent to draft the plan, and we only record how many requests you made and how long they took, to apply the daily limits."
         ]
       },
       {
         "heading": "What we use it for",
         "body": [
           "To run the app, show your name and photo to people taking part in the same events or polls as you, send you account verification and password recovery emails, and send you notifications about your events if you turned them on.",
-          "We don't sell your data or use it for advertising."
+          "We don't sell your data or use it for advertising.",
+          "For the \"Create with AI\" feature: an artificial intelligence model reads the text you type and drafts the event or the poll. It is only a suggestion that fills in the form: check it before saving, because it can be wrong."
         ]
       },
       {
         "heading": "Who we share it with",
         "body": [
           "People taking part in the same event or poll can see your name and photo.",
-          "We use providers to run the service: Render (app hosting), Neon (database), Cloudflare (DNS), Brevo (email delivery) and Google (sign-in and location search through Google Maps). Push notifications are delivered through your browser's service (Google, Apple or Mozilla). These providers process data only to provide their service to us."
+          "We use providers to run the service: Render (app hosting), Neon (database), Cloudflare (DNS), Brevo (email delivery), Google (sign-in and location search through Google Maps) and Amazon Web Services (Bedrock), which processes the text of \"Create with AI\" only when you use that feature. Push notifications are delivered through your browser's service (Google, Apple or Mozilla). These providers process data only to provide their service to us."
         ]
       },
       {
@@ -474,5 +476,33 @@
     "avgParticipants": "Voters per poll (average)",
     "recentSignups": "Latest sign-ups",
     "error": "Couldn't load the metrics"
+  },
+  "aiPlan": {
+    "title": "Create with AI",
+    "intro": "Describe the plan in your own words and I'll draft it. If you suggest several dates I'll draft a date poll; if it's a single date, an event.",
+    "placeholder": "E.g. barbecue at Juli's, Friday at 9pm or Saturday at 8pm",
+    "examplesLabel": "Try:",
+    "examples": [
+      "Caro's birthday on Saturday at 9pm, limit of 15",
+      "Dinner on Friday at 9pm or Saturday at 8pm",
+      "Drinks at my place this weekend"
+    ],
+    "submit": "Draft it",
+    "submitting": "Drafting...",
+    "footnote": "It's only a draft: you review and edit it before saving. The text you type isn't stored.",
+    "reviewNotice": "Drafted with AI. Check it before saving.",
+    "becamePoll": "You suggested several dates, so I drafted a date poll.",
+    "becameEvent": "There's only one date, so I drafted an event.",
+    "errorUnavailable": "The AI feature isn't available right now. You can create the event or the poll by hand.",
+    "errorLimit": "You've reached today's limit. Try again tomorrow or create the event or the poll by hand.",
+    "errorBusy": "It's very busy right now. Try again later or create the event or the poll by hand.",
+    "errorGeneric": "I couldn't draft that. Try again or create the event or the poll by hand.",
+    "warnings": {
+      "default_time": "Some dates had no time: I set 8:00 PM. Check them.",
+      "estimated_time": "I estimated the time from the kind of plan. Check it.",
+      "past_dates_dropped": "I ignored dates that have already passed.",
+      "no_dates": "I couldn't find a date: pick one yourself.",
+      "too_many_dates": "I kept only the first 10 dates."
+    }
   }
 }

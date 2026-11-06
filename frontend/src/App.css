@@ -1255,3 +1255,81 @@
   display: flex;
   flex-direction: column;
 }
+
+/* "Create with AI" screen (reached from the "+" menu). */
+.ai-screen {
+  gap: 14px;
+}
+
+.ai-screen p {
+  text-align: left;
+}
+
+.ai-intro {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.ai-screen textarea {
+  min-height: 110px;
+}
+
+.ai-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.ai-examples span {
+  flex-basis: 100%;
+}
+
+.ai-examples button {
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.ai-examples button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.ai-examples button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-notice {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.ai-notice p {
+  margin: 0;
+  text-align: left;
+}
+
+.ai-notice p + p,
+.ai-notice ul {
+  margin-top: 6px;
+}
+
+.ai-notice ul {
+  margin-bottom: 0;
+  padding-left: 18px;
+  color: var(--text);
+}

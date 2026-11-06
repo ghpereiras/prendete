@@ -3,7 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { avatarUrl, ApiError } from "../api/client";
 import { createEvent, getEvent, isRegistrationOpen, updateEvent } from "../api/events";
+import type { AiDraftState, PlanDraft } from "../api/ai";
 import { resolveEventPoll, type EventPollVoter } from "../api/eventPolls";
+import AiDraftNotice from "../components/AiDraftNotice";
 import Avatar from "../components/Avatar";
 import DateTimeField from "../components/DateTimeField";
 import EventLocation from "../components/EventLocation";
@@ -38,7 +40,10 @@ export default function CreateEvent() {
   const routerLocation = useLocation();
   const { eventId } = useParams<{ eventId: string }>();
   const isEditing = Boolean(eventId);
-  const fromPoll = (routerLocation.state as { fromPoll?: FromPoll } | null)?.fromPoll ?? null;
+  const routerState = routerLocation.state as ({ fromPoll?: FromPoll } & AiDraftState) | null;
+  const fromPoll = routerState?.fromPoll ?? null;
+  // A draft from the "Create with AI" screen (see CreateWithAi).
+  const incomingDraft = routerState?.aiDraft ?? null;
   const [title, setTitle] = useState(fromPoll?.title ?? "");
   const [description, setDescription] = useState(fromPoll?.description ?? "");
   const [location, setLocation] = useState(fromPoll?.location ?? "");
@@ -61,6 +66,30 @@ export default function CreateEvent() {
   const [confirmingNotify, setConfirmingNotify] = useState(false);
 
   usePageTitle(t(isEditing ? "createEvent.editTitle" : "createEvent.title"));
+
+  function applyDraft(draft: PlanDraft) {
+    setTitle(draft.title);
+    setDescription(draft.description ?? "");
+    setLocation(draft.location ?? "");
+    setLocationDetails("");
+    setMapsLink("");
+    setStartsAt(draft.dates[0] ? toDatetimeLocalValue(new Date(draft.dates[0])) : "");
+    setDurationHours(String(draft.duration_minutes / 60));
+    setLimitAttendees(draft.max_attendees !== null);
+    if (draft.max_attendees !== null) {
+      setMaxAttendees(String(draft.max_attendees));
+    }
+    setFieldErrors({});
+    setSubmitError(null);
+  }
+
+  useEffect(() => {
+    if (incomingDraft && !isEditing) {
+      applyDraft(incomingDraft);
+    }
+    // Only on arrival: the draft in the router state must not overwrite what the user edits afterwards.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!eventId) return;
@@ -208,6 +237,7 @@ export default function CreateEvent() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit} onKeyDown={blockEnterSubmit} noValidate>
+        {incomingDraft && !isEditing && <AiDraftNotice draft={incomingDraft} />}
         {fromPoll && fromPoll.voters.length > 0 && (
           <div className="poll-voters-box">
             <p>{t("createEvent.pollVotersLabel")}</p>

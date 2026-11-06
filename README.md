@@ -14,6 +14,7 @@ Plan things with friends without the back-and-forth: create an event, share a li
 
 - **Events**: date, duration and description, location with search and map, attendee limit and registration deadline. Every event has its own invite link (which can be regenerated); whoever opens it joins with an optional comment. The host can edit and delete it, and clean up past events.
 - **Date polls**: propose several dates, friends vote for the ones that work for them and everybody sees who voted for what. The host picks one and an event is created with the people who voted for that date. Polls can also be edited and deleted.
+- **Create with AI**: describe a plan in your own words ("asado en lo de Juli, viernes a las 21 o sábado a las 20") and the app drafts the event or the poll for you, dates and times included. One date makes an event, several make a poll. It only fills in the form; nothing is saved until you review it. Built on AWS Bedrock, see [below](#create-with-ai).
 - **Accounts**: sign up with email and password (with email verification and password recovery) or with Google. Profile picture, and account deletion from the profile page.
 - **Push notifications** (Web Push) when an event changes or is cancelled, or when a poll's date is confirmed. Each person turns them on for their own account.
 - **Installable app** (PWA) in **English and Spanish**.
@@ -27,15 +28,17 @@ Plan things with friends without the back-and-forth: create an event, share a li
 | Backend | Python, FastAPI, SQLAlchemy 2.0, Alembic, PostgreSQL |
 | Frontend | React 19, TypeScript, Vite, react-router, react-i18next |
 | Auth | JWT + bcrypt, Google Sign-In (OIDC) |
+| AI | AWS Bedrock (Claude, Converse API with tool calling), boto3 |
 | Integrations | Web Push (VAPID), Brevo (transactional email), Google Maps |
 | Infrastructure | Render (API and static site), Neon (Postgres), Cloudflare (DNS) |
-| Quality | pytest (180+ tests against a real Postgres database), TypeScript type checking |
+| Quality | pytest (300+ tests against a real Postgres database), an eval set for the AI feature, TypeScript type checking |
 
 ## Technical decisions worth a look
 
 - **Built to run on free tiers.** The Render backend goes to sleep after 15 minutes without traffic, and the Neon database closes its connections when it suspends. To hide that, an external cron keeps the backend awake, the frontend asks it to wake up as soon as it loads and retries instead of showing false errors while it boots, and SQLAlchemy uses `pool_pre_ping` to reopen dead connections. The details, including what did **not** work, are in [DEPLOY.md](DEPLOY.md).
 - **Google login verified on the server.** The frontend receives an `id_token` (OIDC flow with `state` and `nonce`) and the backend validates it, requires a verified email, and wipes the existing password if the account existed unverified, to prevent a *pre-hijacking* attack.
 - **Tests against a real database.** Tables are truncated between tests and the database is never mocked. Only external services (push and email) are mocked; real calls are never made.
+- **An AI feature with the model on a short leash.** The model only reads informal Spanish and extracts title, days and times through a forced tool call; everything with a right answer (event or poll, default time, dropping past dates, caps, time zones) is plain code with tests. A 48-case eval set scores it field by field, and a daily limit per user and for the whole app is the spending ceiling. Details [below](#create-with-ai).
 - **Encrypted, tested backups.** A daily dump taken with a read-only role, checked with `pg_restore --list` and encrypted with [age](https://github.com/FiloSottile/age) before it leaves the machine. They live in a separate private repository, and a full restore has been tested.
 - **Endpoints that act on the caller's own resource** (`/users/me`, `/events/{id}/attendance`), with no IDs in the path for things only the authenticated user can do.
 - **Push per user, not per browser.** A browser keeps a single subscription shared by every user who logs in on that device, so the UI asks the backend who it belongs to before showing its state.
@@ -194,6 +197,10 @@ The model is deliberately simple: a row in `attendees` (`app/models/attendee.py`
 - `PUT /event-polls/{id}/date-options/votes` — replaces your votes. `GET /event-polls/{id}/invite-link` and `POST .../invite-link/regenerate` (owner only) work like the event ones.
 - `POST /event-polls/{id}/resolve` — the owner links the poll to an event they created and a chosen date: the people who voted for that date are added as attendees and everybody who voted is notified.
 
+### AI
+
+- `POST /ai/plan-draft` — takes `{text, timezone}` and returns a draft (`kind`: `event` or `poll`, title, description, location, duration, attendee limit, dates in UTC and warning codes) to prefill the create forms. It saves nothing. Answers `503` if the feature is switched off, `429` when the daily limit is reached and `502` if the model fails.
+
 ### Admin
 
 - `GET /admin/stats` — totals and new users and events over the last day, week and month, plus the split between password and Google accounts. Requires the email to be listed in `ADMIN_EMAILS` and verified.
@@ -204,7 +211,7 @@ The model is deliberately simple: a row in `attendees` (`app/models/attendee.py`
 pytest
 ```
 
-They use a separate database (`prendete_test`, in the same Postgres) that is created automatically if it doesn't exist, and the tables are truncated before every test. They never touch the development database.
+They use a separate database (`prendete_test`, in the same Postgres) that is created automatically if it doesn't exist, and the tables are truncated before every test. They never touch the development database. The model is mocked, so no test calls AWS.
 
 ## New migrations
 
@@ -321,6 +328,29 @@ If B decides to enable in that state, `POST /users/me/push-subscriptions` upsert
 - For "Add to Home Screen" to look right (its own icon, no browser address bar) `frontend/public/manifest.json` + `apple-touch-icon` in `index.html` are needed — both are in place.
 
 **Setup**: you need a VAPID key pair (see "Backend — Setup" above for the command) loaded as `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_CONTACT_EMAIL` in the backend's `.env`, and the same `VAPID_PUBLIC_KEY` as `VITE_VAPID_PUBLIC_KEY` in the frontend's `.env`.
+
+## Create with AI
+
+The "+" menu has a third option, "Create with AI", with its own screen where you describe the plan in your own words. The backend asks a Claude model on AWS Bedrock to extract the title, location, days and times, and returns a draft. The app then opens the form that fits it, already filled in: several dates open the poll form and one date opens the event form, with a note saying why. The user never has to choose between event and poll first, and the forms themselves are untouched.
+
+How it is built:
+
+- **Structured output through tool calling.** `app/llm.py` calls the Bedrock Converse API forcing a single tool (`draft_plan`), so the answer is a JSON object and not text to parse. It is the only module that touches the network.
+- **The model does the reading, code does the rules.** `app/plan_draft.py` gives the model today's date and a ready-made 21-day calendar (models are bad at weekday arithmetic) and then validates and normalises what comes back: event or poll by number of dates, a default time with a warning, past and duplicate dates dropped, a cap on options, units and time zones.
+- **The user stays in charge.** The result only prefills the form, anything the model was unsure about is flagged, and the text the user typed is wrapped as data and never treated as instructions.
+- **A spending ceiling in the app.** Every call is logged in `ai_requests` (tokens and latency, never the text) and that table is what the limits count: `AI_DAILY_LIMIT_PER_USER` and `AI_DAILY_LIMIT_GLOBAL` over any 24 hours. Failed calls count too, so a retry loop cannot run up the bill. An AWS budget alert only sends an email, so it is not a substitute.
+- **Switched off by default.** With `BEDROCK_MODEL_ID` empty the endpoint answers 503 and the rest of the app is unaffected.
+
+Evaluating it, since a prompt change can silently break things:
+
+```bash
+python -m evals.run_eval                  # all 48 cases against the real model
+python -m evals.run_eval --min-pass 0.9   # exit code 1 below 90%, for a pre-merge check
+```
+
+`evals/cases.jsonl` holds Argentine-Spanish phrases with the expected result: weekday arithmetic ("el sábado que viene"), evening hours ("a las 10" is 22:00), alternatives ("viernes o sábado"), recurring days ("los próximos 5 martes"), "somos 10" which is not a capacity, a past date, a prompt-injection attempt and one sentence in English. The run prints accuracy per field, tokens, latency and an estimated cost, and saves a report in `evals/results/`. It needs real AWS credentials and spends a few cents; the tests in `tests/test_eval_cases.py` check the eval set itself without any network.
+
+Setup is in [DEPLOY.md](DEPLOY.md#ai-feature-aws-bedrock), and `infra/bedrock/` has the Terraform for a least-privilege IAM user.
 
 ## Not done yet
 

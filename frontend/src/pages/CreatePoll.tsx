@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import type { AiDraftState, PlanDraft } from "../api/ai";
 import { createEventPoll, getEventPoll, updateEventPoll } from "../api/eventPolls";
+import AiDraftNotice from "../components/AiDraftNotice";
 import DateTimeField from "../components/DateTimeField";
 import EventLocation from "../components/EventLocation";
 import LocationSearch from "../components/LocationSearch";
@@ -24,6 +26,9 @@ export default function CreatePoll() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { pollId } = useParams<{ pollId: string }>();
+  const routerState = useLocation().state as AiDraftState | null;
+  // A draft from the "Create with AI" screen (see CreateWithAi).
+  const incomingDraft = routerState?.aiDraft ?? null;
   const isEditing = Boolean(pollId);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -41,6 +46,28 @@ export default function CreatePoll() {
   const [confirmingNotify, setConfirmingNotify] = useState(false);
 
   usePageTitle(t(isEditing ? "createPoll.editTitle" : "createPoll.title"));
+
+  function applyDraft(draft: PlanDraft) {
+    setTitle(draft.title);
+    setDescription(draft.description ?? "");
+    setLocation(draft.location ?? "");
+    setLocationDetails("");
+    setMapsLink("");
+    setDurationHours(String(draft.duration_minutes / 60));
+    const options = draft.dates.map((d) => toDatetimeLocalValue(new Date(d)));
+    // A poll needs at least two rows on screen, even if the draft found fewer dates.
+    setDateOptions(options.length >= 2 ? options : [...options, ...Array<string>(2 - options.length).fill("")]);
+    setFieldErrors({});
+    setSubmitError(null);
+  }
+
+  useEffect(() => {
+    if (incomingDraft && !isEditing) {
+      applyDraft(incomingDraft);
+    }
+    // Only on arrival: the draft in the router state must not overwrite what the user edits afterwards.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!pollId) return;
@@ -170,6 +197,7 @@ export default function CreatePoll() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit} onKeyDown={blockEnterSubmit} noValidate>
+        {incomingDraft && !isEditing && <AiDraftNotice draft={incomingDraft} />}
         <label>
           {t("createPoll.name")}
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
